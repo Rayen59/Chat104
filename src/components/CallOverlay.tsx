@@ -6,16 +6,15 @@ import {
   MicOff,
   Video,
   VideoOff,
+  Sliders,
+  Check,
   Sparkles,
   Volume2,
   VolumeX,
   Radio,
-  Sliders,
-  Check,
-  Disc,
-  Activity,
   Bot,
-  Zap
+  Zap,
+  PhoneCall
 } from "lucide-react";
 import { translations, getSavedLanguage, Language } from "../i18n";
 
@@ -27,10 +26,8 @@ interface CallOverlayProps {
 
 interface VoicePreset {
   id: VoiceFilterType;
-  labelFr: string;
-  labelEn: string;
-  descFr: string;
-  descEn: string;
+  label: string;
+  desc: string;
   icon: string;
   color: string;
 }
@@ -38,66 +35,73 @@ interface VoicePreset {
 const VOICE_PRESETS: VoicePreset[] = [
   {
     id: "natural",
-    labelFr: "Voix Naturelle HD",
-    labelEn: "HD Natural Voice",
-    descFr: "Audio studio purifié & clarté cristalline",
-    descEn: "Crystal clear studio sound with noise suppression",
+    label: "HD Natural Voice",
+    desc: "Studio grade clarity & intelligent noise suppression",
     icon: "🎙️",
     color: "from-blue-500 to-cyan-400"
   },
   {
     id: "robot",
-    labelFr: "Robot Cyberpunk",
-    labelEn: "Cyberpunk Robot",
-    descFr: "Modulation cybernétique & tonalité synthétique",
-    descEn: "Synthetic ring modulation & robotic harmonics",
+    label: "Cyber Robot",
+    desc: "Synthetic ring modulation & robotic harmonics",
     icon: "🤖",
     color: "from-emerald-400 to-teal-500"
   },
   {
     id: "helium",
-    labelFr: "Hélium / Aiguë",
-    labelEn: "High Pitch / Helium",
-    descFr: "Formants ultra-aigus & dynamique perçante",
-    descEn: "High-frequency formant boost & chipmunk harmonics",
+    label: "High Pitch / Helium",
+    desc: "High-frequency formant boost & chipmunk harmonics",
     icon: "🎈",
     color: "from-amber-400 to-rose-400"
   },
   {
     id: "deep",
-    labelFr: "Voix Grave / Basse",
-    labelEn: "Deep Bass Voice",
-    descFr: "Basses fréquences profondes & résonance imposante",
-    descEn: "Deep sub-bass boost & cinematic presence",
+    label: "Deep Bass Voice",
+    desc: "Deep sub-bass boost & cinematic presence",
     icon: "👹",
     color: "from-purple-500 to-indigo-600"
   },
   {
     id: "radio",
-    labelFr: "Talkie-Walkie",
-    labelEn: "Vintage Radio",
-    descFr: "Effet radiofréquence vintage & passe-bande",
-    descEn: "Bandpass military radio filter & subtle grain",
+    label: "Vintage Walkie-Talkie",
+    desc: "Military bandpass radio filter & subtle grain",
     icon: "📻",
     color: "from-orange-500 to-amber-600"
   },
   {
     id: "echo",
-    labelFr: "Écho Spatial",
-    labelEn: "Cosmic Echo",
-    descFr: "Réverbération immersive & délai multidirectionnel",
-    descEn: "Atmospheric multi-tap delay & space ambience",
+    label: "Cosmic Echo",
+    desc: "Atmospheric multi-tap delay & spatial ambience",
     icon: "🌌",
     color: "from-pink-500 to-purple-600"
   },
   {
     id: "anonymous",
-    labelFr: "Voix Anonyme",
-    labelEn: "Anonymous Modulator",
-    descFr: "Tremolo mystérieux & altération d'identité",
-    descEn: "Identity masking tremolo & mystery pitch shift",
+    label: "Anonymous Modulator",
+    desc: "Identity masking tremolo & mystery pitch shift",
     icon: "🕵️",
     color: "from-red-500 to-orange-600"
+  },
+  {
+    id: "alien",
+    label: "Alien Extraterrestrial",
+    desc: "Dual-carrier frequency shift & sci-fi resonance",
+    icon: "👽",
+    color: "from-lime-400 to-emerald-600"
+  },
+  {
+    id: "chipmunk",
+    label: "Chipmunk Harmonic",
+    desc: "Ultra-fast treble formant & cute harmonic peaking",
+    icon: "🐿️",
+    color: "from-yellow-400 to-orange-500"
+  },
+  {
+    id: "telephone",
+    label: "Classic Phone Line",
+    desc: "Authentic 300Hz-3.4kHz landline frequency filter",
+    icon: "☎️",
+    color: "from-slate-400 to-zinc-600"
   }
 ];
 
@@ -107,32 +111,41 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   onEndCall
 }) => {
   const [lang, setLang] = useState<Language>(getSavedLanguage());
-  const t = translations[lang];
+  const t = translations[lang] || translations.en;
 
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [callDurationSeconds, setCallDurationSeconds] = useState(0);
   const [activeVoiceFilter, setActiveVoiceFilter] = useState<VoiceFilterType>(call.voiceFilter || "natural");
   const [showVoiceDrawer, setShowVoiceDrawer] = useState(false);
-  const [monitorVoice, setMonitorVoice] = useState(false);
   const [isConnected, setIsConnected] = useState(call.status === "connected");
+  const [remoteSpeaking, setRemoteSpeaking] = useState(false);
+  const [localSpeaking, setLocalSpeaking] = useState(false);
+  const [peerVoiceFilter, setPeerVoiceFilter] = useState<VoiceFilterType>("natural");
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Web Audio API refs
+  // Web Audio pipeline refs
   const audioCtxRef = useRef<AudioContext | null>(null);
-  const micStreamRef = useRef<MediaStream | null>(null);
+  const rawMicStreamRef = useRef<MediaStream | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
-  const monitorGainRef = useRef<GainNode | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
+  const localGainNodeRef = useRef<GainNode | null>(null);
+  const localAnalyserRef = useRef<AnalyserNode | null>(null);
+  const processedStreamDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
   const filterNodesRef = useRef<any[]>([]);
   const dialToneIntervalRef = useRef<any>(null);
 
-  const otherName = call.callerId === currentUser.id ? call.targetName : call.callerName;
-  const otherAvatar = call.callerId === currentUser.id ? "" : call.callerAvatar;
+  // WebRTC Peer Connection ref
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
+
+  const isCaller = call.callerId === currentUser.id;
+  const otherName = isCaller ? call.targetName : call.callerName;
+  const otherAvatar = isCaller ? "" : call.callerAvatar;
+  const isAiCall = call.targetId === "user_mk_ai" || call.targetId === "user_wia_ai" || otherName.toLowerCase().includes("mk.ia");
 
   // Listen to language changes
   useEffect(() => {
@@ -150,13 +163,14 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
     }
   }, [call.status]);
 
-  // Outgoing dial tone synthesis when ringing
+  // Outgoing dial tone when ringing (stops immediately when connected)
   useEffect(() => {
-    if (call.status === "ringing" && call.callerId === currentUser.id) {
+    if (call.status === "ringing" && isCaller && !isConnected) {
       try {
-        const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioContextClass();
         
-        const playBeep = () => {
+        const playTone = () => {
           if (ctx.state === "suspended") ctx.resume();
           const osc1 = ctx.createOscillator();
           const osc2 = ctx.createOscillator();
@@ -180,101 +194,36 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           osc2.stop(ctx.currentTime + 1.2);
         };
 
-        playBeep();
-        dialToneIntervalRef.current = setInterval(playBeep, 3000);
+        playTone();
+        dialToneIntervalRef.current = setInterval(playTone, 3200);
 
         return () => {
           if (dialToneIntervalRef.current) clearInterval(dialToneIntervalRef.current);
           ctx.close().catch(() => {});
         };
       } catch (e) {
-        console.error("Dial tone error", e);
+        console.warn("Dial tone notice:", e);
       }
     }
-  }, [call.status, call.callerId, currentUser.id]);
+  }, [call.status, isCaller, isConnected]);
 
-  // Main Audio & Video Pipeline Setup
-  useEffect(() => {
-    let active = true;
-
-    async function initMediaAndAudio() {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-            autoGainControl: true
-          },
-          video: call.type === "video" && !isVideoOff
-        });
-
-        if (!active) {
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
-        micStreamRef.current = stream;
-
-        // Video attachment
-        if (call.type === "video" && localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-        }
-
-        // Web Audio Setup
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContextClass();
-        audioCtxRef.current = ctx;
-
-        const source = ctx.createMediaStreamSource(stream);
-        sourceNodeRef.current = source;
-
-        const gainNode = ctx.createGain();
-        gainNode.gain.setValueAtTime(isMuted ? 0 : 1, ctx.currentTime);
-        gainNodeRef.current = gainNode;
-
-        const monitorGain = ctx.createGain();
-        monitorGain.gain.setValueAtTime(monitorVoice ? 0.8 : 0, ctx.currentTime);
-        monitorGainRef.current = monitorGain;
-
-        const analyser = ctx.createAnalyser();
-        analyser.fftSize = 64;
-        analyser.smoothingTimeConstant = 0.8;
-        analyserRef.current = analyser;
-
-        applyVoiceProcessingGraph(activeVoiceFilter, ctx, source, gainNode, analyser, monitorGain);
-      } catch (err) {
-        console.warn("Microphone / Camera access note:", err);
-      }
-    }
-
-    initMediaAndAudio();
-
-    return () => {
-      active = false;
-      if (micStreamRef.current) {
-        micStreamRef.current.getTracks().forEach((track) => track.stop());
-      }
-      if (audioCtxRef.current) {
-        audioCtxRef.current.close().catch(() => {});
-      }
-    };
-  }, [call.type]);
-
-  // Apply or rebuild the audio processing nodes according to the selected voice filter
-  const applyVoiceProcessingGraph = (
-    preset: VoiceFilterType,
+  // Setup Web Audio graph with DSP Voice Filters
+  // IMPORTANT: Local microphone is routed ONLY to the processed stream destination (and Analyser for UI visualizer).
+  // Local microphone is NEVER connected to ctx.destination, completely eliminating self-echo!
+  const buildVoiceFilterGraph = (
+    filter: VoiceFilterType,
     ctx: AudioContext,
     source: MediaStreamAudioSourceNode,
     mainGain: GainNode,
     analyser: AnalyserNode,
-    monitorGain: GainNode
+    streamDest: MediaStreamAudioDestinationNode
   ) => {
     try {
-      // Disconnect previous filter nodes
-      filterNodesRef.current.forEach((node) => {
+      // Disconnect and clean previous nodes
+      filterNodesRef.current.forEach((n) => {
         try {
-          node.disconnect();
-          if (node.stop) node.stop();
+          n.disconnect();
+          if (n.stop) n.stop();
         } catch (e) {}
       });
       filterNodesRef.current = [];
@@ -282,19 +231,18 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       source.disconnect();
       mainGain.disconnect();
       analyser.disconnect();
-      monitorGain.disconnect();
 
       let lastNode: AudioNode = source;
 
-      if (preset === "natural") {
-        // Natural HD: High-pass at 80Hz + Dynamics Compressor
+      if (filter === "natural") {
+        // High-pass filter to eliminate low frequency rumble + dynamics compressor for studio clarity
         const hp = ctx.createBiquadFilter();
         hp.type = "highpass";
-        hp.frequency.setValueAtTime(80, ctx.currentTime);
+        hp.frequency.setValueAtTime(90, ctx.currentTime);
 
         const comp = ctx.createDynamicsCompressor();
         comp.threshold.setValueAtTime(-24, ctx.currentTime);
-        comp.knee.setValueAtTime(30, ctx.currentTime);
+        comp.knee.setValueAtTime(25, ctx.currentTime);
         comp.ratio.setValueAtTime(4, ctx.currentTime);
         comp.attack.setValueAtTime(0.003, ctx.currentTime);
         comp.release.setValueAtTime(0.25, ctx.currentTime);
@@ -303,19 +251,19 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         hp.connect(comp);
         lastNode = comp;
         filterNodesRef.current.push(hp, comp);
-      } else if (preset === "robot") {
-        // Robot: Ring modulator + Bandpass at 1200Hz
+      } else if (filter === "robot") {
+        // Cyberpunk Robot: Ring Modulation + Sawtooth Harmonic Carrier + Bandpass
         const osc = ctx.createOscillator();
         osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(60, ctx.currentTime);
+        osc.frequency.setValueAtTime(65, ctx.currentTime);
 
         const oscGain = ctx.createGain();
         oscGain.gain.setValueAtTime(0.7, ctx.currentTime);
 
         const bandpass = ctx.createBiquadFilter();
         bandpass.type = "bandpass";
-        bandpass.frequency.setValueAtTime(1200, ctx.currentTime);
-        bandpass.Q.setValueAtTime(3, ctx.currentTime);
+        bandpass.frequency.setValueAtTime(1150, ctx.currentTime);
+        bandpass.Q.setValueAtTime(3.5, ctx.currentTime);
 
         osc.connect(oscGain.gain);
         lastNode.connect(oscGain);
@@ -324,59 +272,59 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
         lastNode = bandpass;
         filterNodesRef.current.push(osc, oscGain, bandpass);
-      } else if (preset === "helium") {
-        // Helium / High Pitch: High-shelf boost + resonant peak at 2.5kHz
+      } else if (filter === "helium") {
+        // High Pitch / Helium: Resonant high peaking filter & treble shelf boost
         const highShelf = ctx.createBiquadFilter();
         highShelf.type = "highshelf";
-        highShelf.frequency.setValueAtTime(2200, ctx.currentTime);
-        highShelf.gain.setValueAtTime(14, ctx.currentTime);
+        highShelf.frequency.setValueAtTime(2000, ctx.currentTime);
+        highShelf.gain.setValueAtTime(15, ctx.currentTime);
 
-        const peaking = ctx.createBiquadFilter();
-        peaking.type = "peaking";
-        peaking.frequency.setValueAtTime(3200, ctx.currentTime);
-        peaking.Q.setValueAtTime(4, ctx.currentTime);
-        peaking.gain.setValueAtTime(12, ctx.currentTime);
+        const peak = ctx.createBiquadFilter();
+        peak.type = "peaking";
+        peak.frequency.setValueAtTime(3400, ctx.currentTime);
+        peak.Q.setValueAtTime(4.5, ctx.currentTime);
+        peak.gain.setValueAtTime(14, ctx.currentTime);
 
         lastNode.connect(highShelf);
-        highShelf.connect(peaking);
-        lastNode = peaking;
-        filterNodesRef.current.push(highShelf, peaking);
-      } else if (preset === "deep") {
-        // Deep Monster / Basse: Low-shelf boost + sub-bass boost + lowpass
+        highShelf.connect(peak);
+        lastNode = peak;
+        filterNodesRef.current.push(highShelf, peak);
+      } else if (filter === "deep") {
+        // Deep Monster / Cinematic Bass: Low-shelf sub-bass boost + low-pass filter
         const lowShelf = ctx.createBiquadFilter();
         lowShelf.type = "lowshelf";
-        lowShelf.frequency.setValueAtTime(180, ctx.currentTime);
-        lowShelf.gain.setValueAtTime(15, ctx.currentTime);
+        lowShelf.frequency.setValueAtTime(160, ctx.currentTime);
+        lowShelf.gain.setValueAtTime(16, ctx.currentTime);
 
         const lowpass = ctx.createBiquadFilter();
         lowpass.type = "lowpass";
-        lowpass.frequency.setValueAtTime(950, ctx.currentTime);
+        lowpass.frequency.setValueAtTime(850, ctx.currentTime);
 
         lastNode.connect(lowShelf);
         lowShelf.connect(lowpass);
         lastNode = lowpass;
         filterNodesRef.current.push(lowShelf, lowpass);
-      } else if (preset === "radio") {
-        // Walkie-Talkie / Vintage Radio: Bandpass 600-3000Hz + subtle waveshaper
+      } else if (filter === "radio") {
+        // Walkie-Talkie Radio: Narrow bandpass 650Hz - 2800Hz with harmonic drive
         const hp = ctx.createBiquadFilter();
         hp.type = "highpass";
-        hp.frequency.setValueAtTime(600, ctx.currentTime);
+        hp.frequency.setValueAtTime(650, ctx.currentTime);
 
         const lp = ctx.createBiquadFilter();
         lp.type = "lowpass";
-        lp.frequency.setValueAtTime(3000, ctx.currentTime);
+        lp.frequency.setValueAtTime(2800, ctx.currentTime);
 
         lastNode.connect(hp);
         hp.connect(lp);
         lastNode = lp;
         filterNodesRef.current.push(hp, lp);
-      } else if (preset === "echo") {
-        // Cosmic Echo: Delay node + feedback gain
+      } else if (filter === "echo") {
+        // Cosmic Echo: Multi-tap spatial delay line
         const delay = ctx.createDelay();
-        delay.delayTime.setValueAtTime(0.28, ctx.currentTime);
+        delay.delayTime.setValueAtTime(0.26, ctx.currentTime);
 
         const feedback = ctx.createGain();
-        feedback.gain.setValueAtTime(0.45, ctx.currentTime);
+        feedback.gain.setValueAtTime(0.42, ctx.currentTime);
 
         const merger = ctx.createGain();
 
@@ -388,11 +336,11 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
         lastNode = merger;
         filterNodesRef.current.push(delay, feedback, merger);
-      } else if (preset === "anonymous") {
-        // Anonymous: Tremolo LFO modulation + Formant
+      } else if (filter === "anonymous") {
+        // Anonymous: Tremolo LFO modulation with phase detuning
         const lfo = ctx.createOscillator();
         lfo.type = "sine";
-        lfo.frequency.setValueAtTime(8, ctx.currentTime);
+        lfo.frequency.setValueAtTime(8.5, ctx.currentTime);
 
         const tremGain = ctx.createGain();
         tremGain.gain.setValueAtTime(0.5, ctx.currentTime);
@@ -403,80 +351,378 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
         lastNode = tremGain;
         filterNodesRef.current.push(lfo, tremGain);
+      } else if (filter === "alien") {
+        // Alien: Dual sinusoidal ring mod
+        const osc = ctx.createOscillator();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(140, ctx.currentTime);
+
+        const oscGain = ctx.createGain();
+        oscGain.gain.setValueAtTime(0.65, ctx.currentTime);
+
+        const peak = ctx.createBiquadFilter();
+        peak.type = "peaking";
+        peak.frequency.setValueAtTime(1800, ctx.currentTime);
+        peak.gain.setValueAtTime(8, ctx.currentTime);
+
+        osc.connect(oscGain.gain);
+        lastNode.connect(oscGain);
+        oscGain.connect(peak);
+        osc.start();
+
+        lastNode = peak;
+        filterNodesRef.current.push(osc, oscGain, peak);
+      } else if (filter === "chipmunk") {
+        // Chipmunk: Extreme high frequency formant
+        const peak1 = ctx.createBiquadFilter();
+        peak1.type = "peaking";
+        peak1.frequency.setValueAtTime(2800, ctx.currentTime);
+        peak1.Q.setValueAtTime(5, ctx.currentTime);
+        peak1.gain.setValueAtTime(18, ctx.currentTime);
+
+        const highpass = ctx.createBiquadFilter();
+        highpass.type = "highpass";
+        highpass.frequency.setValueAtTime(450, ctx.currentTime);
+
+        lastNode.connect(highpass);
+        highpass.connect(peak1);
+        lastNode = peak1;
+        filterNodesRef.current.push(highpass, peak1);
+      } else if (filter === "telephone") {
+        // ITU-T G.711 300Hz - 3400Hz Telephone standard
+        const hp = ctx.createBiquadFilter();
+        hp.type = "highpass";
+        hp.frequency.setValueAtTime(300, ctx.currentTime);
+
+        const lp = ctx.createBiquadFilter();
+        lp.type = "lowpass";
+        lp.frequency.setValueAtTime(3400, ctx.currentTime);
+
+        lastNode.connect(hp);
+        hp.connect(lp);
+        lastNode = lp;
+        filterNodesRef.current.push(hp, lp);
       }
 
-      // Connect to main gain -> analyser
+      // Connect to gain -> analyser -> stream destination
       lastNode.connect(mainGain);
       mainGain.connect(analyser);
+      mainGain.connect(streamDest);
 
-      // Connect to monitor gain -> destination (for loopback listening)
-      mainGain.connect(monitorGain);
-      monitorGain.connect(ctx.destination);
-    } catch (e) {
-      console.error("Audio filter graph error:", e);
+      // NOTICE: We do NOT connect to ctx.destination here!
+      // This prevents the caller from hearing their own voice (zero echo).
+    } catch (err) {
+      console.warn("Voice filter DSP setup note:", err);
     }
   };
 
-  // Sync Voice Filter Selection
-  const handleSelectVoiceFilter = (preset: VoiceFilterType) => {
-    setActiveVoiceFilter(preset);
-    if (audioCtxRef.current && sourceNodeRef.current && gainNodeRef.current && analyserRef.current && monitorGainRef.current) {
-      applyVoiceProcessingGraph(
-        preset,
+  // Main Media & WebRTC Pipeline Initialization
+  useEffect(() => {
+    let isMounted = true;
+
+    async function initCall() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true
+          },
+          video: call.type === "video" && !isVideoOff
+        });
+
+        if (!isMounted) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+
+        rawMicStreamRef.current = stream;
+
+        // Local video element attachment
+        if (call.type === "video" && localVideoRef.current) {
+          localVideoRef.current.srcObject = stream;
+        }
+
+        // Web Audio Context setup
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioCtx();
+        audioCtxRef.current = ctx;
+
+        const source = ctx.createMediaStreamSource(stream);
+        sourceNodeRef.current = source;
+
+        const gainNode = ctx.createGain();
+        gainNode.gain.setValueAtTime(isMuted ? 0 : 1, ctx.currentTime);
+        localGainNodeRef.current = gainNode;
+
+        const analyser = ctx.createAnalyser();
+        analyser.fftSize = 64;
+        analyser.smoothingTimeConstant = 0.8;
+        localAnalyserRef.current = analyser;
+
+        const streamDest = ctx.createMediaStreamDestination();
+        processedStreamDestRef.current = streamDest;
+
+        // Apply selected DSP Voice Filter to outgoing stream
+        buildVoiceFilterGraph(activeVoiceFilter, ctx, source, gainNode, analyser, streamDest);
+
+        // WebRTC RTCPeerConnection Setup
+        const pc = new RTCPeerConnection({
+          iceServers: [
+            { urls: "stun:stun.l.google.com:19302" },
+            { urls: "stun:stun1.l.google.com:19302" }
+          ]
+        });
+        peerConnectionRef.current = pc;
+
+        // Add processed audio track to peer connection
+        streamDest.stream.getAudioTracks().forEach((track) => {
+          pc.addTrack(track, streamDest.stream);
+        });
+
+        // Add video track if video call
+        if (call.type === "video") {
+          stream.getVideoTracks().forEach((vTrack) => {
+            pc.addTrack(vTrack, stream);
+          });
+        }
+
+        // Handle remote incoming stream (User B's audio playing through User A's speaker!)
+        pc.ontrack = (event) => {
+          if (remoteAudioRef.current && event.streams[0]) {
+            remoteAudioRef.current.srcObject = event.streams[0];
+            remoteAudioRef.current.play().catch(() => {});
+            setIsConnected(true);
+          }
+        };
+
+        // ICE candidate exchange
+        pc.onicecandidate = (event) => {
+          if (event.candidate) {
+            fetch("/api/calls/signal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "webrtc_candidate",
+                callId: call.id,
+                callerId: currentUser.id,
+                targetId: otherName,
+                candidate: event.candidate
+              })
+            }).catch(() => {});
+          }
+        };
+
+        // If this user initiated the call, create SDP offer
+        if (isCaller) {
+          const offer = await pc.createOffer();
+          await pc.setLocalDescription(offer);
+          fetch("/api/calls/signal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "webrtc_offer",
+              callId: call.id,
+              callerId: currentUser.id,
+              targetId: otherName,
+              offer
+            })
+          }).catch(() => {});
+        }
+
+        // Cross-tab BroadcastChannel for instant local testing
+        try {
+          const channel = new BroadcastChannel(`wavegram_call_${call.id}`);
+          broadcastChannelRef.current = channel;
+
+          channel.onmessage = (e) => {
+            if (e.data?.type === "speech_active") {
+              if (e.data.userId !== currentUser.id) {
+                setRemoteSpeaking(e.data.isSpeaking);
+              }
+            } else if (e.data?.type === "voice_filter_change") {
+              if (e.data.userId !== currentUser.id) {
+                setPeerVoiceFilter(e.data.filter);
+              }
+            }
+          };
+        } catch (e) {}
+
+      } catch (err) {
+        console.warn("Call media initialization note:", err);
+      }
+    }
+
+    initCall();
+
+    return () => {
+      isMounted = false;
+      if (rawMicStreamRef.current) {
+        rawMicStreamRef.current.getTracks().forEach((track) => track.stop());
+      }
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+      }
+      if (broadcastChannelRef.current) {
+        broadcastChannelRef.current.close();
+      }
+      if (audioCtxRef.current) {
+        audioCtxRef.current.close().catch(() => {});
+      }
+    };
+  }, [call.id, call.type]);
+
+  // WebRTC Signaling Listener via Server-Sent Events / EventSource
+  useEffect(() => {
+    const handleSseMessage = async (e: any) => {
+      try {
+        const raw = e.detail !== undefined ? e.detail : e.data;
+        if (!raw) return;
+        const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+        const pc = peerConnectionRef.current;
+        if (!pc) return;
+
+        if (data.type === "webrtc_offer" && data.callId === call.id && data.callerId !== currentUser.id) {
+          await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          fetch("/api/calls/signal", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              action: "webrtc_answer",
+              callId: call.id,
+              callerId: currentUser.id,
+              targetId: data.callerId,
+              answer
+            })
+          }).catch(() => {});
+        } else if (data.type === "webrtc_answer" && data.callId === call.id && data.callerId !== currentUser.id) {
+          if (pc.signalingState !== "stable") {
+            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          }
+        } else if (data.type === "webrtc_candidate" && data.callId === call.id && data.callerId !== currentUser.id) {
+          if (data.candidate) {
+            await pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {});
+          }
+        } else if (data.type === "call_voice_filter" && data.callId === call.id) {
+          setPeerVoiceFilter(data.voiceFilter);
+        }
+      } catch (err) {}
+    };
+
+    window.addEventListener("wavegram_sse_call_signal", handleSseMessage);
+    return () => window.removeEventListener("wavegram_sse_call_signal", handleSseMessage);
+  }, [call.id, currentUser.id]);
+
+  // AI Conversational Voice (When calling MK.ia AI bot, AI speaks back in real audio!)
+  useEffect(() => {
+    if (!isAiCall || !isConnected) return;
+
+    let aiSpeechTimeout: any = null;
+
+    // AI Greets caller
+    const greetingText = lang === "fr" 
+      ? "Bonjour ! Je vous entends parfaitement sur Wavegram. Comment puis-je vous aider aujourd'hui ?"
+      : "Hello! I can hear you crystal clear on Wavegram. How can I help you today?";
+
+    aiSpeechTimeout = setTimeout(() => {
+      speakAiResponse(greetingText);
+    }, 1200);
+
+    return () => {
+      if (aiSpeechTimeout) clearTimeout(aiSpeechTimeout);
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+  }, [isAiCall, isConnected, lang]);
+
+  const speakAiResponse = (text: string) => {
+    if (!("speechSynthesis" in window)) return;
+    try {
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = lang === "fr" ? "fr-FR" : "en-US";
+      utterance.rate = 1.05;
+      utterance.pitch = 1.0;
+
+      utterance.onstart = () => setRemoteSpeaking(true);
+      utterance.onend = () => setRemoteSpeaking(false);
+      utterance.onerror = () => setRemoteSpeaking(false);
+
+      window.speechSynthesis.speak(utterance);
+    } catch (e) {
+      console.warn("AI Speech error:", e);
+    }
+  };
+
+  // Change Voice Filter in real-time
+  const handleSelectVoiceFilter = (filterId: VoiceFilterType) => {
+    setActiveVoiceFilter(filterId);
+
+    if (
+      audioCtxRef.current &&
+      sourceNodeRef.current &&
+      localGainNodeRef.current &&
+      localAnalyserRef.current &&
+      processedStreamDestRef.current
+    ) {
+      buildVoiceFilterGraph(
+        filterId,
         audioCtxRef.current,
         sourceNodeRef.current,
-        gainNodeRef.current,
-        analyserRef.current,
-        monitorGainRef.current
+        localGainNodeRef.current,
+        localAnalyserRef.current,
+        processedStreamDestRef.current
       );
     }
-    // Broadcast to backend
+
+    // Broadcast filter change to server & peer
     fetch("/api/calls/signal", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         action: "voice_filter",
         callId: call.id,
-        voiceFilter: preset
+        voiceFilter: filterId
       })
     }).catch(() => {});
+
+    if (broadcastChannelRef.current) {
+      broadcastChannelRef.current.postMessage({
+        type: "voice_filter_change",
+        userId: currentUser.id,
+        filter: filterId
+      });
+    }
   };
 
-  // Handle Mute Toggle
+  // Mute / Unmute Microphone
   const handleToggleMute = () => {
     const nextMuted = !isMuted;
     setIsMuted(nextMuted);
-    if (gainNodeRef.current && audioCtxRef.current) {
-      gainNodeRef.current.gain.setValueAtTime(nextMuted ? 0 : 1, audioCtxRef.current.currentTime);
+
+    if (localGainNodeRef.current && audioCtxRef.current) {
+      localGainNodeRef.current.gain.setValueAtTime(nextMuted ? 0 : 1, audioCtxRef.current.currentTime);
     }
-    if (micStreamRef.current) {
-      micStreamRef.current.getAudioTracks().forEach((track) => {
+    if (rawMicStreamRef.current) {
+      rawMicStreamRef.current.getAudioTracks().forEach((track) => {
         track.enabled = !nextMuted;
       });
     }
   };
 
-  // Handle Monitor Voice Toggle
-  const handleToggleMonitor = () => {
-    const nextMonitor = !monitorVoice;
-    setMonitorVoice(nextMonitor);
-    if (monitorGainRef.current && audioCtxRef.current) {
-      monitorGainRef.current.gain.setValueAtTime(nextMonitor ? 0.75 : 0, audioCtxRef.current.currentTime);
-    }
-  };
-
-  // Handle Video Camera Toggle
+  // Toggle Video Camera
   const handleToggleVideo = () => {
     const nextVideoOff = !isVideoOff;
     setIsVideoOff(nextVideoOff);
-    if (micStreamRef.current) {
-      micStreamRef.current.getVideoTracks().forEach((track) => {
+    if (rawMicStreamRef.current) {
+      rawMicStreamRef.current.getVideoTracks().forEach((track) => {
         track.enabled = !nextVideoOff;
       });
     }
   };
 
-  // Call timer
+  // Call duration counter
   useEffect(() => {
     const timer = setInterval(() => {
       setCallDurationSeconds((prev) => prev + 1);
@@ -484,32 +730,35 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
     return () => clearInterval(timer);
   }, []);
 
-  // Live Canvas Waveform / Audio Spectrum Visualizer
+  // Real-time Canvas Waveform Visualizer & Voice Activity Detection (VAD)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const renderWaveform = () => {
-      animationFrameRef.current = requestAnimationFrame(renderWaveform);
-      const analyser = analyserRef.current;
+    let voiceSilenceCount = 0;
+
+    const renderWave = () => {
+      animationFrameRef.current = requestAnimationFrame(renderWave);
+      const analyser = localAnalyserRef.current;
       const width = canvas.width;
       const height = canvas.height;
 
       ctx.clearRect(0, 0, width, height);
 
       if (!analyser || isMuted) {
-        // Idle gentle wave
+        // Idle gentle waveform
         ctx.beginPath();
-        ctx.strokeStyle = "rgba(51, 144, 236, 0.3)";
+        ctx.strokeStyle = "rgba(51, 144, 236, 0.35)";
         ctx.lineWidth = 2;
         ctx.moveTo(0, height / 2);
-        for (let x = 0; x < width; x += 5) {
-          const y = height / 2 + Math.sin((x + Date.now() * 0.003) * 0.05) * 4;
+        for (let x = 0; x < width; x += 6) {
+          const y = height / 2 + Math.sin((x + Date.now() * 0.003) * 0.06) * 3;
           ctx.lineTo(x, y);
         }
         ctx.stroke();
+        setLocalSpeaking(false);
         return;
       }
 
@@ -517,27 +766,45 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       const dataArray = new Uint8Array(bufferLength);
       analyser.getByteFrequencyData(dataArray);
 
+      // Voice Activity Detection
+      let totalEnergy = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        totalEnergy += dataArray[i];
+      }
+      const avgEnergy = totalEnergy / bufferLength;
+      const isVoiceActive = avgEnergy > 18;
+
+      if (isVoiceActive) {
+        voiceSilenceCount = 0;
+        setLocalSpeaking(true);
+      } else {
+        voiceSilenceCount++;
+        if (voiceSilenceCount > 25) {
+          setLocalSpeaking(false);
+        }
+      }
+
       const barWidth = (width / bufferLength) * 2.2;
       let x = 0;
 
       for (let i = 0; i < bufferLength; i++) {
         const barHeight = (dataArray[i] / 255) * (height * 0.85);
 
-        // Dynamic neon gradient based on active voice filter
+        // Neon gradient corresponding to active voice filter
         const gradient = ctx.createLinearGradient(0, height, 0, 0);
         if (activeVoiceFilter === "robot") {
           gradient.addColorStop(0, "#10b981");
           gradient.addColorStop(1, "#34d399");
-        } else if (activeVoiceFilter === "helium") {
+        } else if (activeVoiceFilter === "helium" || activeVoiceFilter === "chipmunk") {
           gradient.addColorStop(0, "#f59e0b");
           gradient.addColorStop(1, "#fb7185");
         } else if (activeVoiceFilter === "deep") {
           gradient.addColorStop(0, "#8b5cf6");
           gradient.addColorStop(1, "#ec4899");
-        } else if (activeVoiceFilter === "radio") {
+        } else if (activeVoiceFilter === "radio" || activeVoiceFilter === "telephone") {
           gradient.addColorStop(0, "#f97316");
           gradient.addColorStop(1, "#eab308");
-        } else if (activeVoiceFilter === "echo") {
+        } else if (activeVoiceFilter === "echo" || activeVoiceFilter === "alien") {
           gradient.addColorStop(0, "#ec4899");
           gradient.addColorStop(1, "#a855f7");
         } else {
@@ -546,20 +813,24 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         }
 
         ctx.fillStyle = gradient;
-        ctx.shadowBlur = 8;
-        ctx.shadowColor = "rgba(51, 144, 236, 0.6)";
+        ctx.shadowBlur = 6;
+        ctx.shadowColor = "rgba(51, 144, 236, 0.5)";
 
         // Centered mirror equalizer bars
         const yTop = height / 2 - barHeight / 2;
         ctx.beginPath();
-        ctx.roundRect ? ctx.roundRect(x, yTop, Math.max(2, barWidth - 2), Math.max(4, barHeight), 3) : ctx.rect(x, yTop, barWidth - 2, barHeight);
+        if (ctx.roundRect) {
+          ctx.roundRect(x, yTop, Math.max(2, barWidth - 2), Math.max(4, barHeight), 3);
+        } else {
+          ctx.rect(x, yTop, barWidth - 2, barHeight);
+        }
         ctx.fill();
 
         x += barWidth + 1;
       }
     };
 
-    renderWaveform();
+    renderWave();
 
     return () => {
       if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
@@ -576,7 +847,11 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-3 sm:p-4 text-white select-none animate-in fade-in duration-300">
-      <div className="w-full max-w-xl bg-[#17212b] border border-[#242f3d] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.8)] flex flex-col items-center p-5 sm:p-7 relative">
+      
+      {/* Hidden remote audio element playing the other person's voice */}
+      <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
+
+      <div className="w-full max-w-xl bg-[#17212b] border border-[#242f3d] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col items-center p-5 sm:p-7 relative">
         
         {/* Top Status Header */}
         <div className="w-full flex items-center justify-between mb-4">
@@ -599,7 +874,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           >
             <span>{activePresetObj.icon}</span>
             <span className="truncate max-w-[130px]">
-              {lang === "fr" ? activePresetObj.labelFr : activePresetObj.labelEn}
+              {activePresetObj.label}
             </span>
             <Sliders className="w-3 h-3 ml-0.5 text-cyan-300" />
           </button>
@@ -617,14 +892,16 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                 className="w-full h-full object-cover"
               />
               <div className="absolute bottom-3 left-3 bg-[#17212b]/90 backdrop-blur-md px-3 py-1 rounded-xl text-xs font-bold text-white border border-white/10 shadow-lg">
-                {currentUser.username || "Vous"}
+                {currentUser.username || "You"}
               </div>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3">
               {/* Pulsing Avatar with Glow Wave */}
               <div className="relative">
-                <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#3390ec] to-cyan-400 shadow-[0_0_25px_rgba(51,144,236,0.4)] animate-pulse flex items-center justify-center">
+                <div className={`w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-[#3390ec] to-cyan-400 shadow-[0_0_30px_rgba(51,144,236,0.45)] flex items-center justify-center transition-all ${
+                  remoteSpeaking ? "scale-110 ring-4 ring-emerald-400 shadow-emerald-500/40 animate-pulse" : ""
+                }`}>
                   <img
                     src={
                       otherAvatar ||
@@ -643,42 +920,53 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
               <div className="text-center">
                 <h3 className="text-lg sm:text-xl font-bold text-white tracking-wide">{otherName}</h3>
-                <p className="text-xs text-[#3390ec] mt-0.5 font-medium flex items-center justify-center gap-1">
-                  <Sparkles className="w-3 h-3 text-cyan-300" />
-                  <span>{t.audioClarity}</span>
-                </p>
+                
+                {/* Real-time speech status indicators */}
+                <div className="mt-1 flex items-center justify-center gap-2">
+                  {remoteSpeaking ? (
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1 animate-pulse">
+                      <Volume2 className="w-3.5 h-3.5" />
+                      <span>{otherName} is speaking...</span>
+                    </span>
+                  ) : localSpeaking && !isMuted ? (
+                    <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 border border-blue-500/40 text-cyan-300 text-xs font-bold flex items-center gap-1 animate-pulse">
+                      <Mic className="w-3.5 h-3.5" />
+                      <span>You are speaking</span>
+                    </span>
+                  ) : (
+                    <p className="text-xs text-[#3390ec] font-medium flex items-center justify-center gap-1">
+                      <Sparkles className="w-3 h-3 text-cyan-300" />
+                      <span>{t.audioClarity}</span>
+                    </p>
+                  )}
+                </div>
+
+                {peerVoiceFilter !== "natural" && (
+                  <div className="mt-1.5">
+                    <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[10px] font-semibold border border-purple-400/30">
+                      🎙️ Remote Voice Filter: {peerVoiceFilter}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
-          {/* Live Audio Visualizer Canvas Banner */}
+          {/* Live Audio Visualizer Canvas */}
           <div className="absolute bottom-2 left-4 right-4 h-12 flex items-center justify-center pointer-events-none">
-            <canvas ref={canvasRef} width={340} height={44} className="w-full h-full opacity-80" />
+            <canvas ref={canvasRef} width={340} height={44} className="w-full h-full opacity-85" />
           </div>
         </div>
 
-        {/* Voice Presets Drawer Modal Popup */}
+        {/* Voice Presets Drawer Popup */}
         {showVoiceDrawer && (
           <div className="w-full mt-3 p-3.5 rounded-2xl bg-[#0e1621] border border-[#3390ec]/30 shadow-xl animate-in slide-in-from-top-2 duration-200">
-            <div className="flex items-center justify-between mb-2.5">
+            <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
                 <Sliders className="w-3.5 h-3.5" />
                 <span>{t.voiceTransformer}</span>
               </div>
-              
-              {/* Monitor Voice Loopback Button */}
-              <button
-                onClick={handleToggleMonitor}
-                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold flex items-center gap-1 transition-all cursor-pointer ${
-                  monitorVoice
-                    ? "bg-cyan-500/20 text-cyan-300 border border-cyan-400/40"
-                    : "bg-[#17212b] text-slate-400 hover:text-white border border-[#242f3d]"
-                }`}
-                title={monitorVoice ? t.monitorVoiceOn : t.monitorVoiceOff}
-              >
-                {monitorVoice ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
-                <span>{t.monitorVoice}</span>
-              </button>
+              <span className="text-[10px] text-slate-400">10 Studio FX Filters</span>
             </div>
 
             <p className="text-[11px] text-[#7d8b99] mb-3 leading-snug">
@@ -686,7 +974,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             </p>
 
             {/* Presets Grid */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-52 overflow-y-auto pr-1 custom-scrollbar">
               {VOICE_PRESETS.map((preset) => {
                 const isSelected = activeVoiceFilter === preset.id;
                 return (
@@ -704,10 +992,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                       {isSelected && <Check className="w-3.5 h-3.5 text-cyan-300" />}
                     </div>
                     <span className="text-xs font-bold text-white truncate">
-                      {lang === "fr" ? preset.labelFr : preset.labelEn}
+                      {preset.label}
                     </span>
                     <span className="text-[10px] text-slate-400 leading-tight line-clamp-2">
-                      {lang === "fr" ? preset.descFr : preset.descEn}
+                      {preset.desc}
                     </span>
                   </button>
                 );
@@ -738,7 +1026,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
               className={`p-4 rounded-full transition-all shadow-lg active:scale-95 cursor-pointer ${
                 isVideoOff
                   ? "bg-rose-600 hover:bg-rose-500 text-white ring-2 ring-rose-400/50"
-                  : "bg-[#242f3d] hover:bg-[#2e3b4d] text-slate-100"
+                : "bg-[#242f3d] hover:bg-[#2e3b4d] text-slate-100"
               }`}
               title={isVideoOff ? t.turnOnCamera : t.turnOffCamera}
             >

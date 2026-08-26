@@ -143,6 +143,17 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   onToggleMute,
   onOpenReportModal
 }) => {
+  const [lang, setLang] = useState<Language>(getSavedLanguage());
+  const t = translations[lang] || translations.en;
+
+  useEffect(() => {
+    const handleLang = (e: any) => {
+      if (e.detail) setLang(e.detail);
+    };
+    window.addEventListener("wavegram_lang_change", handleLang);
+    return () => window.removeEventListener("wavegram_lang_change", handleLang);
+  }, []);
+
   const [inputText, setInputText] = useState("");
   const [replyTo, setReplyTo] = useState<ReplyToMessage | null>(null);
   const [editingMsgId, setEditingMsgId] = useState<string | null>(null);
@@ -2041,8 +2052,8 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                                   {msg.callData?.status === "completed" && msg.callData.duration
                                     ? `${Math.floor(msg.callData.duration / 60)}m ${(msg.callData.duration % 60).toString().padStart(2, "0")}s`
                                     : msg.callData?.status === "declined"
-                                    ? "Appel refusé"
-                                    : "Appel non répondu / manqué"}
+                                    ? t.declinedCall
+                                    : t.missedCall}
                                 </span>
                                 {msg.callData?.voiceFilter && msg.callData.voiceFilter !== "natural" && (
                                   <span className="px-1.5 py-0.2 rounded-md bg-blue-500/20 text-cyan-300 font-semibold border border-cyan-400/30 text-[9px]">
@@ -2060,10 +2071,10 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                               onStartCall(msg.callData?.callType || "voice");
                             }}
                             className="px-3 py-1.5 rounded-xl bg-[#3390ec] hover:bg-[#2879c7] text-white text-xs font-bold flex items-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0 cursor-pointer"
-                            title="Rappeler"
+                            title={t.callBack}
                           >
                             <PhoneCall className="w-3.5 h-3.5" />
-                            <span>Rappeler</span>
+                            <span>{t.callBack}</span>
                           </button>
                         </div>
                       )}

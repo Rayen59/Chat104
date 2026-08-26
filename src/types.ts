@@ -98,7 +98,7 @@ export interface PollData {
   createdAt: string;
 }
 
-export type VoiceFilterType = 'natural' | 'robot' | 'helium' | 'deep' | 'radio' | 'echo' | 'anonymous';
+export type VoiceFilterType = 'natural' | 'robot' | 'helium' | 'deep' | 'radio' | 'echo' | 'anonymous' | 'alien' | 'chipmunk' | 'telephone';
 
 export interface CallData {
   callType: 'voice' | 'video';

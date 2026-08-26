@@ -384,6 +384,19 @@ export default function App() {
       }
     });
 
+    eventSource.addEventListener("webrtc_offer", (e: any) => {
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+    });
+    eventSource.addEventListener("webrtc_answer", (e: any) => {
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+    });
+    eventSource.addEventListener("webrtc_candidate", (e: any) => {
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+    });
+    eventSource.addEventListener("call_voice_filter", (e: any) => {
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+    });
+
     // Instant update when a new user registers!
     eventSource.addEventListener("user_joined", (e: any) => {
       const newUser: User = JSON.parse(e.data);

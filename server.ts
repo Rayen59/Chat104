@@ -2991,6 +2991,24 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
     return res.json({ call });
   }
 
+  if (action === "webrtc_offer") {
+    const { offer } = req.body;
+    broadcastEvent("webrtc_offer", { callId, callerId, targetId, offer });
+    return res.json({ success: true });
+  }
+
+  if (action === "webrtc_answer") {
+    const { answer } = req.body;
+    broadcastEvent("webrtc_answer", { callId, callerId, targetId, answer });
+    return res.json({ success: true });
+  }
+
+  if (action === "webrtc_candidate") {
+    const { candidate } = req.body;
+    broadcastEvent("webrtc_candidate", { callId, callerId, targetId, candidate });
+    return res.json({ success: true });
+  }
+
   if (action === "voice_filter") {
     const call = currentActiveCalls[callId];
     if (call) {
@@ -3034,7 +3052,7 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
         broadcastEvent("conversation_created", conv);
       }
 
-      // Format readable call duration in French / standard format
+      // Format readable call duration
       const formatDuration = (sec: number) => {
         const m = Math.floor(sec / 60);
         const s = sec % 60;
@@ -3047,16 +3065,16 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
       let callSummaryText = "";
       if (callOutcomeStatus === "completed") {
         callSummaryText = call.type === "video"
-          ? `🎥 Appel vidéo terminé (${formatDuration(durationSec)})`
-          : `📞 Appel vocal terminé (${formatDuration(durationSec)})`;
+          ? `🎥 Video Call Ended (${formatDuration(durationSec)})`
+          : `📞 Voice Call Ended (${formatDuration(durationSec)})`;
       } else if (callOutcomeStatus === "declined") {
         callSummaryText = call.type === "video"
-          ? `🎥 Appel vidéo refusé`
-          : `📞 Appel vocal refusé`;
+          ? `🎥 Video Call Declined`
+          : `📞 Voice Call Declined`;
       } else {
         callSummaryText = call.type === "video"
-          ? `🎥 Appel vidéo manqué`
-          : `📞 Appel vocal manqué`;
+          ? `🎥 Missed Video Call`
+          : `📞 Missed Voice Call`;
       }
 
       // Add to conversation message history
