@@ -2993,13 +2993,27 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
   }
 
   if (action === "peer_ready") {
-    broadcastEvent("call_peer_ready", { callId, callerId, targetId });
+    broadcastEvent("call_peer_ready", { type: "call_peer_ready", callId, callerId, targetId });
+    return res.json({ success: true });
+  }
+
+  if (action === "pcm_chunk") {
+    const { pcmData, sampleRate, senderId, voiceFilter: chunkFilter } = req.body;
+    broadcastEvent("call_pcm_chunk", {
+      type: "call_pcm_chunk",
+      callId,
+      senderId,
+      pcmData,
+      sampleRate: sampleRate || 24000,
+      voiceFilter: chunkFilter || "natural"
+    });
     return res.json({ success: true });
   }
 
   if (action === "audio_chunk") {
     const { audioChunk, mimeType, senderId, voiceFilter: chunkFilter } = req.body;
     broadcastEvent("call_audio_chunk", {
+      type: "call_audio_chunk",
       callId,
       senderId,
       audioChunk,
@@ -3011,19 +3025,19 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
 
   if (action === "webrtc_offer") {
     const { offer } = req.body;
-    broadcastEvent("webrtc_offer", { callId, callerId, targetId, offer });
+    broadcastEvent("webrtc_offer", { type: "webrtc_offer", callId, callerId, targetId, offer });
     return res.json({ success: true });
   }
 
   if (action === "webrtc_answer") {
     const { answer } = req.body;
-    broadcastEvent("webrtc_answer", { callId, callerId, targetId, answer });
+    broadcastEvent("webrtc_answer", { type: "webrtc_answer", callId, callerId, targetId, answer });
     return res.json({ success: true });
   }
 
   if (action === "webrtc_candidate") {
     const { candidate } = req.body;
-    broadcastEvent("webrtc_candidate", { callId, callerId, targetId, candidate });
+    broadcastEvent("webrtc_candidate", { type: "webrtc_candidate", callId, callerId, targetId, candidate });
     return res.json({ success: true });
   }
 
@@ -3031,7 +3045,7 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
     const call = currentActiveCalls[callId];
     if (call) {
       call.voiceFilter = voiceFilter || "natural";
-      broadcastEvent("call_voice_filter", { callId, voiceFilter: call.voiceFilter });
+      broadcastEvent("call_voice_filter", { type: "call_voice_filter", callId, voiceFilter: call.voiceFilter });
     }
     return res.json({ success: true, voiceFilter });
   }

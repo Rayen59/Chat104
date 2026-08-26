@@ -385,22 +385,32 @@ export default function App() {
     });
 
     eventSource.addEventListener("webrtc_offer", (e: any) => {
-      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: { type: "webrtc_offer", ...parsed } }));
     });
     eventSource.addEventListener("webrtc_answer", (e: any) => {
-      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: { type: "webrtc_answer", ...parsed } }));
     });
     eventSource.addEventListener("webrtc_candidate", (e: any) => {
-      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: { type: "webrtc_candidate", ...parsed } }));
     });
     eventSource.addEventListener("call_voice_filter", (e: any) => {
-      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: { type: "call_voice_filter", ...parsed } }));
     });
     eventSource.addEventListener("call_peer_ready", (e: any) => {
-      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: { type: "call_peer_ready", ...parsed } }));
     });
     eventSource.addEventListener("call_audio_chunk", (e: any) => {
-      window.dispatchEvent(new CustomEvent("wavegram_sse_audio_chunk", { detail: e.data }));
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_audio_chunk", { detail: parsed }));
+    });
+    eventSource.addEventListener("call_pcm_chunk", (e: any) => {
+      const parsed = typeof e.data === "string" ? JSON.parse(e.data) : e.data;
+      window.dispatchEvent(new CustomEvent("wavegram_sse_pcm_chunk", { detail: parsed }));
     });
 
     // Instant update when a new user registers!

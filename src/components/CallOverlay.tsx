@@ -123,23 +123,29 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const [remoteSpeaking, setRemoteSpeaking] = useState(false);
   const [localSpeaking, setLocalSpeaking] = useState(false);
   const [peerVoiceFilter, setPeerVoiceFilter] = useState<VoiceFilterType>("natural");
+  const [audioNeedsResume, setAudioNeedsResume] = useState(false);
 
   const localVideoRef = useRef<HTMLVideoElement>(null);
   const remoteAudioRef = useRef<HTMLAudioElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationFrameRef = useRef<number | null>(null);
 
-  // Web Audio pipeline refs
+  // Web Audio pipeline refs (Transmission)
   const audioCtxRef = useRef<AudioContext | null>(null);
   const rawMicStreamRef = useRef<MediaStream | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const localGainNodeRef = useRef<GainNode | null>(null);
   const localAnalyserRef = useRef<AnalyserNode | null>(null);
   const processedStreamDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const processorNodeRef = useRef<ScriptProcessorNode | null>(null);
   const filterNodesRef = useRef<any[]>([]);
   const dialToneIntervalRef = useRef<any>(null);
   const remoteSpeakingTimeoutRef = useRef<any>(null);
+
+  // Web Audio Playback Context (Reception)
+  const playbackCtxRef = useRef<AudioContext | null>(null);
+  const playbackGainRef = useRef<GainNode | null>(null);
+  const nextPlayTimeRef = useRef<number>(0);
 
   // WebRTC Peer Connection ref & Broadcast Channel
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
@@ -148,7 +154,12 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const isCaller = call.callerId === currentUser.id;
   const otherName = isCaller ? call.targetName : call.callerName;
   const otherAvatar = isCaller ? "" : call.callerAvatar;
-  const isAiCall = call.targetId === "user_mk_ai" || call.targetId === "user_wia_ai" || call.targetId === "user_mk_ia" || otherName.toLowerCase().includes("mk.ia") || otherName.toLowerCase().includes("ai");
+  const isAiCall =
+    call.targetId === "user_mk_ai" ||
+    call.targetId === "user_wia_ai" ||
+    call.targetId === "user_mk_ia" ||
+    otherName.toLowerCase().includes("mk.ia") ||
+    otherName.toLowerCase().includes("ai");
 
   // Listen to language changes
   useEffect(() => {
@@ -178,7 +189,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         const ctx = new AudioCtx();
 
         const playTone = () => {
-          if (ctx.state === "suspended") ctx.resume();
+          if (ctx.state === "suspended") ctx.resume().catch(() => {});
           const osc1 = ctx.createOscillator();
           const osc2 = ctx.createOscillator();
           const gain = ctx.createGain();
@@ -215,7 +226,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   }, [call.status, isCaller, isConnected]);
 
   // Setup Web Audio graph with DSP Voice Filters
-  // IMPORTANT: Local microphone is routed ONLY to the processed stream destination (and Analyser for UI visualizer).
+  // IMPORTANT: Local microphone is routed ONLY to processedStreamDestination and PCM processor (and Analyser for UI visualizer).
   // Local microphone is NEVER connected to ctx.destination, completely eliminating self-echo!
   const buildVoiceFilterGraph = (
     filter: VoiceFilterType,
@@ -223,10 +234,11 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
     source: MediaStreamAudioSourceNode,
     mainGain: GainNode,
     analyser: AnalyserNode,
-    streamDest: MediaStreamAudioDestinationNode
+    streamDest: MediaStreamAudioDestinationNode,
+    processorNode?: ScriptProcessorNode | null
   ) => {
     try {
-      // Disconnect and clean previous nodes
+      // Disconnect and clean previous filter nodes
       filterNodesRef.current.forEach((n) => {
         try {
           n.disconnect();
@@ -411,35 +423,117 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         filterNodesRef.current.push(hp, lp);
       }
 
-      // Connect to gain -> analyser -> stream destination
+      // Connect to main gain node
       lastNode.connect(mainGain);
       mainGain.connect(analyser);
       mainGain.connect(streamDest);
 
+      // Connect to PCM streaming processor node if present
+      if (processorNode) {
+        mainGain.connect(processorNode);
+      }
+
       // NOTICE: We do NOT connect to ctx.destination here!
-      // This prevents the caller from hearing their own voice (zero echo).
+      // This prevents the caller from hearing their own voice (zero self-echo).
     } catch (err) {
       console.warn("Voice filter DSP setup note:", err);
     }
   };
 
-  // Helper to play incoming audio chunk smoothly through the speaker
-  const playIncomingAudioChunk = (audioDataUrl: string, voiceFilter?: VoiceFilterType) => {
-    if (!audioDataUrl) return;
+  // Ensure playback AudioContext is initialized and unlocked
+  const ensurePlaybackContext = (): AudioContext | null => {
     try {
-      setRemoteSpeaking(true);
-      if (voiceFilter) setPeerVoiceFilter(voiceFilter);
+      if (!playbackCtxRef.current) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const pCtx = new AudioCtx();
+        playbackCtxRef.current = pCtx;
 
-      const audio = new Audio(audioDataUrl);
-      audio.volume = 1.0;
-      audio.play().catch(() => {});
+        const pGain = pCtx.createGain();
+        pGain.gain.setValueAtTime(1.0, pCtx.currentTime);
+        pGain.connect(pCtx.destination);
+        playbackGainRef.current = pGain;
+        nextPlayTimeRef.current = pCtx.currentTime;
+      }
 
-      if (remoteSpeakingTimeoutRef.current) clearTimeout(remoteSpeakingTimeoutRef.current);
-      remoteSpeakingTimeoutRef.current = setTimeout(() => {
-        setRemoteSpeaking(false);
-      }, 400);
+      const pCtx = playbackCtxRef.current;
+      if (pCtx.state === "suspended") {
+        pCtx.resume().catch(() => {
+          setAudioNeedsResume(true);
+        });
+      } else {
+        setAudioNeedsResume(false);
+      }
+
+      return pCtx;
     } catch (e) {
-      console.warn("Incoming audio playback notice:", e);
+      console.warn("Playback context notice:", e);
+      return null;
+    }
+  };
+
+  // Helper to play incoming PCM audio chunk smoothly into the continuous AudioContext buffer queue
+  const playIncomingPcmChunk = (base64Pcm: string, sampleRate: number = 24000, voiceFilter?: VoiceFilterType) => {
+    if (!base64Pcm) return;
+    try {
+      const pCtx = ensurePlaybackContext();
+      if (!pCtx || !playbackGainRef.current) return;
+
+      // Decode base64 to 16-bit PCM Float32 samples
+      const binaryString = atob(base64Pcm);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const int16Array = new Int16Array(bytes.buffer);
+      const float32Array = new Float32Array(int16Array.length);
+
+      let energy = 0;
+      for (let i = 0; i < int16Array.length; i++) {
+        const val = int16Array[i] / 32768.0;
+        float32Array[i] = val;
+        energy += Math.abs(val);
+      }
+
+      // Voice Activity Detection for Remote Peer
+      if (energy / int16Array.length > 0.02) {
+        setRemoteSpeaking(true);
+        if (voiceFilter) setPeerVoiceFilter(voiceFilter);
+        if (remoteSpeakingTimeoutRef.current) clearTimeout(remoteSpeakingTimeoutRef.current);
+        remoteSpeakingTimeoutRef.current = setTimeout(() => {
+          setRemoteSpeaking(false);
+        }, 400);
+      }
+
+      // Create AudioBuffer & play scheduled seamlessly
+      const audioBuffer = pCtx.createBuffer(1, float32Array.length, sampleRate);
+      audioBuffer.getChannelData(0).set(float32Array);
+
+      const source = pCtx.createBufferSource();
+      source.buffer = audioBuffer;
+      source.connect(playbackGainRef.current);
+
+      const currentTime = pCtx.currentTime;
+      const startTime = Math.max(currentTime + 0.005, nextPlayTimeRef.current);
+      source.start(startTime);
+      nextPlayTimeRef.current = startTime + audioBuffer.duration;
+    } catch (e) {
+      console.warn("PCM audio playback notice:", e);
+    }
+  };
+
+  // Helper to resume audio if blocked by browser autoplay policy
+  const handleUserResumeAudio = () => {
+    if (playbackCtxRef.current && playbackCtxRef.current.state === "suspended") {
+      playbackCtxRef.current.resume().then(() => {
+        setAudioNeedsResume(false);
+      }).catch(() => {});
+    }
+    if (audioCtxRef.current && audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume().catch(() => {});
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.play().catch(() => {});
     }
   };
 
@@ -472,6 +566,8 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
     async function initCall() {
       try {
+        ensurePlaybackContext();
+
         const stream = await navigator.mediaDevices.getUserMedia({
           audio: {
             echoCancellation: true,
@@ -513,69 +609,81 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         const streamDest = ctx.createMediaStreamDestination();
         processedStreamDestRef.current = streamDest;
 
-        // Apply selected DSP Voice Filter to outgoing stream
-        buildVoiceFilterGraph(activeVoiceFilter, ctx, source, gainNode, analyser, streamDest);
+        // Real-Time PCM Stream Processor: buffers 2048 samples and streams continuously
+        const processor = ctx.createScriptProcessor(2048, 1, 1);
+        processorNodeRef.current = processor;
 
-        // Real-Time Audio Chunk Streamer: slices audio every 250ms to stream to remote peer
-        try {
-          let recorderOptions: MediaRecorderOptions = {};
-          if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
-            recorderOptions = { mimeType: "audio/webm;codecs=opus" };
-          } else if (MediaRecorder.isTypeSupported("audio/webm")) {
-            recorderOptions = { mimeType: "audio/webm" };
-          } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
-            recorderOptions = { mimeType: "audio/mp4" };
+        let throttleCounter = 0;
+        processor.onaudioprocess = (e) => {
+          if (isMuted) return;
+          const inputData = e.inputBuffer.getChannelData(0);
+
+          // Convert Float32Array to 16-bit PCM Int16Array
+          const pcmData = new Int16Array(inputData.length);
+          let hasSignal = false;
+
+          for (let i = 0; i < inputData.length; i++) {
+            const s = Math.max(-1, Math.min(1, inputData[i]));
+            pcmData[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+            if (Math.abs(s) > 0.015) hasSignal = true;
           }
 
-          const recorder = new MediaRecorder(streamDest.stream, recorderOptions);
-          mediaRecorderRef.current = recorder;
+          // Convert to binary string -> base64
+          const uint8 = new Uint8Array(pcmData.buffer);
+          let binary = "";
+          const len = uint8.byteLength;
+          for (let i = 0; i < len; i++) {
+            binary += String.fromCharCode(uint8[i]);
+          }
+          const base64Data = btoa(binary);
 
-          recorder.ondataavailable = (event) => {
-            if (event.data && event.data.size > 0 && !isMuted) {
-              const reader = new FileReader();
-              reader.onloadend = () => {
-                const base64Data = reader.result as string;
-                if (!base64Data) return;
+          // 1. Instant local multi-tab BroadcastChannel
+          if (broadcastChannelRef.current) {
+            broadcastChannelRef.current.postMessage({
+              type: "call_pcm_chunk",
+              callId: call.id,
+              senderId: currentUser.id,
+              pcmData: base64Data,
+              sampleRate: ctx.sampleRate,
+              voiceFilter: activeVoiceFilter
+            });
+          }
 
-                // 1. Instant local BroadcastChannel audio relay
-                if (broadcastChannelRef.current) {
-                  broadcastChannelRef.current.postMessage({
-                    type: "call_audio_chunk",
-                    callId: call.id,
-                    senderId: currentUser.id,
-                    audioChunk: base64Data,
-                    voiceFilter: activeVoiceFilter
-                  });
-                }
+          // 2. Transmit via SSE/API for network users (throttled slightly if silence to conserve bandwidth)
+          throttleCounter++;
+          if (hasSignal || throttleCounter % 4 === 0) {
+            fetch("/api/calls/signal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                action: "pcm_chunk",
+                callId: call.id,
+                senderId: currentUser.id,
+                pcmData: base64Data,
+                sampleRate: ctx.sampleRate,
+                voiceFilter: activeVoiceFilter
+              })
+            }).catch(() => {});
+          }
+        };
 
-                // 2. Server SSE audio relay for remote cross-device connection
-                fetch("/api/calls/signal", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
-                    action: "audio_chunk",
-                    callId: call.id,
-                    senderId: currentUser.id,
-                    audioChunk: base64Data,
-                    voiceFilter: activeVoiceFilter
-                  })
-                }).catch(() => {});
-              };
-              reader.readAsDataURL(event.data);
-            }
-          };
+        // Connect dummy destination to keep script processor running
+        const dummyGain = ctx.createGain();
+        dummyGain.gain.setValueAtTime(0, ctx.currentTime);
+        processor.connect(dummyGain);
+        dummyGain.connect(ctx.destination);
 
-          recorder.start(250);
-        } catch (recErr) {
-          console.warn("MediaRecorder start notice:", recErr);
-        }
+        // Apply selected DSP Voice Filter to outgoing stream
+        buildVoiceFilterGraph(activeVoiceFilter, ctx, source, gainNode, analyser, streamDest, processor);
 
         // WebRTC RTCPeerConnection Setup
         const pc = new RTCPeerConnection({
           iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
             { urls: "stun:stun1.l.google.com:19302" },
-            { urls: "stun:stun2.l.google.com:19302" }
+            { urls: "stun:stun2.l.google.com:19302" },
+            { urls: "stun:stun3.l.google.com:19302" },
+            { urls: "stun:stun4.l.google.com:19302" }
           ]
         });
         peerConnectionRef.current = pc;
@@ -592,11 +700,15 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           });
         }
 
-        // Handle remote incoming stream (User B's audio playing through User A's speaker!)
+        // Handle remote incoming WebRTC stream
         pc.ontrack = (event) => {
           if (remoteAudioRef.current && event.streams[0]) {
             remoteAudioRef.current.srcObject = event.streams[0];
-            remoteAudioRef.current.play().catch(() => {});
+            remoteAudioRef.current.volume = 1.0;
+            remoteAudioRef.current.muted = false;
+            remoteAudioRef.current.play().catch(() => {
+              setAudioNeedsResume(true);
+            });
             setIsConnected(true);
           }
         };
@@ -630,7 +742,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           })
         }).catch(() => {});
 
-        // If caller and already connected, create SDP offer
+        // If caller, send SDP offer
         if (isCaller) {
           sendWebRtcOffer();
         }
@@ -641,10 +753,8 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           broadcastChannelRef.current = channel;
 
           channel.onmessage = (e) => {
-            if (e.data?.type === "call_audio_chunk" && e.data.senderId !== currentUser.id) {
-              playIncomingAudioChunk(e.data.audioChunk, e.data.voiceFilter);
-            } else if (e.data?.type === "speech_active" && e.data.userId !== currentUser.id) {
-              setRemoteSpeaking(e.data.isSpeaking);
+            if (e.data?.type === "call_pcm_chunk" && e.data.senderId !== currentUser.id) {
+              playIncomingPcmChunk(e.data.pcmData, e.data.sampleRate, e.data.voiceFilter);
             } else if (e.data?.type === "voice_filter_change" && e.data.userId !== currentUser.id) {
               setPeerVoiceFilter(e.data.filter);
             }
@@ -660,8 +770,11 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
     return () => {
       isMounted = false;
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-        try { mediaRecorderRef.current.stop(); } catch (e) {}
+      if (processorNodeRef.current) {
+        try {
+          processorNodeRef.current.disconnect();
+          processorNodeRef.current.onaudioprocess = null;
+        } catch (e) {}
       }
       if (rawMicStreamRef.current) {
         rawMicStreamRef.current.getTracks().forEach((track) => track.stop());
@@ -674,6 +787,9 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       }
       if (audioCtxRef.current) {
         audioCtxRef.current.close().catch(() => {});
+      }
+      if (playbackCtxRef.current) {
+        playbackCtxRef.current.close().catch(() => {});
       }
       if (remoteSpeakingTimeoutRef.current) {
         clearTimeout(remoteSpeakingTimeoutRef.current);
@@ -724,23 +840,23 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       } catch (err) {}
     };
 
-    const handleSseAudioChunk = (e: any) => {
+    const handleSsePcmChunk = (e: any) => {
       try {
         const raw = e.detail !== undefined ? e.detail : e.data;
         if (!raw) return;
         const data = typeof raw === "string" ? JSON.parse(raw) : raw;
-        if (data.callId === call.id && data.senderId !== currentUser.id && data.audioChunk) {
-          playIncomingAudioChunk(data.audioChunk, data.voiceFilter);
+        if (data.callId === call.id && data.senderId !== currentUser.id && data.pcmData) {
+          playIncomingPcmChunk(data.pcmData, data.sampleRate, data.voiceFilter);
         }
       } catch (e) {}
     };
 
     window.addEventListener("wavegram_sse_call_signal", handleSseMessage);
-    window.addEventListener("wavegram_sse_audio_chunk", handleSseAudioChunk);
+    window.addEventListener("wavegram_sse_pcm_chunk", handleSsePcmChunk);
 
     return () => {
       window.removeEventListener("wavegram_sse_call_signal", handleSseMessage);
-      window.removeEventListener("wavegram_sse_audio_chunk", handleSseAudioChunk);
+      window.removeEventListener("wavegram_sse_pcm_chunk", handleSsePcmChunk);
     };
   }, [call.id, currentUser.id, isCaller]);
 
@@ -750,7 +866,6 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
     let aiSpeechTimeout: any = null;
 
-    // AI Greets caller in English
     const greetingText = "Hello! I can hear you crystal clear on Wavegram. How can I help you today?";
 
     aiSpeechTimeout = setTimeout(() => {
@@ -799,7 +914,8 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         sourceNodeRef.current,
         localGainNodeRef.current,
         localAnalyserRef.current,
-        processedStreamDestRef.current
+        processedStreamDestRef.current,
+        processorNodeRef.current
       );
     }
 
@@ -973,13 +1089,26 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const activePresetObj = VOICE_PRESETS.find((p) => p.id === activeVoiceFilter) || VOICE_PRESETS[0];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-3 sm:p-4 text-white select-none animate-in fade-in duration-300">
-      
+    <div
+      onClick={handleUserResumeAudio}
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-3 sm:p-4 text-white select-none animate-in fade-in duration-300"
+    >
       {/* Hidden remote audio element playing the other person's voice */}
       <audio ref={remoteAudioRef} autoPlay playsInline className="hidden" />
 
       <div className="w-full max-w-xl bg-[#17212b] border border-[#242f3d] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.85)] flex flex-col items-center p-5 sm:p-7 relative">
         
+        {/* Unmute / Resume Audio Banner if browser autoplay held back audio */}
+        {audioNeedsResume && (
+          <button
+            onClick={handleUserResumeAudio}
+            className="w-full mb-3 py-2 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold flex items-center justify-center gap-2 shadow-lg transition-all animate-bounce cursor-pointer"
+          >
+            <Volume2 className="w-4 h-4" />
+            <span>Click here to enable call speaker audio</span>
+          </button>
+        )}
+
         {/* Top Status Header */}
         <div className="w-full flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0e1621] border border-[#242f3d] text-xs font-semibold">
@@ -992,7 +1121,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
           {/* Voice Filter Tag Button */}
           <button
-            onClick={() => setShowVoiceDrawer(!showVoiceDrawer)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowVoiceDrawer(!showVoiceDrawer);
+            }}
             className={`px-3 py-1.5 rounded-full border text-xs font-bold flex items-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer ${
               activeVoiceFilter !== "natural"
                 ? "bg-gradient-to-r from-blue-600 to-indigo-600 border-cyan-300/40 text-white shadow-cyan-500/20 ring-1 ring-cyan-400/40"
@@ -1063,7 +1195,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                   ) : (
                     <p className="text-xs text-[#3390ec] font-medium flex items-center justify-center gap-1">
                       <Sparkles className="w-3 h-3 text-cyan-300" />
-                      <span>HD Studio Audio Active</span>
+                      <span>Live 2-Way HD Audio</span>
                     </p>
                   )}
                 </div>
@@ -1087,7 +1219,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
         {/* Voice Presets Drawer Popup */}
         {showVoiceDrawer && (
-          <div className="w-full mt-3 p-3.5 rounded-2xl bg-[#0e1621] border border-[#3390ec]/30 shadow-xl animate-in slide-in-from-top-2 duration-200">
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="w-full mt-3 p-3.5 rounded-2xl bg-[#0e1621] border border-[#3390ec]/30 shadow-xl animate-in slide-in-from-top-2 duration-200"
+          >
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
                 <Sliders className="w-3.5 h-3.5" />
@@ -1135,7 +1270,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         <div className="flex items-center justify-center gap-4 mt-5">
           {/* Mute Mic Button */}
           <button
-            onClick={handleToggleMute}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleMute();
+            }}
             className={`p-4 rounded-full transition-all shadow-lg active:scale-95 cursor-pointer ${
               isMuted
                 ? "bg-rose-600 hover:bg-rose-500 text-white ring-2 ring-rose-400/50"
@@ -1149,11 +1287,14 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           {/* Toggle Video Camera Button */}
           {call.type === "video" && (
             <button
-              onClick={handleToggleVideo}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleToggleVideo();
+              }}
               className={`p-4 rounded-full transition-all shadow-lg active:scale-95 cursor-pointer ${
                 isVideoOff
                   ? "bg-rose-600 hover:bg-rose-500 text-white ring-2 ring-rose-400/50"
-                : "bg-[#242f3d] hover:bg-[#2e3b4d] text-slate-100"
+                  : "bg-[#242f3d] hover:bg-[#2e3b4d] text-slate-100"
               }`}
               title={isVideoOff ? "Turn on Camera" : "Turn off Camera"}
             >
@@ -1163,7 +1304,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
           {/* Voice Transformer Toggle Drawer */}
           <button
-            onClick={() => setShowVoiceDrawer(!showVoiceDrawer)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowVoiceDrawer(!showVoiceDrawer);
+            }}
             className={`p-4 rounded-full transition-all shadow-lg active:scale-95 cursor-pointer ${
               showVoiceDrawer
                 ? "bg-[#3390ec] text-white ring-2 ring-cyan-300"
@@ -1176,7 +1320,10 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
           {/* End Call Button */}
           <button
-            onClick={onEndCall}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEndCall();
+            }}
             className="p-4 rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-xl transition-transform active:scale-95 cursor-pointer ring-2 ring-rose-400/40"
             title="End Call"
           >

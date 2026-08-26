@@ -354,8 +354,9 @@ export const translations: Record<Language, Translations> = {
 
 export const getSavedLanguage = (): Language => {
   const saved = localStorage.getItem("wavegram_lang");
-  if (saved === "fr" || saved === "en") return saved;
-  // Default to English as requested by user
+  if (saved === "en") return "en";
+  if (saved === "fr") return "fr";
+  // Default to English as explicitly requested
   return "en";
 };
 
