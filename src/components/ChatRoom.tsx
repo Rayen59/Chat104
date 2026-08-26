@@ -62,9 +62,11 @@ import {
   PenTool,
   Paintbrush,
   CheckSquare,
-  Square
+  Square,
+  PhoneCall
 } from "lucide-react";
 
+import { translations, getSavedLanguage, Language } from "../i18n";
 import { ForwardModal } from "./ForwardModal";
 import { GifStickerModal } from "./GifStickerModal";
 import { PhotoEditorModal } from "./PhotoEditorModal";
@@ -2008,6 +2010,61 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                           ) : (
                             <span className="text-[10px] text-amber-400 font-semibold">No URL</span>
                           )}
+                        </div>
+                      )}
+
+                      {/* CALL EVENT CARD (VOICE & VIDEO CALL LOGS) */}
+                      {msg.type === "call" && (
+                        <div className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-black/35 border border-white/10 min-w-[240px] sm:min-w-[290px] shadow-sm my-0.5">
+                          <div className="flex items-center gap-3">
+                            <div
+                              className={`w-10 h-10 rounded-2xl flex items-center justify-center shadow-md shrink-0 ${
+                                msg.callData?.status === "completed"
+                                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40"
+                                  : msg.callData?.status === "declined"
+                                  ? "bg-rose-500/20 text-rose-400 border border-rose-500/40"
+                                  : "bg-amber-500/20 text-amber-400 border border-amber-500/40"
+                              }`}
+                            >
+                              {msg.callData?.callType === "video" ? (
+                                <Video className="w-5 h-5" />
+                              ) : (
+                                <Phone className="w-5 h-5" />
+                              )}
+                            </div>
+                            <div className="min-w-0">
+                              <p className="font-bold text-xs sm:text-sm text-white flex items-center gap-1.5 leading-snug">
+                                <span>{msg.text}</span>
+                              </p>
+                              <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-slate-400">
+                                <span>
+                                  {msg.callData?.status === "completed" && msg.callData.duration
+                                    ? `${Math.floor(msg.callData.duration / 60)}m ${(msg.callData.duration % 60).toString().padStart(2, "0")}s`
+                                    : msg.callData?.status === "declined"
+                                    ? "Appel refusé"
+                                    : "Appel non répondu / manqué"}
+                                </span>
+                                {msg.callData?.voiceFilter && msg.callData.voiceFilter !== "natural" && (
+                                  <span className="px-1.5 py-0.2 rounded-md bg-blue-500/20 text-cyan-300 font-semibold border border-cyan-400/30 text-[9px]">
+                                    🎙️ {msg.callData.voiceFilter}
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onStartCall(msg.callData?.callType || "voice");
+                            }}
+                            className="px-3 py-1.5 rounded-xl bg-[#3390ec] hover:bg-[#2879c7] text-white text-xs font-bold flex items-center gap-1.5 shadow-md active:scale-95 transition-all shrink-0 cursor-pointer"
+                            title="Rappeler"
+                          >
+                            <PhoneCall className="w-3.5 h-3.5" />
+                            <span>Rappeler</span>
+                          </button>
                         </div>
                       )}
                     </>

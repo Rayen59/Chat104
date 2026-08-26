@@ -1582,11 +1582,12 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
       .slice(-16);
 
     const systemInstruction = `You are MK.ia, the elite intelligent AI assistant built natively into MK Wavegram, powered by Google Gemini.
-Your mission is to provide exceptionally deep, articulate, comprehensive, structured, and insightful answers strictly in clean English (unless the user explicitly requests another language):
-- Provide profound, well-reasoned, and multi-paragraph answers when needed (with clear Markdown headings, bullet points, structured tables, and concrete examples).
+Your mission is to provide exceptionally deep, articulate, comprehensive, structured, and insightful answers:
+- Detect the user's language automatically. If the user writes in French (or is in French mode), reply in fluent, natural French (Français). If the user writes in English, reply in English. Always match the user's language smoothly.
+- Provide profound, well-reasoned, and structured answers (with clear Markdown headings, bullet points, structured tables, and concrete examples).
 - For technical, mathematical, or coding tasks: provide robust, error-free TypeScript/React/Python/Node.js snippets with clear step-by-step explanations.
 - For brainstorming, planning, stories, or strategic questions: deliver high-depth creative frameworks, actionable takeaways, and structured solutions.
-- For conversations: be intelligent, polite, proactive, and deeply helpful. Maintain continuity with prior messages in this conversation.`;
+- For voice calls and conversations: be intelligent, polite, proactive, and deeply helpful. Maintain continuity with prior messages in this conversation.`;
 
     let replyText = "";
     const gemini = getGeminiClient();
@@ -2932,9 +2933,9 @@ app.get("/api/stickers", (req: Request, res: Response) => {
   });
 });
 
-// 17. Voice & Video Calls Signaling
+// 17. Voice & Video Calls Signaling with Live Logging & Voice Transformers
 app.post("/api/calls/signal", (req: Request, res: Response) => {
-  const { action, callId, callerId, targetId, type, callerName, callerAvatar } = req.body;
+  const { action, callId, callerId, targetId, type, callerName, callerAvatar, voiceFilter } = req.body;
 
   if (action === "start") {
     const caller = store.users.find((u) => u.id === callerId);
@@ -2957,11 +2958,26 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
       type: type || "voice",
       status: "ringing",
       isVoiceEnhanced: true,
+      voiceFilter: voiceFilter || "natural",
       startedAt: new Date().toISOString()
     };
 
     currentActiveCalls[call.id] = call;
     broadcastEvent("call_incoming", call);
+    broadcastEvent("call_started", call);
+
+    // If target is MK.ia AI or demo bots, automatically answer the call after 2.5s
+    if (targetId === MK_AI_USER.id || targetId === "user_wia_ai") {
+      setTimeout(() => {
+        const active = currentActiveCalls[call.id];
+        if (active && active.status === "ringing") {
+          active.status = "connected";
+          active.connectedAt = new Date().toISOString();
+          broadcastEvent("call_status", active);
+        }
+      }, 2500);
+    }
+
     return res.json({ call });
   }
 
@@ -2969,17 +2985,120 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
     const call = currentActiveCalls[callId];
     if (call) {
       call.status = "connected";
+      call.connectedAt = new Date().toISOString();
       broadcastEvent("call_status", call);
     }
     return res.json({ call });
   }
 
-  if (action === "end") {
+  if (action === "voice_filter") {
     const call = currentActiveCalls[callId];
     if (call) {
+      call.voiceFilter = voiceFilter || "natural";
+      broadcastEvent("call_voice_filter", { callId, voiceFilter: call.voiceFilter });
+    }
+    return res.json({ success: true, voiceFilter });
+  }
+
+  if (action === "end" || action === "decline") {
+    const call = currentActiveCalls[callId];
+    if (call) {
+      const wasConnected = call.status === "connected" || !!call.connectedAt;
+      let durationSec = 0;
+      if (call.connectedAt) {
+        durationSec = Math.max(1, Math.round((Date.now() - new Date(call.connectedAt).getTime()) / 1000));
+      } else if (wasConnected && call.startedAt) {
+        durationSec = Math.max(1, Math.round((Date.now() - new Date(call.startedAt).getTime()) / 1000));
+      }
+
       call.status = "ended";
       broadcastEvent("call_status", call);
       delete currentActiveCalls[callId];
+
+      // Find or create DM conversation between caller and target
+      let conv = store.conversations.find(
+        (c) =>
+          c.type === "dm" &&
+          c.participants.includes(call.callerId) &&
+          c.participants.includes(call.targetId)
+      );
+
+      if (!conv) {
+        conv = {
+          id: "conv_dm_" + Math.random().toString(36).substring(2, 10),
+          type: "dm",
+          participants: [call.callerId, call.targetId],
+          updatedAt: new Date().toISOString()
+        };
+        store.conversations.push(conv);
+        broadcastEvent("conversation_created", conv);
+      }
+
+      // Format readable call duration in French / standard format
+      const formatDuration = (sec: number) => {
+        const m = Math.floor(sec / 60);
+        const s = sec % 60;
+        if (m === 0) return `${s}s`;
+        return `${m}m ${s.toString().padStart(2, "0")}s`;
+      };
+
+      const callOutcomeStatus = wasConnected ? "completed" : action === "decline" ? "declined" : "missed";
+
+      let callSummaryText = "";
+      if (callOutcomeStatus === "completed") {
+        callSummaryText = call.type === "video"
+          ? `🎥 Appel vidéo terminé (${formatDuration(durationSec)})`
+          : `📞 Appel vocal terminé (${formatDuration(durationSec)})`;
+      } else if (callOutcomeStatus === "declined") {
+        callSummaryText = call.type === "video"
+          ? `🎥 Appel vidéo refusé`
+          : `📞 Appel vocal refusé`;
+      } else {
+        callSummaryText = call.type === "video"
+          ? `🎥 Appel vidéo manqué`
+          : `📞 Appel vocal manqué`;
+      }
+
+      // Add to conversation message history
+      const callLogMessage: Message = {
+        id: "msg_call_" + Math.random().toString(36).substring(2, 10),
+        conversationId: conv.id,
+        senderId: call.callerId,
+        senderName: call.callerName,
+        senderAvatar: call.callerAvatar,
+        text: callSummaryText,
+        type: "call",
+        callData: {
+          callType: call.type,
+          status: callOutcomeStatus,
+          duration: durationSec,
+          callerId: call.callerId,
+          callerName: call.callerName,
+          callerAvatar: call.callerAvatar,
+          targetId: call.targetId,
+          targetName: call.targetName,
+          voiceFilter: call.voiceFilter || "natural"
+        },
+        duration: durationSec,
+        reactions: {},
+        likes: [],
+        createdAt: new Date().toISOString()
+      };
+
+      store.messages.push(callLogMessage);
+      conv.lastMessage = {
+        text: callSummaryText,
+        senderId: call.callerId,
+        senderName: call.callerName,
+        createdAt: callLogMessage.createdAt
+      };
+      conv.updatedAt = callLogMessage.createdAt;
+      saveStore();
+
+      broadcastEvent("new_message", callLogMessage);
+      broadcastEvent("conversation_updated", conv);
+
+      return res.json({ status: "ended", duration: durationSec, callData: callLogMessage.callData });
     }
     return res.json({ status: "ended" });
   }

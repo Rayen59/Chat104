@@ -30,8 +30,10 @@ import {
   Volume2,
   ShieldAlert,
   ShieldCheck,
-  Radio
+  Radio,
+  Languages
 } from "lucide-react";
+import { translations, getSavedLanguage, setSavedLanguage, Language } from "../i18n";
 
 interface SidebarProps {
   currentUser: User;
@@ -123,10 +125,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onToggleMuteConversation,
   onOpenReportModal
 }) => {
+  const [lang, setLang] = useState<Language>(getSavedLanguage());
+  const t = translations[lang];
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [showDropdownMenu, setShowDropdownMenu] = useState(false);
   const [showFabMenu, setShowFabMenu] = useState(false);
+
+  const handleToggleLanguage = () => {
+    const nextLang: Language = lang === "fr" ? "en" : "fr";
+    setLang(nextLang);
+    setSavedLanguage(nextLang);
+  };
 
   const isAdmin =
     currentUser.role === "admin" ||
@@ -256,6 +267,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
             </div>
 
             <div className="flex items-center gap-1">
+              {/* Language Switcher Badge */}
+              <button
+                onClick={handleToggleLanguage}
+                title={lang === "fr" ? "Passer en Anglais" : "Switch to French"}
+                className="px-2 py-1 rounded-lg bg-[#202b36] hover:bg-[#283745] text-xs font-bold text-slate-200 border border-[#101921] flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
+              >
+                <span>{lang === "fr" ? "🇫🇷 FR" : "🇬🇧 EN"}</span>
+              </button>
+
               <button
                 onClick={() => setShowSearchInput(true)}
                 title="Search"
@@ -281,6 +301,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       onClick={() => setShowDropdownMenu(false)}
                     />
                     <div className="absolute right-0 top-11 w-56 bg-[#242f3d] border border-[#101921] rounded-xl shadow-2xl py-1.5 z-40 text-sm text-white animate-in fade-in zoom-in-95 duration-100">
+                      
+                      {/* Language Switch Menu Item */}
+                      <button
+                        onClick={() => {
+                          handleToggleLanguage();
+                          setShowDropdownMenu(false);
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center justify-between hover:bg-[#17212b] text-cyan-300 transition-colors text-left border-b border-[#101921]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Languages className="w-4 h-4 text-cyan-400" />
+                          <span className="font-semibold">{t.language}</span>
+                        </div>
+                        <span className="text-xs px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold">
+                          {lang === "fr" ? "Français" : "English"}
+                        </span>
+                      </button>
                       {onOpenAdminPanel && (
                         <button
                           onClick={() => {
@@ -1063,7 +1100,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
           </div>
-          <span className="text-[11px] font-medium mt-0.5">Chats</span>
+          <span className="text-[11px] font-medium mt-0.5">{t.chats}</span>
         </button>
 
         {/* Contacts / People Tab */}
@@ -1076,7 +1113,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className={`p-1 rounded-full ${activeTab === "people" ? "bg-[#3390ec]/20" : ""}`}>
             <Users className="w-5 h-5" />
           </div>
-          <span className="text-[11px] font-medium mt-0.5">Contacts</span>
+          <span className="text-[11px] font-medium mt-0.5">{t.contacts}</span>
         </button>
 
         {/* Groups Tab */}
@@ -1089,7 +1126,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className={`p-1 rounded-full ${activeTab === "groups" ? "bg-[#3390ec]/20" : ""}`}>
             <Layers className="w-5 h-5" />
           </div>
-          <span className="text-[11px] font-medium mt-0.5">Groups</span>
+          <span className="text-[11px] font-medium mt-0.5">{t.groups}</span>
         </button>
 
         {/* Invitations / Requests Tab */}
@@ -1109,7 +1146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </span>
             )}
           </div>
-          <span className="text-[11px] font-medium mt-0.5">Invites</span>
+          <span className="text-[11px] font-medium mt-0.5">{t.invites}</span>
         </button>
 
         {/* Profile / Settings Tab */}
@@ -1124,7 +1161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="w-5 h-5 rounded-full object-cover bg-slate-800"
             />
           </div>
-          <span className="text-[11px] font-medium mt-0.5">Profile</span>
+          <span className="text-[11px] font-medium mt-0.5">{t.profile}</span>
         </button>
 
       </div>

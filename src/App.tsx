@@ -1306,6 +1306,8 @@ export default function App() {
     if (!activeConv) return;
 
     const otherUserId = activeConv.participants.find((id) => id !== currentUser.id) || "target";
+    const otherUser = allUsers.find((u) => u.id === otherUserId);
+    const targetName = activeConv.type === "group" ? (activeConv.name || "Groupe") : (otherUser?.name || otherUser?.username || "Correspondant");
 
     try {
       const res = await fetch("/api/calls/signal", {
@@ -1314,9 +1316,10 @@ export default function App() {
         body: JSON.stringify({
           action: "start",
           callerId: currentUser.id,
-          callerName: currentUser.username,
+          callerName: currentUser.name || currentUser.username,
           callerAvatar: currentUser.avatar,
           targetId: otherUserId,
+          targetName,
           type
         })
       });

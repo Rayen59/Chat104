@@ -98,6 +98,20 @@ export interface PollData {
   createdAt: string;
 }
 
+export type VoiceFilterType = 'natural' | 'robot' | 'helium' | 'deep' | 'radio' | 'echo' | 'anonymous';
+
+export interface CallData {
+  callType: 'voice' | 'video';
+  status: 'completed' | 'missed' | 'declined';
+  duration?: number; // seconds
+  callerId: string;
+  callerName: string;
+  callerAvatar?: string;
+  targetId: string;
+  targetName: string;
+  voiceFilter?: VoiceFilterType;
+}
+
 export interface Message {
   id: string;
   conversationId: string;
@@ -106,7 +120,8 @@ export interface Message {
   senderName: string;
   senderAvatar: string;
   text: string;
-  type: 'text' | 'image' | 'video' | 'audio' | 'voice' | 'file' | 'gif' | 'poll' | 'sticker' | 'drawing';
+  type: 'text' | 'image' | 'video' | 'audio' | 'voice' | 'file' | 'gif' | 'poll' | 'sticker' | 'drawing' | 'call';
+  callData?: CallData;
   mediaUrl?: string;
   mediaName?: string;
   mediaSize?: string;
@@ -190,7 +205,9 @@ export interface ActiveCall {
   isMuted?: boolean;
   isVideoOff?: boolean;
   isVoiceEnhanced?: boolean; // AI Voice Clarity feature
+  voiceFilter?: VoiceFilterType;
   startedAt?: string;
+  connectedAt?: string;
 }
 
 export interface TopContact {
