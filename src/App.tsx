@@ -396,6 +396,12 @@ export default function App() {
     eventSource.addEventListener("call_voice_filter", (e: any) => {
       window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
     });
+    eventSource.addEventListener("call_peer_ready", (e: any) => {
+      window.dispatchEvent(new CustomEvent("wavegram_sse_call_signal", { detail: e.data }));
+    });
+    eventSource.addEventListener("call_audio_chunk", (e: any) => {
+      window.dispatchEvent(new CustomEvent("wavegram_sse_audio_chunk", { detail: e.data }));
+    });
 
     // Instant update when a new user registers!
     eventSource.addEventListener("user_joined", (e: any) => {

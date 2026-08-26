@@ -2987,8 +2987,26 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
       call.status = "connected";
       call.connectedAt = new Date().toISOString();
       broadcastEvent("call_status", call);
+      broadcastEvent("call_peer_ready", { callId, targetId, callerId: call.callerId });
     }
     return res.json({ call });
+  }
+
+  if (action === "peer_ready") {
+    broadcastEvent("call_peer_ready", { callId, callerId, targetId });
+    return res.json({ success: true });
+  }
+
+  if (action === "audio_chunk") {
+    const { audioChunk, mimeType, senderId, voiceFilter: chunkFilter } = req.body;
+    broadcastEvent("call_audio_chunk", {
+      callId,
+      senderId,
+      audioChunk,
+      mimeType: mimeType || "audio/webm",
+      voiceFilter: chunkFilter || "natural"
+    });
+    return res.json({ success: true });
   }
 
   if (action === "webrtc_offer") {

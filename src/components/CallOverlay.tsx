@@ -14,7 +14,8 @@ import {
   Radio,
   Bot,
   Zap,
-  PhoneCall
+  PhoneCall,
+  Activity
 } from "lucide-react";
 import { translations, getSavedLanguage, Language } from "../i18n";
 
@@ -135,17 +136,19 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const localGainNodeRef = useRef<GainNode | null>(null);
   const localAnalyserRef = useRef<AnalyserNode | null>(null);
   const processedStreamDestRef = useRef<MediaStreamAudioDestinationNode | null>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const filterNodesRef = useRef<any[]>([]);
   const dialToneIntervalRef = useRef<any>(null);
+  const remoteSpeakingTimeoutRef = useRef<any>(null);
 
-  // WebRTC Peer Connection ref
+  // WebRTC Peer Connection ref & Broadcast Channel
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const broadcastChannelRef = useRef<BroadcastChannel | null>(null);
 
   const isCaller = call.callerId === currentUser.id;
   const otherName = isCaller ? call.targetName : call.callerName;
   const otherAvatar = isCaller ? "" : call.callerAvatar;
-  const isAiCall = call.targetId === "user_mk_ai" || call.targetId === "user_wia_ai" || otherName.toLowerCase().includes("mk.ia");
+  const isAiCall = call.targetId === "user_mk_ai" || call.targetId === "user_wia_ai" || call.targetId === "user_mk_ia" || otherName.toLowerCase().includes("mk.ia") || otherName.toLowerCase().includes("ai");
 
   // Listen to language changes
   useEffect(() => {
@@ -160,16 +163,20 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   useEffect(() => {
     if (call.status === "connected") {
       setIsConnected(true);
+      if (dialToneIntervalRef.current) {
+        clearInterval(dialToneIntervalRef.current);
+        dialToneIntervalRef.current = null;
+      }
     }
   }, [call.status]);
 
-  // Outgoing dial tone when ringing (stops immediately when connected)
+  // Outgoing Dial Tone for the Caller while status is "ringing"
   useEffect(() => {
-    if (call.status === "ringing" && isCaller && !isConnected) {
+    if (isCaller && !isConnected) {
       try {
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioContextClass();
-        
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        const ctx = new AudioCtx();
+
         const playTone = () => {
           if (ctx.state === "suspended") ctx.resume();
           const osc1 = ctx.createOscillator();
@@ -177,8 +184,8 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           const gain = ctx.createGain();
 
           osc1.type = "sine";
-          osc1.frequency.setValueAtTime(440, ctx.currentTime);
           osc2.type = "sine";
+          osc1.frequency.setValueAtTime(440, ctx.currentTime);
           osc2.frequency.setValueAtTime(480, ctx.currentTime);
 
           gain.gain.setValueAtTime(0.04, ctx.currentTime);
@@ -188,14 +195,14 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           osc2.connect(gain);
           gain.connect(ctx.destination);
 
-          osc1.start();
-          osc2.start();
+          osc1.start(ctx.currentTime);
+          osc2.start(ctx.currentTime);
           osc1.stop(ctx.currentTime + 1.2);
           osc2.stop(ctx.currentTime + 1.2);
         };
 
         playTone();
-        dialToneIntervalRef.current = setInterval(playTone, 3200);
+        dialToneIntervalRef.current = setInterval(playTone, 3000);
 
         return () => {
           if (dialToneIntervalRef.current) clearInterval(dialToneIntervalRef.current);
@@ -416,7 +423,50 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
     }
   };
 
-  // Main Media & WebRTC Pipeline Initialization
+  // Helper to play incoming audio chunk smoothly through the speaker
+  const playIncomingAudioChunk = (audioDataUrl: string, voiceFilter?: VoiceFilterType) => {
+    if (!audioDataUrl) return;
+    try {
+      setRemoteSpeaking(true);
+      if (voiceFilter) setPeerVoiceFilter(voiceFilter);
+
+      const audio = new Audio(audioDataUrl);
+      audio.volume = 1.0;
+      audio.play().catch(() => {});
+
+      if (remoteSpeakingTimeoutRef.current) clearTimeout(remoteSpeakingTimeoutRef.current);
+      remoteSpeakingTimeoutRef.current = setTimeout(() => {
+        setRemoteSpeaking(false);
+      }, 400);
+    } catch (e) {
+      console.warn("Incoming audio playback notice:", e);
+    }
+  };
+
+  // Send WebRTC Offer helper
+  const sendWebRtcOffer = async () => {
+    const pc = peerConnectionRef.current;
+    if (!pc) return;
+    try {
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      fetch("/api/calls/signal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "webrtc_offer",
+          callId: call.id,
+          callerId: currentUser.id,
+          targetId: otherName,
+          offer
+        })
+      }).catch(() => {});
+    } catch (err) {
+      console.warn("Offer creation notice:", err);
+    }
+  };
+
+  // Main Media, Web Audio & WebRTC Pipeline Initialization
   useEffect(() => {
     let isMounted = true;
 
@@ -466,11 +516,66 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         // Apply selected DSP Voice Filter to outgoing stream
         buildVoiceFilterGraph(activeVoiceFilter, ctx, source, gainNode, analyser, streamDest);
 
+        // Real-Time Audio Chunk Streamer: slices audio every 250ms to stream to remote peer
+        try {
+          let recorderOptions: MediaRecorderOptions = {};
+          if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) {
+            recorderOptions = { mimeType: "audio/webm;codecs=opus" };
+          } else if (MediaRecorder.isTypeSupported("audio/webm")) {
+            recorderOptions = { mimeType: "audio/webm" };
+          } else if (MediaRecorder.isTypeSupported("audio/mp4")) {
+            recorderOptions = { mimeType: "audio/mp4" };
+          }
+
+          const recorder = new MediaRecorder(streamDest.stream, recorderOptions);
+          mediaRecorderRef.current = recorder;
+
+          recorder.ondataavailable = (event) => {
+            if (event.data && event.data.size > 0 && !isMuted) {
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64Data = reader.result as string;
+                if (!base64Data) return;
+
+                // 1. Instant local BroadcastChannel audio relay
+                if (broadcastChannelRef.current) {
+                  broadcastChannelRef.current.postMessage({
+                    type: "call_audio_chunk",
+                    callId: call.id,
+                    senderId: currentUser.id,
+                    audioChunk: base64Data,
+                    voiceFilter: activeVoiceFilter
+                  });
+                }
+
+                // 2. Server SSE audio relay for remote cross-device connection
+                fetch("/api/calls/signal", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({
+                    action: "audio_chunk",
+                    callId: call.id,
+                    senderId: currentUser.id,
+                    audioChunk: base64Data,
+                    voiceFilter: activeVoiceFilter
+                  })
+                }).catch(() => {});
+              };
+              reader.readAsDataURL(event.data);
+            }
+          };
+
+          recorder.start(250);
+        } catch (recErr) {
+          console.warn("MediaRecorder start notice:", recErr);
+        }
+
         // WebRTC RTCPeerConnection Setup
         const pc = new RTCPeerConnection({
           iceServers: [
             { urls: "stun:stun.l.google.com:19302" },
-            { urls: "stun:stun1.l.google.com:19302" }
+            { urls: "stun:stun1.l.google.com:19302" },
+            { urls: "stun:stun2.l.google.com:19302" }
           ]
         });
         peerConnectionRef.current = pc;
@@ -513,37 +618,35 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           }
         };
 
-        // If this user initiated the call, create SDP offer
+        // Notify server that this peer's audio pipeline is ready
+        fetch("/api/calls/signal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "peer_ready",
+            callId: call.id,
+            callerId: currentUser.id,
+            targetId: otherName
+          })
+        }).catch(() => {});
+
+        // If caller and already connected, create SDP offer
         if (isCaller) {
-          const offer = await pc.createOffer();
-          await pc.setLocalDescription(offer);
-          fetch("/api/calls/signal", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              action: "webrtc_offer",
-              callId: call.id,
-              callerId: currentUser.id,
-              targetId: otherName,
-              offer
-            })
-          }).catch(() => {});
+          sendWebRtcOffer();
         }
 
-        // Cross-tab BroadcastChannel for instant local testing
+        // Cross-tab BroadcastChannel for instantaneous audio and state sync
         try {
           const channel = new BroadcastChannel(`wavegram_call_${call.id}`);
           broadcastChannelRef.current = channel;
 
           channel.onmessage = (e) => {
-            if (e.data?.type === "speech_active") {
-              if (e.data.userId !== currentUser.id) {
-                setRemoteSpeaking(e.data.isSpeaking);
-              }
-            } else if (e.data?.type === "voice_filter_change") {
-              if (e.data.userId !== currentUser.id) {
-                setPeerVoiceFilter(e.data.filter);
-              }
+            if (e.data?.type === "call_audio_chunk" && e.data.senderId !== currentUser.id) {
+              playIncomingAudioChunk(e.data.audioChunk, e.data.voiceFilter);
+            } else if (e.data?.type === "speech_active" && e.data.userId !== currentUser.id) {
+              setRemoteSpeaking(e.data.isSpeaking);
+            } else if (e.data?.type === "voice_filter_change" && e.data.userId !== currentUser.id) {
+              setPeerVoiceFilter(e.data.filter);
             }
           };
         } catch (e) {}
@@ -557,6 +660,9 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
 
     return () => {
       isMounted = false;
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+        try { mediaRecorderRef.current.stop(); } catch (e) {}
+      }
       if (rawMicStreamRef.current) {
         rawMicStreamRef.current.getTracks().forEach((track) => track.stop());
       }
@@ -569,10 +675,13 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       if (audioCtxRef.current) {
         audioCtxRef.current.close().catch(() => {});
       }
+      if (remoteSpeakingTimeoutRef.current) {
+        clearTimeout(remoteSpeakingTimeoutRef.current);
+      }
     };
   }, [call.id, call.type]);
 
-  // WebRTC Signaling Listener via Server-Sent Events / EventSource
+  // WebRTC & Call Signaling Listener via Server-Sent Events / EventSource
   useEffect(() => {
     const handleSseMessage = async (e: any) => {
       try {
@@ -580,9 +689,12 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         if (!raw) return;
         const data = typeof raw === "string" ? JSON.parse(raw) : raw;
         const pc = peerConnectionRef.current;
-        if (!pc) return;
 
-        if (data.type === "webrtc_offer" && data.callId === call.id && data.callerId !== currentUser.id) {
+        if (data.type === "call_peer_ready" && isCaller) {
+          setIsConnected(true);
+          sendWebRtcOffer();
+        } else if (data.type === "webrtc_offer" && data.callId === call.id && data.callerId !== currentUser.id && pc) {
+          setIsConnected(true);
           await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
@@ -597,11 +709,12 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
               answer
             })
           }).catch(() => {});
-        } else if (data.type === "webrtc_answer" && data.callId === call.id && data.callerId !== currentUser.id) {
+        } else if (data.type === "webrtc_answer" && data.callId === call.id && data.callerId !== currentUser.id && pc) {
+          setIsConnected(true);
           if (pc.signalingState !== "stable") {
             await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
           }
-        } else if (data.type === "webrtc_candidate" && data.callId === call.id && data.callerId !== currentUser.id) {
+        } else if (data.type === "webrtc_candidate" && data.callId === call.id && data.callerId !== currentUser.id && pc) {
           if (data.candidate) {
             await pc.addIceCandidate(new RTCIceCandidate(data.candidate)).catch(() => {});
           }
@@ -611,20 +724,34 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       } catch (err) {}
     };
 
-    window.addEventListener("wavegram_sse_call_signal", handleSseMessage);
-    return () => window.removeEventListener("wavegram_sse_call_signal", handleSseMessage);
-  }, [call.id, currentUser.id]);
+    const handleSseAudioChunk = (e: any) => {
+      try {
+        const raw = e.detail !== undefined ? e.detail : e.data;
+        if (!raw) return;
+        const data = typeof raw === "string" ? JSON.parse(raw) : raw;
+        if (data.callId === call.id && data.senderId !== currentUser.id && data.audioChunk) {
+          playIncomingAudioChunk(data.audioChunk, data.voiceFilter);
+        }
+      } catch (e) {}
+    };
 
-  // AI Conversational Voice (When calling MK.ia AI bot, AI speaks back in real audio!)
+    window.addEventListener("wavegram_sse_call_signal", handleSseMessage);
+    window.addEventListener("wavegram_sse_audio_chunk", handleSseAudioChunk);
+
+    return () => {
+      window.removeEventListener("wavegram_sse_call_signal", handleSseMessage);
+      window.removeEventListener("wavegram_sse_audio_chunk", handleSseAudioChunk);
+    };
+  }, [call.id, currentUser.id, isCaller]);
+
+  // AI Conversational Voice (When calling MK.ia AI bot, AI speaks back in crystal clear English!)
   useEffect(() => {
     if (!isAiCall || !isConnected) return;
 
     let aiSpeechTimeout: any = null;
 
-    // AI Greets caller
-    const greetingText = lang === "fr" 
-      ? "Bonjour ! Je vous entends parfaitement sur Wavegram. Comment puis-je vous aider aujourd'hui ?"
-      : "Hello! I can hear you crystal clear on Wavegram. How can I help you today?";
+    // AI Greets caller in English
+    const greetingText = "Hello! I can hear you crystal clear on Wavegram. How can I help you today?";
 
     aiSpeechTimeout = setTimeout(() => {
       speakAiResponse(greetingText);
@@ -634,14 +761,14 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
       if (aiSpeechTimeout) clearTimeout(aiSpeechTimeout);
       if (window.speechSynthesis) window.speechSynthesis.cancel();
     };
-  }, [isAiCall, isConnected, lang]);
+  }, [isAiCall, isConnected]);
 
   const speakAiResponse = (text: string) => {
     if (!("speechSynthesis" in window)) return;
     try {
       window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = lang === "fr" ? "fr-FR" : "en-US";
+      utterance.lang = "en-US";
       utterance.rate = 1.05;
       utterance.pitch = 1.0;
 
@@ -772,14 +899,14 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
         totalEnergy += dataArray[i];
       }
       const avgEnergy = totalEnergy / bufferLength;
-      const isVoiceActive = avgEnergy > 18;
+      const isVoiceActive = avgEnergy > 16;
 
       if (isVoiceActive) {
         voiceSilenceCount = 0;
         setLocalSpeaking(true);
       } else {
         voiceSilenceCount++;
-        if (voiceSilenceCount > 25) {
+        if (voiceSilenceCount > 20) {
           setLocalSpeaking(false);
         }
       }
@@ -858,7 +985,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#0e1621] border border-[#242f3d] text-xs font-semibold">
             <span className={`w-2.5 h-2.5 rounded-full ${isConnected ? "bg-[#42ab58] animate-pulse" : "bg-amber-400 animate-ping"}`} />
             <span className="text-slate-200">
-              {isConnected ? t.connected : t.ringing}
+              {isConnected ? "Connected" : "Ringing..."}
             </span>
             <span className="text-[#3390ec] font-mono ml-2">{formatDuration(callDurationSeconds)}</span>
           </div>
@@ -936,7 +1063,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                   ) : (
                     <p className="text-xs text-[#3390ec] font-medium flex items-center justify-center gap-1">
                       <Sparkles className="w-3 h-3 text-cyan-300" />
-                      <span>{t.audioClarity}</span>
+                      <span>HD Studio Audio Active</span>
                     </p>
                   )}
                 </div>
@@ -944,7 +1071,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                 {peerVoiceFilter !== "natural" && (
                   <div className="mt-1.5">
                     <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[10px] font-semibold border border-purple-400/30">
-                      🎙️ Remote Voice Filter: {peerVoiceFilter}
+                      🎙️ Remote Voice FX: {peerVoiceFilter}
                     </span>
                   </div>
                 )}
@@ -964,13 +1091,13 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-1.5 text-xs font-bold text-cyan-300">
                 <Sliders className="w-3.5 h-3.5" />
-                <span>{t.voiceTransformer}</span>
+                <span>Voice Transformer</span>
               </div>
               <span className="text-[10px] text-slate-400">10 Studio FX Filters</span>
             </div>
 
             <p className="text-[11px] text-[#7d8b99] mb-3 leading-snug">
-              {t.voiceTransformerDesc}
+              Transform your voice in real-time during this phone call. The other person will hear your transformed voice live.
             </p>
 
             {/* Presets Grid */}
@@ -1014,7 +1141,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                 ? "bg-rose-600 hover:bg-rose-500 text-white ring-2 ring-rose-400/50"
                 : "bg-[#242f3d] hover:bg-[#2e3b4d] text-slate-100"
             }`}
-            title={isMuted ? t.unmuteMicrophone : t.muteMicrophone}
+            title={isMuted ? "Unmute Microphone" : "Mute Microphone"}
           >
             {isMuted ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </button>
@@ -1028,7 +1155,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                   ? "bg-rose-600 hover:bg-rose-500 text-white ring-2 ring-rose-400/50"
                 : "bg-[#242f3d] hover:bg-[#2e3b4d] text-slate-100"
               }`}
-              title={isVideoOff ? t.turnOnCamera : t.turnOffCamera}
+              title={isVideoOff ? "Turn on Camera" : "Turn off Camera"}
             >
               {isVideoOff ? <VideoOff className="w-5 h-5" /> : <Video className="w-5 h-5" />}
             </button>
@@ -1042,7 +1169,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
                 ? "bg-[#3390ec] text-white ring-2 ring-cyan-300"
                 : "bg-[#242f3d] hover:bg-[#2e3b4d] text-cyan-300"
             }`}
-            title={t.voiceTransformer}
+            title="Voice Transformer"
           >
             <Sliders className="w-5 h-5" />
           </button>
@@ -1051,7 +1178,7 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
           <button
             onClick={onEndCall}
             className="p-4 rounded-full bg-rose-600 hover:bg-rose-500 text-white shadow-xl transition-transform active:scale-95 cursor-pointer ring-2 ring-rose-400/40"
-            title={t.endCall}
+            title="End Call"
           >
             <PhoneOff className="w-5 h-5" />
           </button>
