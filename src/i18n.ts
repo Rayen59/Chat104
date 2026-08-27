@@ -1065,11 +1065,11 @@ export const translations: Record<Language, Translations> = {
 };
 
 export const getSavedLanguage = (): Language => {
-  const saved = localStorage.getItem("wavegram_lang");
+  const saved = typeof localStorage !== "undefined" ? localStorage.getItem("wavegram_lang") : null;
   if (saved && (saved === "en" || saved === "fr" || saved === "ar" || saved === "hi" || saved === "zh" || saved === "ru")) {
     return saved as Language;
   }
-  // Default to English as explicitly requested
+  // Standardize default strictly to English
   return "en";
 };
 

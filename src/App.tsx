@@ -56,9 +56,12 @@ export default function App() {
   // Notifications state
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
-  // Initialize theme on mount
+  // Initialize theme and language on mount
   useEffect(() => {
     applyTheme(getSavedTheme());
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = "en";
+    }
   }, []);
 
   // Synthesize notification sound
