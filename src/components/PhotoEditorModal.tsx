@@ -392,25 +392,25 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-4xl h-[94vh] max-h-[850px] bg-[#09112a] border border-blue-900/60 rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden text-white animate-in zoom-in-95 duration-200"
+        className="w-full max-w-4xl h-[94vh] max-h-[850px] bg-[#17212b] border border-[#242f3d] rounded-3xl shadow-2xl flex flex-col md:flex-row overflow-hidden text-white animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ==================================================== */}
         {/* LEFT / CENTER: CANVAS WORKSPACE */}
         {/* ==================================================== */}
-        <div className="flex-1 bg-[#040816] flex flex-col items-center justify-center p-3 relative select-none overflow-hidden">
+        <div className="flex-1 bg-[#0e1621] flex flex-col items-center justify-center p-3 relative select-none overflow-hidden">
           {/* Top Bar for Canvas */}
           <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-30 pointer-events-none">
             <div className="pointer-events-auto flex items-center gap-2">
               <label
                 htmlFor="photo-upload-input"
-                className="px-3 py-1.5 rounded-xl bg-black/60 backdrop-blur-md border border-white/20 hover:bg-black/90 text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-95"
+                className="px-3 py-1.5 rounded-xl bg-[#17212b]/80 backdrop-blur-md border border-[#242f3d] hover:bg-[#242f3d] text-xs font-bold text-white flex items-center gap-1.5 cursor-pointer shadow-md transition-all active:scale-95"
               >
-                <ImageIcon className="w-3.5 h-3.5 text-cyan-400" />
+                <ImageIcon className="w-3.5 h-3.5 text-[#3390ec]" />
                 <span>Change Photo</span>
               </label>
               <input
@@ -437,7 +437,7 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
           {/* Interactive Photo Stage */}
           <div
             ref={containerRef}
-            className="relative max-w-full max-h-full flex items-center justify-center overflow-hidden rounded-2xl shadow-2xl border border-white/10"
+            className="relative max-w-full max-h-full flex items-center justify-center overflow-hidden rounded-2xl shadow-2xl border border-[#242f3d]"
             style={{
               maxHeight: "calc(94vh - 120px)"
             }}
@@ -452,12 +452,12 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                 }}
               />
             ) : (
-              <div className="w-80 h-96 flex flex-col items-center justify-center gap-3 p-6 text-center bg-slate-900/60 rounded-2xl border-2 border-dashed border-slate-700">
-                <ImageIcon className="w-12 h-12 text-slate-500" />
-                <p className="text-sm font-semibold text-slate-300">No image loaded</p>
+              <div className="w-80 h-96 flex flex-col items-center justify-center gap-3 p-6 text-center bg-[#17212b] rounded-2xl border-2 border-dashed border-[#242f3d]">
+                <ImageIcon className="w-12 h-12 text-[#7d8b99]" />
+                <p className="text-sm font-semibold text-[#7d8b99]">No image loaded</p>
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs"
+                  className="px-4 py-2 rounded-xl bg-[#3390ec] hover:bg-[#2880d8] text-white font-bold text-xs"
                 >
                   Upload Photo from Gallery
                 </button>
@@ -532,20 +532,20 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                         : item.bgStyle === "outline"
                         ? "border-2 border-white px-2 py-0.5 rounded"
                         : item.bgStyle === "highlight"
-                        ? "drop-shadow-[0_0_12px_rgba(6,182,212,0.9)]"
+                        ? "drop-shadow-[0_0_12px_rgba(51,144,236,0.9)]"
                         : "drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]"
                     } ${
                       isBeingDragged
-                        ? "ring-2 ring-cyan-300 ring-offset-2 ring-offset-black/80 scale-105 shadow-[0_0_20px_rgba(6,182,212,0.8)]"
+                        ? "ring-2 ring-[#3390ec] ring-offset-2 ring-offset-black/80 scale-105 shadow-[0_0_20px_rgba(51,144,236,0.8)]"
                         : isSelected
-                        ? "ring-2 ring-cyan-400 ring-offset-2 ring-offset-black/50"
+                        ? "ring-2 ring-[#3390ec] ring-offset-2 ring-offset-black/50"
                         : "hover:ring-1 hover:ring-white/50"
                     }`}
                     title="Drag anywhere across photo to reposition"
                   >
                     <span>{item.text}</span>
                     {isSelected && (
-                      <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-md bg-cyan-500/90 text-slate-950 font-black text-[9px] whitespace-nowrap pointer-events-none shadow-md">
+                      <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 px-1.5 py-0.5 rounded-md bg-[#3390ec] text-white font-black text-[9px] whitespace-nowrap pointer-events-none shadow-md">
                         {item.x}% , {item.y}%
                       </span>
                     )}
@@ -559,35 +559,35 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
         {/* ==================================================== */}
         {/* RIGHT SIDEBAR: TOOLBAR & TEXT CONTROLS */}
         {/* ==================================================== */}
-        <div className="w-full md:w-80 lg:w-96 bg-[#09112a] border-t md:border-t-0 md:border-l border-blue-950 flex flex-col p-4 gap-4 overflow-y-auto">
+        <div className="w-full md:w-80 lg:w-96 bg-[#17212b] border-t md:border-t-0 md:border-l border-[#242f3d] flex flex-col p-4 gap-4 overflow-y-auto">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-blue-950 pb-3">
+          <div className="flex items-center justify-between border-b border-[#242f3d] pb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/30 flex items-center justify-center">
                 <Sparkles className="w-4 h-4" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white">Write & Draw on Photo</h3>
-                <p className="text-[11px] text-slate-400">Add text, doodles & effects</p>
+                <p className="text-[11px] text-[#7d8b99]">Add text, doodles & effects</p>
               </div>
             </div>
 
             <button
               onClick={onClose}
-              className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white"
+              className="p-1.5 rounded-xl hover:bg-[#242f3d] text-[#7d8b99] hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
           {/* Mode Selector Tabs */}
-          <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-black/40 border border-blue-950">
+          <div className="grid grid-cols-4 gap-1 p-1 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
             <button
               onClick={() => setActiveTab("text")}
               className={`py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                 activeTab === "text"
-                  ? "bg-cyan-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-[#3390ec] text-white shadow-md"
+                  : "text-[#7d8b99] hover:text-white"
               }`}
             >
               <Type className="w-3.5 h-3.5" />
@@ -598,8 +598,8 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
               onClick={() => setActiveTab("draw")}
               className={`py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                 activeTab === "draw"
-                  ? "bg-cyan-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-[#3390ec] text-white shadow-md"
+                  : "text-[#7d8b99] hover:text-white"
               }`}
             >
               <PenTool className="w-3.5 h-3.5" />
@@ -610,8 +610,8 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
               onClick={() => setActiveTab("stickers")}
               className={`py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                 activeTab === "stickers"
-                  ? "bg-cyan-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-[#3390ec] text-white shadow-md"
+                  : "text-[#7d8b99] hover:text-white"
               }`}
             >
               <Smile className="w-3.5 h-3.5" />
@@ -622,8 +622,8 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
               onClick={() => setActiveTab("filters")}
               className={`py-2 rounded-xl text-xs font-bold flex flex-col items-center gap-1 transition-all ${
                 activeTab === "filters"
-                  ? "bg-cyan-500 text-slate-950 shadow-md"
-                  : "text-slate-400 hover:text-white"
+                  ? "bg-[#3390ec] text-white shadow-md"
+                  : "text-[#7d8b99] hover:text-white"
               }`}
             >
               <Sliders className="w-3.5 h-3.5" />
@@ -637,10 +637,10 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
           {activeTab === "text" && (
             <div className="flex flex-col gap-3.5 flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-300">Text Layers</span>
+                <span className="text-xs font-bold text-white">Text Layers</span>
                 <button
                   onClick={handleAddText}
-                  className="px-3 py-1.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 border border-cyan-500/40 text-xs font-bold flex items-center gap-1 transition-all active:scale-95"
+                  className="px-3 py-1.5 rounded-xl bg-[#3390ec] hover:bg-[#2880d8] text-white text-xs font-bold flex items-center gap-1 transition-all active:scale-95"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Add Text</span>
@@ -648,9 +648,9 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
               </div>
 
               {selectedTextId ? (
-                <div className="flex flex-col gap-3 p-3 rounded-2xl bg-slate-950/80 border border-blue-950">
+                <div className="flex flex-col gap-3 p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider">
+                    <span className="text-[11px] font-bold text-[#3390ec] uppercase tracking-wider">
                       Edit Selected Text
                     </span>
                     <button
@@ -671,12 +671,12 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                       updateSelectedText({ text: e.target.value });
                     }}
                     placeholder="Type your message on the photo..."
-                    className="w-full p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400 resize-none font-medium"
+                    className="w-full p-2.5 rounded-xl bg-[#17212b] border border-[#242f3d] text-sm text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec] resize-none font-medium"
                   />
 
                   {/* Font Family Selection */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] text-slate-400">Typography Style</span>
+                    <span className="text-[11px] text-[#7d8b99]">Typography Style</span>
                     <div className="grid grid-cols-2 gap-1.5">
                       {FONT_FAMILIES.map((f) => (
                         <button
@@ -687,8 +687,8 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                           }}
                           className={`py-1.5 px-2 rounded-xl text-xs border text-left truncate transition-all ${
                             fontFamily === f.id
-                              ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold"
-                              : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                              ? "bg-[#3390ec]/20 border-[#3390ec] text-white font-bold"
+                              : "bg-[#17212b] border-[#242f3d] text-[#7d8b99] hover:text-white"
                           }`}
                         >
                           {f.name}
@@ -699,7 +699,7 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
 
                   {/* Text Color Picker Palette */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] text-slate-400">Color Palette</span>
+                    <span className="text-[11px] text-[#7d8b99]">Color Palette</span>
                     <div className="flex items-center gap-1.5 flex-wrap">
                       {COLOR_PALETTE.map((c) => (
                         <button
@@ -714,7 +714,7 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                           style={{ backgroundColor: c }}
                         >
                           {textColor === c && (
-                            <Check className={`w-3 h-3 ${c === "#FFFFFF" ? "text-black" : "text-white"}`} />
+                            <Check className={`w-3.5 h-3.5 ${c === "#FFFFFF" ? "text-black" : "text-white"}`} />
                           )}
                         </button>
                       ))}
@@ -723,7 +723,7 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
 
                   {/* Background Style Options */}
                   <div className="flex flex-col gap-1">
-                    <span className="text-[11px] text-slate-400">Badge Background</span>
+                    <span className="text-[11px] text-[#7d8b99]">Badge Background</span>
                     <div className="grid grid-cols-2 gap-1">
                       {BACKGROUND_STYLES.map((bg) => (
                         <button
@@ -734,8 +734,8 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                           }}
                           className={`py-1 px-2 rounded-lg text-[11px] border font-medium transition-all ${
                             bgStyle === bg.id
-                              ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                              : "bg-slate-900 border-slate-800 text-slate-400 hover:text-white"
+                              ? "bg-[#3390ec]/20 border-[#3390ec] text-white"
+                              : "bg-[#17212b] border-[#242f3d] text-[#7d8b99] hover:text-white"
                           }`}
                         >
                           {bg.name}
@@ -745,34 +745,34 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                   </div>
 
                   {/* Position & Placement Controls (Professional & Easy) */}
-                  <div className="flex flex-col gap-2 pt-1 border-t border-slate-800/80">
+                  <div className="flex flex-col gap-2 pt-1 border-t border-[#242f3d]">
                     <div className="flex items-center justify-between text-[11px]">
-                      <span className="text-slate-300 font-bold flex items-center gap-1">
+                      <span className="text-white font-bold flex items-center gap-1">
                         <span>Position on Photo</span>
-                        <span className="text-cyan-400 font-mono text-[10px]">
+                        <span className="text-[#3390ec] font-mono text-[10px]">
                           ({textOverlays.find((t) => t.id === selectedTextId)?.x || 50}%, {textOverlays.find((t) => t.id === selectedTextId)?.y || 50}%)
                         </span>
                       </span>
-                      <span className="text-[10px] text-slate-400">Drag text or click preset</span>
+                      <span className="text-[10px] text-[#7d8b99]">Drag text or click preset</span>
                     </div>
 
                     {/* 1-Tap Quick Alignment Presets */}
                     <div className="grid grid-cols-3 gap-1">
                       <button
                         onClick={() => updateSelectedText({ y: 15 })}
-                        className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all text-center"
+                        className="py-1.5 px-2 rounded-lg bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-[11px] font-semibold text-[#7d8b99] hover:text-white transition-all text-center"
                       >
                         Top ⬆️
                       </button>
                       <button
                         onClick={() => updateSelectedText({ y: 50 })}
-                        className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all text-center"
+                        className="py-1.5 px-2 rounded-lg bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-[11px] font-semibold text-[#7d8b99] hover:text-white transition-all text-center"
                       >
                         Middle 🎯
                       </button>
                       <button
                         onClick={() => updateSelectedText({ y: 85 })}
-                        className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all text-center"
+                        className="py-1.5 px-2 rounded-lg bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-[11px] font-semibold text-[#7d8b99] hover:text-white transition-all text-center"
                       >
                         Bottom ⬇️
                       </button>
@@ -781,29 +781,29 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                     <div className="grid grid-cols-3 gap-1">
                       <button
                         onClick={() => updateSelectedText({ x: 25 })}
-                        className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all text-center"
+                        className="py-1.5 px-2 rounded-lg bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-[11px] font-semibold text-[#7d8b99] hover:text-white transition-all text-center"
                       >
                         Left ⬅️
                       </button>
                       <button
                         onClick={() => updateSelectedText({ x: 50 })}
-                        className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all text-center"
+                        className="py-1.5 px-2 rounded-lg bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-[11px] font-semibold text-[#7d8b99] hover:text-white transition-all text-center"
                       >
                         Center ⏺️
                       </button>
                       <button
                         onClick={() => updateSelectedText({ x: 75 })}
-                        className="py-1.5 px-2 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-[11px] font-semibold text-slate-300 hover:text-cyan-300 transition-all text-center"
+                        className="py-1.5 px-2 rounded-lg bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-[11px] font-semibold text-[#7d8b99] hover:text-white transition-all text-center"
                       >
                         Right ➡️
                       </button>
                     </div>
 
                     {/* Fine-tuning Nudge Sliders */}
-                    <div className="flex flex-col gap-1.5 mt-1 bg-black/40 p-2.5 rounded-xl border border-slate-800">
-                      <div className="flex items-center justify-between text-[10px] text-slate-400">
+                    <div className="flex flex-col gap-1.5 mt-1 bg-[#17212b] p-2.5 rounded-xl border border-[#242f3d]">
+                      <div className="flex items-center justify-between text-[10px] text-[#7d8b99]">
                         <span>Horizontal X</span>
-                        <span className="font-mono text-cyan-300">{textOverlays.find((t) => t.id === selectedTextId)?.x || 50}%</span>
+                        <span className="font-mono text-[#3390ec]">{textOverlays.find((t) => t.id === selectedTextId)?.x || 50}%</span>
                       </div>
                       <input
                         type="range"
@@ -811,12 +811,12 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                         max="95"
                         value={textOverlays.find((t) => t.id === selectedTextId)?.x || 50}
                         onChange={(e) => updateSelectedText({ x: Number(e.target.value) })}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
 
-                      <div className="flex items-center justify-between text-[10px] text-slate-400 mt-1">
+                      <div className="flex items-center justify-between text-[10px] text-[#7d8b99] mt-1">
                         <span>Vertical Y</span>
-                        <span className="font-mono text-cyan-300">{textOverlays.find((t) => t.id === selectedTextId)?.y || 50}%</span>
+                        <span className="font-mono text-[#3390ec]">{textOverlays.find((t) => t.id === selectedTextId)?.y || 50}%</span>
                       </div>
                       <input
                         type="range"
@@ -824,16 +824,16 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                         max="95"
                         value={textOverlays.find((t) => t.id === selectedTextId)?.y || 50}
                         onChange={(e) => updateSelectedText({ y: Number(e.target.value) })}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-2xl bg-slate-950/60 border border-dashed border-slate-800 text-center flex flex-col items-center gap-2">
-                  <Type className="w-8 h-8 text-slate-600" />
-                  <p className="text-xs text-slate-400 font-medium">No text layer selected</p>
-                  <p className="text-[11px] text-slate-500">
+                <div className="p-4 rounded-2xl bg-[#0e1621] border border-dashed border-[#242f3d] text-center flex flex-col items-center gap-2">
+                  <Type className="w-8 h-8 text-[#7d8b99]" />
+                  <p className="text-xs text-[#7d8b99] font-medium">No text layer selected</p>
+                  <p className="text-[11px] text-[#7d8b99]">
                     Click "Add Text" or tap any text on the photo to customize style, size & color.
                   </p>
                 </div>
@@ -847,7 +847,7 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
           {activeTab === "draw" && (
             <div className="flex flex-col gap-4 flex-1">
               <div className="flex flex-col gap-2">
-                <span className="text-xs font-bold text-slate-300">Brush Color</span>
+                <span className="text-xs font-bold text-white">Brush Color</span>
                 <div className="flex items-center gap-2 flex-wrap">
                   {COLOR_PALETTE.map((c) => (
                     <button
@@ -867,9 +867,9 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
               </div>
 
               <div className="flex flex-col gap-2">
-                <div className="flex justify-between text-xs text-slate-300">
+                <div className="flex justify-between text-xs text-white">
                   <span>Brush Thickness</span>
-                  <span className="font-bold text-cyan-400">{brushSize}px</span>
+                  <span className="font-bold text-[#3390ec]">{brushSize}px</span>
                 </div>
                 <input
                   type="range"
@@ -877,11 +877,11 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                   max="30"
                   value={brushSize}
                   onChange={(e) => setBrushSize(Number(e.target.value))}
-                  className="w-full accent-cyan-400 cursor-pointer"
+                  className="w-full accent-[#3390ec] cursor-pointer"
                 />
               </div>
 
-              <div className="p-3 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-300 flex items-center gap-2">
+              <div className="p-3 rounded-2xl bg-[#3390ec]/10 border border-[#3390ec]/20 text-xs text-[#3390ec] flex items-center gap-2">
                 <PenTool className="w-4 h-4 shrink-0" />
                 <span>Draw directly anywhere over the photo with your mouse or finger.</span>
               </div>
@@ -893,13 +893,13 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
           {/* ============================================== */}
           {activeTab === "stickers" && (
             <div className="flex flex-col gap-3 flex-1">
-              <span className="text-xs font-bold text-slate-300">Quick Emojis & Badges</span>
+              <span className="text-xs font-bold text-white">Quick Emojis & Badges</span>
               <div className="grid grid-cols-4 gap-2">
                 {PRESET_STICKERS.map((emoji) => (
                   <button
                     key={emoji}
                     onClick={() => handleAddSticker(emoji)}
-                    className="p-3 rounded-2xl bg-slate-950 border border-slate-800 hover:border-cyan-400 hover:bg-slate-900 text-2xl flex items-center justify-center active:scale-90 transition-all"
+                    className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] hover:border-[#3390ec] hover:bg-[#17212b] text-2xl flex items-center justify-center active:scale-90 transition-all"
                   >
                     {emoji}
                   </button>
@@ -913,7 +913,7 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
           {/* ============================================== */}
           {activeTab === "filters" && (
             <div className="flex flex-col gap-2 flex-1">
-              <span className="text-xs font-bold text-slate-300">Color Presets</span>
+              <span className="text-xs font-bold text-white">Color Presets</span>
               <div className="grid grid-cols-2 gap-2">
                 {PHOTO_FILTERS.map((f) => (
                   <button
@@ -921,8 +921,8 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
                     onClick={() => setActiveFilter(f.id)}
                     className={`p-2.5 rounded-2xl border text-left transition-all ${
                       activeFilter === f.id
-                        ? "bg-cyan-500/20 border-cyan-400 text-cyan-300 font-bold"
-                        : "bg-slate-950 border-slate-800 text-slate-400 hover:text-white"
+                        ? "bg-[#3390ec]/20 border-[#3390ec] text-white font-bold"
+                        : "bg-[#0e1621] border-[#242f3d] text-[#7d8b99] hover:text-white"
                     }`}
                   >
                     <span className="text-xs block">{f.name}</span>
@@ -933,22 +933,22 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
           )}
 
           {/* Optional Caption */}
-          <div className="flex flex-col gap-1 border-t border-blue-950 pt-3">
-            <span className="text-[11px] text-slate-400">Photo Caption</span>
+          <div className="flex flex-col gap-1 border-t border-[#242f3d] pt-3">
+            <span className="text-[11px] text-[#7d8b99]">Photo Caption</span>
             <input
               type="text"
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
               placeholder="Add a caption..."
-              className="w-full py-2 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+              className="w-full py-2 px-3 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
             />
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-2 pt-1 border-t border-blue-950">
+          <div className="flex flex-col gap-2 pt-1 border-t border-[#242f3d]">
             <button
               onClick={handleSend}
-              className="w-full py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-2xl bg-[#3390ec] hover:bg-[#2880d8] text-white font-bold text-xs shadow-lg shadow-[#3390ec]/20 active:scale-95 transition-all flex items-center justify-center gap-2"
             >
               <Send className="w-4 h-4" />
               <span>Send to Chat</span>
@@ -958,16 +958,16 @@ export const PhotoEditorModal: React.FC<PhotoEditorModalProps> = ({
               {onPostAsStory && (
                 <button
                   onClick={handleStoryPost}
-                  className="flex-1 py-2 px-3 rounded-xl bg-purple-600/80 hover:bg-purple-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3.5 h-3.5 text-[#3390ec]" />
                   <span>Post to Story</span>
                 </button>
               )}
 
               <button
                 onClick={handleDownload}
-                className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                className="py-2 px-3 rounded-xl bg-[#0e1621] hover:bg-[#242f3d] border border-[#242f3d] text-[#7d8b99] hover:text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors"
                 title="Download photo"
               >
                 <Download className="w-3.5 h-3.5" />

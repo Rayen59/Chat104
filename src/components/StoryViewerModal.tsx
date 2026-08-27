@@ -1059,11 +1059,11 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                     setShowShareModal(true);
                     setIsPaused(true);
                   }}
-                  className="px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/30 active:scale-95 transition-all flex items-center gap-1.5"
+                  className="px-3 py-1.5 rounded-full bg-[#3390ec] hover:bg-[#2481cc] text-white font-bold text-xs shadow-md active:scale-95 transition-all flex items-center gap-1.5"
                   title="Share this story to your chats or copy link"
                 >
-                  <Share2 className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
-                  <span className="text-slate-950 font-black">Share</span>
+                  <Share2 className="w-3.5 h-3.5 text-white" />
+                  <span className="text-white font-bold">Share</span>
                 </button>
               )}
 
@@ -1071,10 +1071,10 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
               {currentStory.type === "video" && (
                 <button
                   onClick={() => setIsMuted(!isMuted)}
-                  className="p-2 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 transition-transform active:scale-95"
+                  className="p-2 rounded-full bg-[#0e1621]/80 hover:bg-[#17212b] text-white backdrop-blur-md border border-[#242f3d] transition-transform active:scale-95"
                   title={isMuted ? "Unmute" : "Mute"}
                 >
-                  {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-cyan-400" />}
+                  {isMuted ? <VolumeX className="w-4 h-4 text-red-400" /> : <Volume2 className="w-4 h-4 text-[#3390ec]" />}
                 </button>
               )}
 
@@ -1082,7 +1082,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
               {isCreator && (
                 <button
                   onClick={() => onEditStory(currentStory)}
-                  className="p-2 rounded-full bg-black/50 hover:bg-black/80 text-cyan-300 backdrop-blur-md border border-white/10 transition-transform active:scale-95"
+                  className="p-2 rounded-full bg-[#0e1621]/80 hover:bg-[#17212b] text-[#3390ec] backdrop-blur-md border border-[#242f3d] transition-transform active:scale-95"
                   title="Edit story caption, tags, and filters"
                 >
                   <Edit3 className="w-4 h-4" />
@@ -1093,7 +1093,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
               {isCreator && (
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 rounded-full bg-black/50 hover:bg-red-500/80 text-red-400 hover:text-white backdrop-blur-md border border-white/10 transition-all active:scale-95"
+                  className="p-2 rounded-full bg-[#0e1621]/80 hover:bg-red-500/80 text-red-400 hover:text-white backdrop-blur-md border border-[#242f3d] transition-all active:scale-95"
                   title="Delete story"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -1103,7 +1103,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
               {/* Close Button */}
               <button
                 onClick={onClose}
-                className="p-2 rounded-full bg-black/50 hover:bg-black/80 text-white backdrop-blur-md border border-white/10 transition-transform active:scale-95"
+                className="p-2 rounded-full bg-[#0e1621]/80 hover:bg-[#17212b] text-white backdrop-blur-md border border-[#242f3d] transition-transform active:scale-95"
                 title="Close viewer"
               >
                 <X className="w-4 h-4" />
@@ -1115,11 +1115,11 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
         {/* ==================================================== */}
         {/* 3. BOTTOM OVERLAYS & INTERACTION BAR */}
         {/* ==================================================== */}
-        <div className={`relative z-30 p-4 flex flex-col gap-2 bg-gradient-to-t from-black/95 via-black/70 to-transparent transition-opacity ${isHolding ? "opacity-0" : "opacity-100"}`}>
+        <div className={`relative z-30 p-4 flex flex-col gap-2 bg-gradient-to-t from-[#0e1621]/95 via-[#0e1621]/80 to-transparent transition-opacity ${isHolding ? "opacity-0" : "opacity-100"}`}>
           
           {/* Music Track Badge */}
           {currentStory.music && (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-black/60 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-semibold w-fit">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-2xl bg-[#17212b]/90 backdrop-blur-md border border-amber-400/30 text-amber-300 text-xs font-semibold w-fit">
               <Music className="w-3.5 h-3.5 text-amber-400 animate-bounce shrink-0" />
               <span className="truncate max-w-[240px]">
                 {currentStory.music.title} {currentStory.music.artist ? `• ${currentStory.music.artist}` : ""}
@@ -1130,7 +1130,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
           {/* Location & Tags Badges */}
           <div className="flex flex-wrap items-center gap-1.5">
             {currentStory.location && (
-              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-xl bg-black/60 backdrop-blur-md border border-cyan-400/30 text-cyan-300 flex items-center gap-1">
+              <span className="text-[11px] font-semibold px-2.5 py-1 rounded-xl bg-[#17212b]/90 backdrop-blur-md border border-[#3390ec]/30 text-[#3390ec] flex items-center gap-1">
                 <MapPin className="w-3 h-3" />
                 <span>{currentStory.location}</span>
               </span>
@@ -1145,7 +1145,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                     if (u && onSelectUserProfile) onSelectUserProfile(u);
                   }
                 }}
-                className="text-[11px] font-semibold px-2.5 py-1 rounded-xl bg-blue-600/80 hover:bg-blue-500 text-white shadow-sm transition-transform active:scale-95"
+                className="text-[11px] font-semibold px-2.5 py-1 rounded-xl bg-[#3390ec] hover:bg-[#2481cc] text-white shadow-sm transition-transform active:scale-95"
               >
                 {t.label}
               </button>
@@ -1171,13 +1171,13 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                   onClick={() => handleReact(emoji)}
                   className={`px-2.5 py-1 rounded-2xl flex items-center gap-1 text-base transition-all shrink-0 active:scale-90 ${
                     hasReacted
-                      ? "bg-cyan-500/30 border-2 border-cyan-400 scale-105 shadow-md shadow-cyan-400/30"
-                      : "bg-black/50 hover:bg-black/80 border border-white/10"
+                      ? "bg-[#3390ec]/30 border-2 border-[#3390ec] scale-105 shadow-md shadow-[#3390ec]/30"
+                      : "bg-[#17212b]/80 hover:bg-[#202b36] border border-[#242f3d]"
                   }`}
                 >
                   <span>{emoji}</span>
                   {count > 0 && (
-                    <span className="text-[10px] font-bold text-cyan-300">{count}</span>
+                    <span className="text-[10px] font-bold text-[#3390ec]">{count}</span>
                   )}
                 </button>
               );
@@ -1186,19 +1186,19 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
 
           {/* Direct Reply Bar (Sends reply automatically to DM chat) */}
           <div className="flex items-center gap-2 pt-1" onClick={(e) => e.stopPropagation()}>
-            <div className="flex-1 flex items-center bg-black/60 backdrop-blur-md rounded-full border border-white/20 px-3 py-1.5 focus-within:border-cyan-400 transition-colors">
+            <div className="flex-1 flex items-center bg-[#17212b]/90 backdrop-blur-md rounded-full border border-[#242f3d] px-3 py-1.5 focus-within:border-[#3390ec] transition-colors">
               <input
                 type="text"
                 value={inlineReplyText}
                 onChange={(e) => setInlineReplyText(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSendComment(inlineReplyText)}
                 placeholder="Reply to story (sends to chat)..."
-                className="flex-1 bg-transparent text-xs text-white placeholder-slate-400 focus:outline-none"
+                className="flex-1 bg-transparent text-xs text-white placeholder-[#7d8b99] focus:outline-none"
               />
               <button
                 onClick={() => handleSendComment(inlineReplyText)}
                 disabled={!inlineReplyText.trim()}
-                className="p-1 rounded-full text-cyan-400 hover:text-white disabled:opacity-40 transition-colors"
+                className="p-1 rounded-full text-[#3390ec] hover:text-white disabled:opacity-40 transition-colors"
                 title="Send reply to chat"
               >
                 <Send className="w-3.5 h-3.5" />
@@ -1211,7 +1211,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
               className={`px-3 py-1.5 rounded-full font-bold text-xs border active:scale-90 flex items-center gap-1.5 transition-all shrink-0 ${
                 currentStory.reactions?.["❤️"]?.includes(currentUser.id)
                   ? "bg-red-500/25 border-red-500/60 text-red-400 shadow-md shadow-red-500/30 scale-105"
-                  : "bg-black/60 hover:bg-black/80 border-white/15 text-white"
+                  : "bg-[#17212b]/90 hover:bg-[#202b36] border-[#242f3d] text-white"
               }`}
               title="Like story"
             >
@@ -1219,7 +1219,7 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                 className={`w-3.5 h-3.5 transition-transform ${
                   currentStory.reactions?.["❤️"]?.includes(currentUser.id)
                     ? "fill-red-500 text-red-500 scale-110"
-                    : "text-slate-300 hover:text-red-400"
+                    : "text-[#7d8b99] hover:text-red-400"
                 }`}
               />
               <span className="text-[11px] font-bold">
@@ -1229,19 +1229,19 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
 
             <button
               onClick={() => setShowComments(true)}
-              className="px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-white/10 active:scale-95 flex items-center gap-1.5 transition-all shrink-0"
+              className="px-3 py-1.5 rounded-full bg-[#17212b] hover:bg-[#202b36] text-[#7d8b99] hover:text-white font-bold text-xs border border-[#242f3d] active:scale-95 flex items-center gap-1.5 transition-all shrink-0"
               title="View & post comments"
             >
-              <MessageCircle className="w-3.5 h-3.5 text-cyan-400" />
+              <MessageCircle className="w-3.5 h-3.5 text-[#3390ec]" />
               <span>{currentStory.comments?.length || 0}</span>
             </button>
 
             {currentStory.disableSharing && !isCreator ? (
               <div
-                className="px-2.5 py-1.5 rounded-full bg-slate-900/80 border border-slate-700/80 text-slate-400 text-xs font-medium flex items-center gap-1 shadow-sm"
+                className="px-2.5 py-1.5 rounded-full bg-[#17212b] border border-[#242f3d] text-[#7d8b99] text-xs font-medium flex items-center gap-1 shadow-sm"
                 title="Story author disabled sharing"
               >
-                <Lock className="w-3.5 h-3.5 text-slate-400" />
+                <Lock className="w-3.5 h-3.5 text-[#7d8b99]" />
                 <span className="hidden sm:inline">Locked</span>
               </div>
             ) : (
@@ -1250,11 +1250,11 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
                   setShowShareModal(true);
                   setIsPaused(true);
                 }}
-                className="px-3 py-1.5 rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold text-xs shadow-md shadow-cyan-500/30 active:scale-95 flex items-center gap-1.5 transition-all"
+                className="px-3 py-1.5 rounded-full bg-[#3390ec] hover:bg-[#2481cc] text-white font-bold text-xs shadow-md active:scale-95 flex items-center gap-1.5 transition-all"
                 title="Share story to chats & friends"
               >
-                <Share2 className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
-                <span className="font-black">Share</span>
+                <Share2 className="w-3.5 h-3.5 text-white" />
+                <span className="font-bold">Share</span>
               </button>
             )}
           </div>
@@ -1265,20 +1265,20 @@ export const StoryViewerModal: React.FC<StoryViewerModalProps> = ({
         {/* ==================================================== */}
         {showComments && (
           <div
-            className="absolute inset-0 z-40 bg-black/95 backdrop-blur-xl flex flex-col animate-in slide-in-from-bottom duration-200"
+            className="absolute inset-0 z-40 bg-[#0e1621]/95 backdrop-blur-xl flex flex-col animate-in slide-in-from-bottom duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Comments Header */}
-            <div className="p-4 border-b border-blue-950 flex items-center justify-between bg-[#09112a]">
+            <div className="p-4 border-b border-[#242f3d] flex items-center justify-between bg-[#17212b]">
               <div className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-cyan-400" />
+                <MessageCircle className="w-5 h-5 text-[#3390ec]" />
                 <h3 className="text-sm font-bold text-white">
                   Story Comments ({currentStory.comments?.length || 0})
                 </h3>
               </div>
               <button
                 onClick={() => setShowComments(false)}
-                className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-xl hover:bg-[#202b36] text-[#7d8b99] hover:text-white"
               >
                 <X className="w-4 h-4" />
               </button>

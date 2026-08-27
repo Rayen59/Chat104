@@ -471,3 +471,42 @@ export interface UserReport {
   updatedAt?: string;
 }
 
+// User Chat Typography & Writing Style Preferences
+export type ChatFontFamily =
+  | 'plus-jakarta-sans'
+  | 'inter'
+  | 'jetbrains-mono'
+  | 'playfair-display'
+  | 'caveat'
+  | 'quicksand';
+
+export type ChatFontSize = 'compact' | 'normal' | 'large' | 'huge';
+
+export type ChatTextStyle = 'standard' | 'high-contrast' | 'bold-readable' | 'relaxed';
+
+export interface ChatTypographyConfig {
+  fontFamily: ChatFontFamily;
+  fontSize: ChatFontSize;
+  textStyle: ChatTextStyle;
+}
+
+// Multi-Intelligence AI Modes
+export type AiIntelligenceMode =
+  | 'deep_reasoning'
+  | 'code_architect'
+  | 'creative_scribe'
+  | 'polyglot_translator'
+  | 'scientific_analyst'
+  | 'instant_flash';
+
+export interface AiIntelligenceProfile {
+  id: AiIntelligenceMode;
+  name: string;
+  badge: string;
+  iconName: string;
+  tagline: string;
+  description: string;
+  systemDirective: string;
+  quickPrompts: string[];
+}
+

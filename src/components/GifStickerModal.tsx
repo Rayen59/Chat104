@@ -15,17 +15,21 @@ import {
   PlusCircle,
   Image as ImageIcon,
   Palette,
-  Star
+  Star,
+  Type
 } from "lucide-react";
-import { GifItem, StickerItem } from "../types";
+import { GifItem, StickerItem, ChatTypographyConfig } from "../types";
 import { StickerMaker } from "./StickerMaker";
+import { DEFAULT_TYPOGRAPHY_CONFIG } from "./ChatTypographyModal";
 
 interface GifStickerModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSendGif: (gif: GifItem) => void;
   onSendSticker: (sticker: StickerItem) => void;
-  initialTab?: "gifs" | "stickers" | "maker";
+  initialTab?: "stickers" | "maker" | "gifs" | "typography";
+  currentTypography?: ChatTypographyConfig;
+  onSaveTypography?: (cfg: ChatTypographyConfig) => void;
 }
 
 export const GifStickerModal: React.FC<GifStickerModalProps> = ({
@@ -33,9 +37,37 @@ export const GifStickerModal: React.FC<GifStickerModalProps> = ({
   onClose,
   onSendGif,
   onSendSticker,
-  initialTab = "stickers"
+  initialTab = "stickers",
+  currentTypography = DEFAULT_TYPOGRAPHY_CONFIG,
+  onSaveTypography
 }) => {
-  const [activeTab, setActiveTab] = useState<"gifs" | "stickers" | "maker">(initialTab);
+  const [activeTab, setActiveTab] = useState<"stickers" | "maker" | "gifs" | "typography">(initialTab);
+
+  // Sync initialTab when modal opens
+  useEffect(() => {
+    if (isOpen && initialTab) {
+      setActiveTab(initialTab);
+    }
+  }, [isOpen, initialTab]);
+
+  // Typography state
+  const [typographyConfig, setTypographyConfig] = useState<ChatTypographyConfig>(currentTypography);
+
+  useEffect(() => {
+    if (currentTypography) {
+      setTypographyConfig(currentTypography);
+    }
+  }, [currentTypography]);
+
+  const handleUpdateTypography = (newCfg: ChatTypographyConfig) => {
+    setTypographyConfig(newCfg);
+    if (onSaveTypography) {
+      onSaveTypography(newCfg);
+    }
+    try {
+      localStorage.setItem("wavegram_chat_typography", JSON.stringify(newCfg));
+    } catch {}
+  };
 
   // GIF states
   const [gifQuery, setGifQuery] = useState("");
@@ -224,6 +256,18 @@ export const GifStickerModal: React.FC<GifStickerModalProps> = ({
             >
               <Zap className="w-3.5 h-3.5" />
               <span>GIFs</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("typography")}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === "typography"
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-indigo-400 hover:text-white"
+              }`}
+            >
+              <Type className="w-3.5 h-3.5" />
+              <span>Writing Style</span>
             </button>
           </div>
 
@@ -508,6 +552,144 @@ export const GifStickerModal: React.FC<GifStickerModalProps> = ({
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* TAB 4: WRITING STYLE & TYPOGRAPHY */}
+          {activeTab === "typography" && (
+            <div className="space-y-5">
+              {/* Header Info */}
+              <div className="p-3.5 rounded-xl bg-[#0e1621] border border-[#242f3d] flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
+                    <Type className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="font-bold text-white text-xs block">Custom Chat Typography & Font</span>
+                    <span className="text-[11px] text-[#7d8b99]">
+                      Select your preferred typeface, size, and weight for your messages.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => handleUpdateTypography(DEFAULT_TYPOGRAPHY_CONFIG)}
+                  className="px-2.5 py-1.5 rounded-lg bg-[#242f3d] hover:bg-[#3390ec] text-slate-300 hover:text-white text-[11px] font-semibold transition-colors shrink-0"
+                >
+                  Reset Default
+                </button>
+              </div>
+
+              {/* Live Preview Box */}
+              <div className="p-4 rounded-xl bg-[#0e1621] border border-indigo-500/30 space-y-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400 block">
+                  Live Preview:
+                </span>
+                <div className="p-3 rounded-xl bg-[#3390ec] text-white self-end inline-block max-w-[90%] shadow-md">
+                  <p
+                    className={`font-${typographyConfig.fontFamily} chat-size-${typographyConfig.fontSize} chat-style-${typographyConfig.textStyle} leading-relaxed`}
+                  >
+                    The quick brown fox jumps over the lazy dog. ✨
+                  </p>
+                </div>
+              </div>
+
+              {/* Font Family Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-300 block">Typeface / Font Family</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { id: "plus-jakarta-sans", name: "Plus Jakarta Sans", desc: "Modern Geometric Sans (Default)" },
+                    { id: "inter", name: "Inter", desc: "Clean & Sharp Digital UI" },
+                    { id: "jetbrains-mono", name: "JetBrains Mono", desc: "Developer Terminal Monospace" },
+                    { id: "playfair-display", name: "Playfair Display", desc: "Editorial Classical Serif" },
+                    { id: "caveat", name: "Caveat Script", desc: "Friendly Handwritten Charm ✨" },
+                    { id: "quicksand", name: "Quicksand", desc: "Soft & Approachable Rounded" }
+                  ].map((f) => {
+                    const isSelected = typographyConfig.fontFamily === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => handleUpdateTypography({ ...typographyConfig, fontFamily: f.id as any })}
+                        className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500/50 shadow-md"
+                            : "bg-[#0e1621] border-[#242f3d] hover:border-slate-600"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-xs text-white">{f.name}</span>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-indigo-400" />}
+                        </div>
+                        <p className={`text-xs text-slate-300 font-${f.id} truncate`}>
+                          Preview text in this typeface
+                        </p>
+                        <span className="text-[10px] text-slate-500 mt-1 block">{f.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Font Size Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-300 block">Font Size</label>
+                <div className="grid grid-cols-4 gap-2">
+                  {[
+                    { id: "compact", label: "Compact", px: "13px" },
+                    { id: "normal", label: "Normal", px: "15px" },
+                    { id: "large", label: "Large", px: "17px" },
+                    { id: "huge", label: "Huge", px: "20px" }
+                  ].map((s) => {
+                    const isSelected = typographyConfig.fontSize === s.id;
+                    return (
+                      <button
+                        key={s.id}
+                        type="button"
+                        onClick={() => handleUpdateTypography({ ...typographyConfig, fontSize: s.id as any })}
+                        className={`py-2.5 px-2 text-center rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-indigo-600 text-white font-bold border-indigo-500 shadow-md"
+                            : "bg-[#0e1621] border-[#242f3d] text-slate-300 hover:border-slate-600"
+                        }`}
+                      >
+                        <span className="text-xs block">{s.label}</span>
+                        <span className="text-[10px] opacity-70 block">{s.px}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Weight & Style Selector */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-slate-300 block">Weight & Style</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {[
+                    { id: "standard", label: "Standard", desc: "Balanced weight and normal tracking" },
+                    { id: "bold-readable", label: "Bold & Crisp", desc: "Maximum instant readability" },
+                    { id: "high-contrast", label: "High Contrast", desc: "Enhanced text luminosity" },
+                    { id: "relaxed", label: "Relaxed Spacing", desc: "Spacious line-height and tracking" }
+                  ].map((st) => {
+                    const isSelected = typographyConfig.textStyle === st.id;
+                    return (
+                      <button
+                        key={st.id}
+                        type="button"
+                        onClick={() => handleUpdateTypography({ ...typographyConfig, textStyle: st.id as any })}
+                        className={`text-left p-3 rounded-xl border transition-all cursor-pointer ${
+                          isSelected
+                            ? "bg-indigo-600/20 border-indigo-500 ring-1 ring-indigo-500/50"
+                            : "bg-[#0e1621] border-[#242f3d] hover:border-slate-600"
+                        }`}
+                      >
+                        <span className="font-bold text-xs text-white block">{st.label}</span>
+                        <span className="text-[10px] text-slate-400 mt-0.5 block">{st.desc}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
           )}
 

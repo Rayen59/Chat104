@@ -222,3 +222,66 @@ code, pre, .font-mono {
   color: #ffffff;
   border-radius: 16px 16px 4px 16px;
 }
+
+/* Custom Chat Typography Font Families */
+.font-plus-jakarta-sans {
+  font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.font-inter {
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
+.font-jetbrains-mono {
+  font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+}
+
+.font-playfair-display {
+  font-family: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif !important;
+}
+
+.font-caveat {
+  font-family: "Caveat", "Comic Sans MS", "Segoe Print", cursive !important;
+}
+
+.font-quicksand {
+  font-family: "Quicksand", "Nunito", -apple-system, BlinkMacSystemFont, sans-serif !important;
+}
+
+/* Chat Font Sizes */
+.chat-size-compact {
+  font-size: 0.8125rem; /* 13px */
+  line-height: 1.45;
+}
+
+.chat-size-normal {
+  font-size: 0.9375rem; /* 15px */
+  line-height: 1.55;
+}
+
+.chat-size-large {
+  font-size: 1.0625rem; /* 17px */
+  line-height: 1.6;
+}
+
+.chat-size-huge {
+  font-size: 1.25rem; /* 20px */
+  line-height: 1.65;
+}
+
+/* Chat Text Styles */
+.chat-style-high-contrast {
+  letter-spacing: 0.015em;
+  text-shadow: 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.chat-style-bold-readable {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.chat-style-relaxed {
+  letter-spacing: 0.03em;
+  line-height: 1.7;
+}
+

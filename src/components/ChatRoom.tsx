@@ -70,7 +70,8 @@ import {
   Code,
   Flame,
   BarChart3,
-  Terminal
+  Terminal,
+  Type
 } from "lucide-react";
 
 import { translations, getSavedLanguage, Language } from "../i18n";
@@ -79,7 +80,9 @@ import { GifStickerModal } from "./GifStickerModal";
 import { PhotoEditorModal } from "./PhotoEditorModal";
 import { GlowDoodleModal } from "./GlowDoodleModal";
 import { ReplayDoodleModal } from "./ReplayDoodleModal";
-import { GifItem, StickerItem } from "../types";
+import { ChatTypographyModal, DEFAULT_TYPOGRAPHY_CONFIG } from "./ChatTypographyModal";
+import { AiIntelligenceHubModal } from "./AiIntelligenceHubModal";
+import { GifItem, StickerItem, ChatTypographyConfig, AiIntelligenceMode } from "../types";
 
 interface ChatRoomProps {
   currentUser: User;
@@ -272,6 +275,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const [showChatPhotoEditor, setShowChatPhotoEditor] = useState(false);
   const [showGlowDoodleModal, setShowGlowDoodleModal] = useState(false);
   const [replayDoodleMsg, setReplayDoodleMsg] = useState<Message | null>(null);
+
+  // User-Customizable Chat Typography & Writing Style state
+  const [userTypography, setUserTypography] = useState<ChatTypographyConfig>(() => {
+    try {
+      const saved = localStorage.getItem("wavegram_chat_typography");
+      return saved ? JSON.parse(saved) : DEFAULT_TYPOGRAPHY_CONFIG;
+    } catch (e) {
+      return DEFAULT_TYPOGRAPHY_CONFIG;
+    }
+  });
+  const [showTypographyModal, setShowTypographyModal] = useState(false);
+
+  // Multi-Intelligence AI Hub state
+  const [activeAiMode, setActiveAiMode] = useState<AiIntelligenceMode>("deep_reasoning");
+  const [showAiHubModal, setShowAiHubModal] = useState(false);
+
+  const handleSaveTypography = (config: ChatTypographyConfig) => {
+    setUserTypography(config);
+    try {
+      localStorage.setItem("wavegram_chat_typography", JSON.stringify(config));
+    } catch (e) {}
+  };
+
+  const getTypographyClassName = (config: ChatTypographyConfig) => {
+    const fontClass = `font-${config.fontFamily}`;
+    const sizeClass = `chat-size-${config.fontSize}`;
+    const styleClass = `chat-style-${config.textStyle}`;
+    return `${fontClass} ${sizeClass} ${styleClass}`;
+  };
 
   // Manual Photo Zoom & Pan Helpers
   const handleResetPhotoView = () => {
@@ -1381,6 +1413,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-1 relative">
+          {/* Typography & Writing Style Customization (T button at top header) */}
+          <button
+            onClick={() => setShowTypographyModal(true)}
+            title="Writing Style & Typography"
+            className="p-2 rounded-full text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/20 transition-colors"
+          >
+            <Type className="w-4 h-4" />
+          </button>
+
+          {/* MK.ia Gemini Multi-Intelligence Hub Button */}
+          <button
+            onClick={() => setShowAiHubModal(true)}
+            title="MK.ia AI Intelligence Hub"
+            className="p-2 rounded-full text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/20 transition-colors"
+          >
+            <Bot className="w-4 h-4" />
+          </button>
+
           {onToggleMute && (
             <button
               onClick={() => onToggleMute(conversation.id, !isMuted)}
@@ -1461,6 +1511,28 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
               {showHeaderMenu && (
                 <div className="absolute right-0 top-full mt-1.5 w-52 bg-[#17212b] border border-[#101921] rounded-xl p-1.5 shadow-2xl z-30 space-y-0.5">
+                  <button
+                    onClick={() => {
+                      setShowTypographyModal(true);
+                      setShowHeaderMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-[#202b36] text-white transition-colors"
+                  >
+                    <Type className="w-4 h-4 text-indigo-400" />
+                    <span>Writing Style & Typography</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowAiHubModal(true);
+                      setShowHeaderMenu(false);
+                    }}
+                    className="w-full text-left px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 hover:bg-[#202b36] text-white transition-colors"
+                  >
+                    <Bot className="w-4 h-4 text-cyan-400" />
+                    <span>MK.ia Intelligence Hub</span>
+                  </button>
+
                   <button
                     onClick={() => {
                       setSelectionMode(true);
@@ -1833,8 +1905,42 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                     </div>
                   ) : (
                     <>
-                      {/* TEXT CONTENT */}
-                      {msg.type === "text" && <p className="whitespace-pre-wrap leading-relaxed">{msg.text}</p>}
+                      {/* MK.ia Gemini Intelligence Header Badge */}
+                      {isMkAi && (
+                        <div className="flex items-center justify-between gap-2 pb-1.5 mb-1.5 border-b border-[#3390ec]/20 text-[11px]">
+                          <div className="flex items-center gap-1.5 text-[#3390ec] font-bold">
+                            <Bot className="w-3.5 h-3.5" />
+                            <span>MK.ia • Gemini Deep Intelligence</span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (msg.text) {
+                                navigator.clipboard.writeText(msg.text);
+                                setCopiedToastText("AI response copied to clipboard! ✓");
+                                setCopiedToast(true);
+                                setTimeout(() => setCopiedToast(false), 2000);
+                              }
+                            }}
+                            className="p-1 rounded hover:bg-white/10 text-[var(--app-text-muted,#7d8b99)] hover:text-white transition-colors"
+                            title="Copy AI response"
+                          >
+                            <Copy className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* TEXT CONTENT WITH USER-SELECTED TYPOGRAPHY */}
+                      {msg.type === "text" && (
+                        <p
+                          className={`whitespace-pre-wrap leading-relaxed ${
+                            isMe ? getTypographyClassName(userTypography) : ""
+                          }`}
+                        >
+                          {msg.text}
+                        </p>
+                      )}
 
                       {/* POLL & VOTE CONTENT */}
                       {msg.type === "poll" && msg.poll && (
@@ -2608,7 +2714,37 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   <span className="text-[10px] text-[#7d8b99] font-medium truncate w-full">Photo Edit</span>
                 </button>
 
-                {/* 5. Poll (Group Chats & Admins Only) */}
+                {/* 6. Typography & Text Style (T) */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPlusMenu(false);
+                    setShowTypographyModal(true);
+                  }}
+                  className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-[#202b36] transition-all group active:scale-95 cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform shadow-indigo-500/30">
+                    <Type className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] text-indigo-400 font-bold truncate w-full">Text Style</span>
+                </button>
+
+                {/* 7. MK.ia Intelligence Hub */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPlusMenu(false);
+                    setShowAiHubModal(true);
+                  }}
+                  className="flex flex-col items-center gap-1.5 p-1 rounded-xl hover:bg-[#202b36] transition-all group active:scale-95 cursor-pointer"
+                >
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-cyan-600 to-blue-600 flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform shadow-cyan-500/30">
+                    <Bot className="w-4 h-4" />
+                  </div>
+                  <span className="text-[10px] text-cyan-400 font-bold truncate w-full">MK.ia AI</span>
+                </button>
+
+                {/* 8. Poll (Group Chats & Admins Only) */}
                 {conversation.type === "group" && isGroupAdmin && (
                   <button
                     type="button"
@@ -2625,7 +2761,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   </button>
                 )}
 
-                {/* 6. Sticker Maker */}
+                {/* 9. Sticker Maker */}
                 <button
                   type="button"
                   onClick={() => {
@@ -2641,7 +2777,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   <span className="text-[10px] text-[#7d8b99] font-medium truncate w-full">Stickers</span>
                 </button>
 
-                {/* 7. Stickers */}
+                {/* 10. Emoji */}
                 <button
                   type="button"
                   onClick={() => {
@@ -2657,7 +2793,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   <span className="text-[10px] text-[#7d8b99] font-medium truncate w-full">Emoji</span>
                 </button>
 
-                {/* 8. GIFs */}
+                {/* 11. GIFs */}
                 <button
                   type="button"
                   onClick={() => {
@@ -2884,7 +3020,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                 <textarea
                   ref={textareaRef}
                   rows={1}
-                  placeholder="Message (type @ for MK.ia & members)"
+                  placeholder="Message (type @ for MK.ia & members, $ for AI modes)"
                   value={inputText}
                   onFocus={() => {
                     setTimeout(() => {
@@ -2895,7 +3031,9 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   onKeyDown={handleKeyDown}
                   onPaste={handlePaste}
                   style={{ minHeight: "26px", maxHeight: "120px" }}
-                  className="flex-1 min-w-0 bg-transparent text-white placeholder-[#7d8b99] text-sm focus:outline-none resize-none px-2 py-1.5 leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-[#242f3d] self-center"
+                  className={`flex-1 min-w-0 bg-transparent text-white placeholder-[#7d8b99] focus:outline-none resize-none px-2 py-1.5 leading-relaxed overflow-y-auto scrollbar-thin scrollbar-thumb-[#242f3d] self-center ${getTypographyClassName(
+                    userTypography
+                  )}`}
                 />
 
                 {/* Right inside capsule: Glow Drawing Studio Button */}
@@ -2958,13 +3096,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
         </div>
       )}
 
-      {/* Rich GIFs & Stickers Modal (with Feather / Plumes Themes) */}
+      {/* Rich GIFs, Stickers & Writing Style Modal */}
       <GifStickerModal
         isOpen={showGifStickerModal}
         onClose={() => setShowGifStickerModal(false)}
         onSendGif={handleSendGif}
         onSendSticker={handleSendSticker}
         initialTab={gifStickerTab}
+        currentTypography={userTypography}
+        onSaveTypography={(cfg) => setUserTypography(cfg)}
       />
 
       {/* Admin Create Poll Modal */}
@@ -3852,6 +3992,30 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           onSaveToGallery={(url, caption) => handleSavePhotoToGallery(url, caption)}
         />
       )}
+
+      {/* User Custom Typography & Writing Style Modal */}
+      <ChatTypographyModal
+        isOpen={showTypographyModal}
+        onClose={() => setShowTypographyModal(false)}
+        currentConfig={userTypography}
+        onSaveConfig={handleSaveTypography}
+      />
+
+      {/* MK.ia Gemini Multi-Intelligence Hub Modal */}
+      <AiIntelligenceHubModal
+        isOpen={showAiHubModal}
+        onClose={() => setShowAiHubModal(false)}
+        activeMode={activeAiMode}
+        onSelectMode={(mode) => setActiveAiMode(mode)}
+        onLaunchPrompt={(prompt, mode) => {
+          setShowAiHubModal(false);
+          setActiveAiMode(mode);
+          setInputText(prompt);
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+          }
+        }}
+      />
     </div>
   );
 };

@@ -854,22 +854,22 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
       id="story-creator-modal"
       className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-xl animate-in fade-in select-none"
     >
-      <div className="bg-[#070b19] border border-blue-900/60 rounded-3xl w-full max-w-5xl h-[94vh] max-h-[850px] shadow-2xl flex flex-col overflow-hidden text-slate-100">
+      <div className="bg-[#0e1621] border border-[#242f3d] rounded-3xl w-full max-w-5xl h-[94vh] max-h-[850px] shadow-2xl flex flex-col overflow-hidden text-white">
         
         {/* Top Header */}
-        <div className="px-3 sm:px-5 py-3 border-b border-blue-950/80 bg-[#09112a] flex items-center justify-between shrink-0 gap-2">
+        <div className="px-3 sm:px-5 py-3 border-b border-[#242f3d] bg-[#17212b] flex items-center justify-between shrink-0 gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-tr from-cyan-500 via-indigo-600 to-pink-500 flex items-center justify-center shadow-md shadow-cyan-500/20 shrink-0">
-              <Sparkles className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-[#3390ec]/20 border border-[#3390ec]/40 text-[#3390ec] flex items-center justify-center shadow-md shrink-0">
+              <Sparkles className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <h2 className="text-sm sm:text-base font-bold text-white flex items-center gap-1.5 truncate">
                 <span>{isEditing ? "Edit Story" : "Story Studio"}</span>
-                <span className="text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-cyan-400/10 text-cyan-400 border border-cyan-400/30 shrink-0">
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/30 shrink-0">
                   {mode.toUpperCase()}
                 </span>
               </h2>
-              <p className="text-[11px] text-slate-400 truncate hidden sm:block">
+              <p className="text-[11px] text-[#7d8b99] truncate hidden sm:block">
                 Share photos, 60s videos, styled typography, or anonymous Q&A stickers
               </p>
             </div>
@@ -878,14 +878,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
           {/* Header Action Controls */}
           <div className="flex items-center gap-2 shrink-0">
             {/* Mobile View Switcher Pill */}
-            <div className="flex md:hidden items-center bg-slate-900 border border-slate-800 rounded-xl p-0.5 text-[11px] font-semibold">
+            <div className="flex md:hidden items-center bg-[#0e1621] border border-[#242f3d] rounded-xl p-0.5 text-[11px] font-semibold">
               <button
                 type="button"
                 onClick={() => setMobileTab("preview")}
                 className={`px-2 py-1 rounded-lg transition-all ${
                   mobileTab === "preview"
-                    ? "bg-cyan-500 text-slate-950 font-bold shadow-sm"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#3390ec] text-white font-bold shadow-sm"
+                    : "text-[#7d8b99] hover:text-white"
                 }`}
               >
                 Preview
@@ -895,8 +895,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 onClick={() => setMobileTab("studio")}
                 className={`px-2 py-1 rounded-lg transition-all ${
                   mobileTab === "studio"
-                    ? "bg-cyan-500 text-slate-950 font-bold shadow-sm"
-                    : "text-slate-400 hover:text-white"
+                    ? "bg-[#3390ec] text-white font-bold shadow-sm"
+                    : "text-[#7d8b99] hover:text-white"
                 }`}
               >
                 Tools
@@ -908,25 +908,25 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               id="header-share-story-btn"
               onClick={handlePublishStory}
               disabled={isSubmitting}
-              className="px-3.5 sm:px-5 py-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-600 hover:from-cyan-300 hover:to-indigo-500 text-slate-950 font-black text-xs sm:text-sm shadow-md shadow-cyan-500/25 active:scale-95 disabled:opacity-50 flex items-center gap-1.5 transition-all cursor-pointer"
+              className="px-3.5 sm:px-5 py-2 rounded-xl bg-[#3390ec] hover:bg-[#2481cc] text-white font-bold text-xs sm:text-sm shadow-md active:scale-95 disabled:opacity-50 flex items-center gap-1.5 transition-all cursor-pointer"
               title="Share this story to your 24h feed"
             >
               {isSubmitting ? (
                 <>
-                  <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-slate-950" />
+                  <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-white" />
                   <span>Publishing...</span>
                 </>
               ) : (
                 <>
-                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950 stroke-[2.5]" />
-                  <span>{isEditing ? "Save" : "Share Story ✨"}</span>
+                  <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                  <span>{isEditing ? "Save" : "Share Story"}</span>
                 </>
               )}
             </button>
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors"
+              className="p-2 rounded-xl text-[#7d8b99] hover:text-white hover:bg-[#202b36] transition-colors"
               title="Close"
             >
               <X className="w-5 h-5" />
@@ -954,13 +954,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
         <div className="flex-1 flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
           
           {/* LEFT: 9:16 Phone Preview Canvas */}
-          <div className={`w-full md:w-[380px] lg:w-[420px] bg-black/70 p-3 sm:p-4 flex flex-col items-center justify-start shrink-0 border-b md:border-b-0 md:border-r border-blue-950/80 relative overflow-y-auto ${
+          <div className={`w-full md:w-[380px] lg:w-[420px] bg-[#0e1621] p-3 sm:p-4 flex flex-col items-center justify-start shrink-0 border-b md:border-b-0 md:border-r border-[#242f3d] relative overflow-y-auto ${
             mobileTab === "preview" ? "flex" : "hidden md:flex"
           }`}>
             
             {/* 4-Way Mode Selector */}
             {!isEditing && (
-              <div className="flex items-center gap-1 p-1 bg-slate-900/90 rounded-2xl border border-slate-800/80 mb-3 shadow-inner max-w-full overflow-x-auto">
+              <div className="flex items-center gap-1 p-1 bg-[#17212b] rounded-2xl border border-[#242f3d] mb-3 shadow-inner max-w-full overflow-x-auto">
                 <button
                   onClick={() => {
                     setMode("image");
@@ -968,8 +968,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   }}
                   className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                     mode === "image"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-[#3390ec] text-white shadow-md font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <ImageIcon className="w-3.5 h-3.5" />
@@ -983,8 +983,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   }}
                   className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                     mode === "video"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-[#3390ec] text-white shadow-md font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Video className="w-3.5 h-3.5" />
@@ -998,8 +998,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   }}
                   className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                     mode === "text"
-                      ? "bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-md"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-[#3390ec] text-white shadow-md font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Type className="w-3.5 h-3.5" />
@@ -1013,8 +1013,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   }}
                   className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all ${
                     mode === "anonymous_qa"
-                      ? "bg-gradient-to-r from-pink-600 to-orange-500 text-white shadow-md"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-pink-600 text-white shadow-md font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Lock className="w-3.5 h-3.5" />
@@ -1038,14 +1038,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 }
               }}
               onTouchEnd={handleCanvasRelease}
-              className="w-[260px] sm:w-[280px] h-[460px] sm:h-[500px] rounded-[32px] overflow-hidden relative shadow-2xl border-4 border-slate-800/80 flex flex-col justify-between select-none"
+              className="w-[260px] sm:w-[280px] h-[460px] sm:h-[500px] rounded-[32px] overflow-hidden relative shadow-2xl border-4 border-[#242f3d] flex flex-col justify-between select-none"
               style={{
                 background:
                   mode === "text"
                     ? bgGradient
                     : mode === "anonymous_qa"
                     ? "linear-gradient(135deg, #180828 0%, #2e0854 50%, #030612 100%)"
-                    : "#090d1f"
+                    : "#0e1621"
               }}
             >
               {/* Media Background Render */}
@@ -1390,19 +1390,19 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
           </div>
 
           {/* RIGHT: Studio Control Dashboard */}
-          <div className={`flex-1 flex flex-col bg-[#070a18] overflow-y-auto ${
+          <div className={`flex-1 flex flex-col bg-[#17212b] overflow-y-auto ${
             mobileTab === "studio" ? "flex" : "hidden md:flex"
           }`}>
             
             {/* Studio Navigation Bar */}
-            <div className="flex items-center gap-1 p-2 border-b border-blue-950/80 overflow-x-auto scrollbar-none bg-[#09112a]/50">
+            <div className="flex items-center gap-1 p-2 border-b border-[#242f3d] overflow-x-auto scrollbar-none bg-[#0e1621]">
               {(mode === "image" || mode === "video" || mode === "anonymous_qa") && (
                 <button
                   onClick={() => setStudioTab("gallery")}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                     studioTab === "gallery"
-                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Upload className="w-3.5 h-3.5" />
@@ -1415,8 +1415,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   onClick={() => setStudioTab("ngl")}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                     studioTab === "ngl"
-                      ? "bg-pink-500/20 text-pink-400 border border-pink-500/40"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-pink-500/20 text-pink-400 border border-pink-500/40 font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Lock className="w-3.5 h-3.5" />
@@ -1429,8 +1429,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   onClick={() => setStudioTab("templates")}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                     studioTab === "templates"
-                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Type className="w-3.5 h-3.5" />
@@ -1444,8 +1444,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     onClick={() => setStudioTab("filters")}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                       studioTab === "filters"
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                        : "text-slate-400 hover:text-slate-200"
+                        ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                        : "text-[#7d8b99] hover:text-white"
                     }`}
                   >
                     <Sparkles className="w-3.5 h-3.5" />
@@ -1456,8 +1456,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     onClick={() => setStudioTab("adjust")}
                     className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                       studioTab === "adjust"
-                        ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                        : "text-slate-400 hover:text-slate-200"
+                        ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                        : "text-[#7d8b99] hover:text-white"
                     }`}
                   >
                     <Sliders className="w-3.5 h-3.5" />
@@ -1471,8 +1471,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   onClick={() => setStudioTab("video")}
                   className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                     studioTab === "video"
-                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                      : "text-slate-400 hover:text-slate-200"
+                      ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                      : "text-[#7d8b99] hover:text-white"
                   }`}
                 >
                   <Scissors className="w-3.5 h-3.5" />
@@ -1484,8 +1484,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 onClick={() => setStudioTab("stickers")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                   studioTab === "stickers"
-                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                    : "text-[#7d8b99] hover:text-white"
                 }`}
               >
                 <Smile className="w-3.5 h-3.5" />
@@ -1499,8 +1499,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 }}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                   studioTab === "draw"
-                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                    : "text-[#7d8b99] hover:text-white"
                 }`}
               >
                 <Paintbrush className="w-3.5 h-3.5" />
@@ -1511,8 +1511,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 onClick={() => setStudioTab("tags")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                   studioTab === "tags"
-                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                    : "text-[#7d8b99] hover:text-white"
                 }`}
               >
                 <AtSign className="w-3.5 h-3.5" />
@@ -1523,8 +1523,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 onClick={() => setStudioTab("privacy")}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shrink-0 transition-colors ${
                   studioTab === "privacy"
-                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/40 font-bold"
+                    : "text-[#7d8b99] hover:text-white"
                 }`}
               >
                 <Shield className="w-3.5 h-3.5" />
@@ -1595,16 +1595,16 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   {/* Direct File Picker Trigger Card */}
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-6 rounded-3xl bg-slate-900/80 border-2 border-dashed border-cyan-500/40 hover:border-cyan-400 hover:bg-slate-900 flex flex-col items-center justify-center text-center gap-3 cursor-pointer transition-all shadow-inner group/upload"
+                    className="p-6 rounded-3xl bg-[#0e1621] border-2 border-dashed border-[#242f3d] hover:border-[#3390ec] flex flex-col items-center justify-center text-center gap-3 cursor-pointer transition-all group/upload"
                   >
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center text-white shadow-lg shadow-cyan-500/20 group-hover/upload:scale-110 transition-transform">
+                    <div className="w-14 h-14 rounded-2xl bg-[#3390ec] flex items-center justify-center text-white shadow-lg shadow-[#3390ec]/20 group-hover/upload:scale-110 transition-transform">
                       <Upload className="w-7 h-7" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-white group-hover/upload:text-cyan-300 transition-colors">
+                      <h4 className="text-sm font-bold text-white group-hover/upload:text-[#3390ec] transition-colors">
                         Click to Browse Gallery or Drop Files Here
                       </h4>
-                      <p className="text-xs text-slate-400 mt-1">
+                      <p className="text-xs text-[#7d8b99] mt-1">
                         Supports high-res JPG, PNG, WEBP, and MP4 / WebM videos up to 60 seconds
                       </p>
                     </div>
@@ -1613,41 +1613,41 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     <div className="flex flex-wrap items-center justify-center gap-2 mt-1" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => photoInputRef.current?.click()}
-                        className="px-4 py-2 rounded-xl bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-cyan-300 font-bold text-xs shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] hover:border-[#3390ec] text-white font-bold text-xs shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
                       >
-                        <ImageIcon className="w-4 h-4 text-cyan-400" />
+                        <ImageIcon className="w-4 h-4 text-[#3390ec]" />
                         <span>Choose Photo</span>
                       </button>
 
                       <button
                         onClick={() => videoInputRef.current?.click()}
-                        className="px-4 py-2 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-purple-300 font-bold text-xs shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] hover:border-[#3390ec] text-white font-bold text-xs shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
                       >
-                        <Video className="w-4 h-4 text-purple-400" />
+                        <Video className="w-4 h-4 text-[#3390ec]" />
                         <span>Choose Video (≤60s)</span>
                       </button>
 
                       <button
                         onClick={() => cameraInputRef.current?.click()}
-                        className="px-4 py-2 rounded-xl bg-pink-600/30 hover:bg-pink-600/50 border border-pink-500/40 text-pink-300 font-bold text-xs shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] hover:border-[#3390ec] text-white font-bold text-xs shadow-sm active:scale-95 transition-all flex items-center gap-1.5"
                       >
-                        <Camera className="w-4 h-4 text-pink-400" />
+                        <Camera className="w-4 h-4 text-[#3390ec]" />
                         <span>Snap Camera</span>
                       </button>
 
                       <button
                         onClick={() => setShowPhotoEditor(true)}
-                        className="px-4 py-2 rounded-xl bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold text-xs shadow-md shadow-cyan-500/30 active:scale-95 transition-all flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-xl bg-[#3390ec] hover:bg-[#2880d8] text-white font-bold text-xs shadow-md shadow-[#3390ec]/30 active:scale-95 transition-all flex items-center gap-1.5"
                       >
-                        <Paintbrush className="w-4 h-4 text-cyan-200" />
+                        <Paintbrush className="w-4 h-4 text-white" />
                         <span>Draw & Write on Photo 🎨</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Direct Web URL Loader */}
-                  <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col gap-2">
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <div className="p-3.5 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex flex-col gap-2">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Or Import from Web Link / Image URL
                     </label>
                     <div className="flex items-center gap-2">
@@ -1657,11 +1657,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         onChange={(e) => setUrlInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleLoadMediaUrl()}
                         placeholder="Paste image or video link (https://...)"
-                        className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-400"
+                        className="flex-1 p-2.5 rounded-xl bg-[#17212b] border border-[#242f3d] text-white text-xs placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                       />
                       <button
                         onClick={handleLoadMediaUrl}
-                        className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all"
+                        className="px-4 py-2.5 rounded-xl bg-[#3390ec] hover:bg-[#2880d8] text-white font-bold text-xs shadow-md active:scale-95 transition-all"
                       >
                         Load
                       </button>
@@ -1670,7 +1670,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
 
                   {/* Ready-made HD Photo Presets */}
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Curated High-Resolution Photo Presets
                     </label>
                     <div className="grid grid-cols-3 sm:grid-cols-6 gap-2 mt-2">
@@ -1684,7 +1684,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                             setUploadSuccessToast(`Loaded preset: ${item.title}`);
                             setTimeout(() => setUploadSuccessToast(""), 3000);
                           }}
-                          className="group relative rounded-2xl overflow-hidden aspect-[9/16] border border-slate-800 hover:border-cyan-400 transition-all shadow-md active:scale-95"
+                          className="group relative rounded-2xl overflow-hidden aspect-[9/16] border border-[#242f3d] hover:border-[#3390ec] transition-all shadow-md active:scale-95"
                         >
                           <img
                             src={item.url}
@@ -1701,7 +1701,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
 
                   {/* Ready-made Video Presets */}
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Curated HD Video Story Presets (≤60s)
                     </label>
                     <div className="grid grid-cols-3 gap-2 mt-2">
@@ -1718,13 +1718,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                             setUploadSuccessToast(`Loaded video preset: ${item.title}`);
                             setTimeout(() => setUploadSuccessToast(""), 3000);
                           }}
-                          className="p-3 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-cyan-400 text-left transition-all active:scale-95"
+                          className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] hover:border-[#3390ec] text-left transition-all active:scale-95"
                         >
                           <div className="flex items-center gap-2 text-xs font-bold text-white">
-                            <Video className="w-4 h-4 text-cyan-400" />
+                            <Video className="w-4 h-4 text-[#3390ec]" />
                             <span>{item.title}</span>
                           </div>
-                          <span className="text-[10px] text-slate-400 mt-1 block">Duration: {item.duration}s</span>
+                          <span className="text-[10px] text-[#7d8b99] mt-1 block">Duration: {item.duration}s</span>
                         </button>
                       ))}
                     </div>
@@ -1736,7 +1736,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {studioTab === "ngl" && (
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Anonymous Question Prompt
                     </label>
                     <input
@@ -1744,13 +1744,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       value={qaQuestion}
                       onChange={(e) => setQaQuestion(e.target.value)}
                       placeholder="e.g. Ask me anything honestly 🤫"
-                      className="w-full mt-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-pink-500"
+                      className="w-full mt-1.5 p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] text-white text-sm placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                     />
                   </div>
 
                   {/* Suggestion Prompts */}
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Instant Prompt Templates
                     </label>
                     <div className="flex flex-wrap gap-1.5 mt-2">
@@ -1760,8 +1760,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                           onClick={() => setQaQuestion(q)}
                           className={`text-xs px-3 py-1.5 rounded-xl border transition-all ${
                             qaQuestion === q
-                              ? "bg-pink-500/20 border-pink-400 text-pink-300"
-                              : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white"
+                              ? "bg-[#3390ec]/20 border-[#3390ec] text-white"
+                              : "bg-[#0e1621] border-[#242f3d] text-[#7d8b99] hover:text-white"
                           }`}
                         >
                           {q}
@@ -1772,7 +1772,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
 
                   {/* Sticker Theme Styles */}
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       NGL Card Theme
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
@@ -1782,21 +1782,21 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                           onClick={() => setQaStyle(st.id)}
                           className={`p-3 rounded-2xl text-left border transition-all ${
                             qaStyle === st.id
-                              ? "bg-pink-500/20 border-pink-400 shadow-md shadow-pink-500/20"
-                              : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                              ? "bg-[#3390ec]/20 border-[#3390ec] shadow-md"
+                              : "bg-[#0e1621] border-[#242f3d] hover:border-[#3390ec]"
                           }`}
                         >
                           <div className="text-xs font-bold text-white flex items-center justify-between">
                             <span>{st.name}</span>
-                            {qaStyle === st.id && <Check className="w-3.5 h-3.5 text-pink-400" />}
+                            {qaStyle === st.id && <Check className="w-3.5 h-3.5 text-[#3390ec]" />}
                           </div>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-pink-500/10 border border-pink-500/20 text-xs text-pink-200 flex items-center gap-2">
-                    <Lock className="w-4 h-4 shrink-0 text-pink-400" />
+                  <div className="p-3.5 rounded-2xl bg-[#3390ec]/10 border border-[#3390ec]/20 text-xs text-slate-200 flex items-center gap-2">
+                    <Lock className="w-4 h-4 shrink-0 text-[#3390ec]" />
                     <span>
                       Replies sent to this story will be completely anonymous! Only you will see the incoming responses in your private inbox, and you can choose to share them publicly.
                     </span>
@@ -1808,7 +1808,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {mode === "text" && studioTab === "templates" && (
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Story Text Message
                     </label>
                     <textarea
@@ -1816,13 +1816,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       onChange={(e) => setTextContent(e.target.value)}
                       placeholder="Type what's on your mind, quotes, announcements, reflections..."
                       rows={3}
-                      className="w-full mt-1.5 p-3 rounded-2xl bg-slate-900 border border-slate-800 text-white text-sm focus:outline-none focus:border-cyan-400/80 resize-none"
+                      className="w-full mt-1.5 p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] text-white text-sm placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec] resize-none"
                     />
                   </div>
 
                   {/* Typography Template Picker */}
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Typography Model Preset
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-2">
@@ -1832,12 +1832,12 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                           onClick={() => setSelectedTemplate(tmpl.id)}
                           className={`p-2.5 rounded-2xl text-left border transition-all ${
                             selectedTemplate === tmpl.id
-                              ? "bg-cyan-500/15 border-cyan-400 shadow-md shadow-cyan-500/20"
-                              : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                              ? "bg-[#3390ec]/20 border-[#3390ec] shadow-md"
+                              : "bg-[#0e1621] border-[#242f3d] hover:border-[#3390ec]"
                           }`}
                         >
                           <div className="text-xs font-bold text-white truncate">{tmpl.name}</div>
-                          <div className="text-[10px] text-slate-400 truncate mt-0.5">{tmpl.desc}</div>
+                          <div className="text-[10px] text-[#7d8b99] truncate mt-0.5">{tmpl.desc}</div>
                         </button>
                       ))}
                     </div>
@@ -1845,7 +1845,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
 
                   {/* Background Gradient Palette */}
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Background Gradient
                     </label>
                     <div className="flex items-center gap-2 mt-2 overflow-x-auto py-1">
@@ -1855,7 +1855,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                           onClick={() => setBgGradient(grad)}
                           style={{ background: grad }}
                           className={`w-9 h-9 rounded-xl shrink-0 border-2 transition-transform hover:scale-110 ${
-                            bgGradient === grad ? "border-cyan-400 scale-110 shadow-md shadow-cyan-400/40" : "border-transparent"
+                            bgGradient === grad ? "border-[#3390ec] scale-110 shadow-md shadow-[#3390ec]/40" : "border-transparent"
                           }`}
                         />
                       ))}
@@ -1865,7 +1865,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   {/* Font Size & Alignment */}
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                         Font Size
                       </label>
                       <div className="flex items-center gap-1 mt-1.5">
@@ -1875,8 +1875,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                             onClick={() => setFontSize(sz)}
                             className={`flex-1 py-1.5 rounded-xl text-xs font-bold uppercase transition-all ${
                               fontSize === sz
-                                ? "bg-cyan-500 text-white shadow-sm"
-                                : "bg-slate-900 text-slate-400 hover:text-white"
+                                ? "bg-[#3390ec] text-white shadow-sm"
+                                : "bg-[#0e1621] text-[#7d8b99] hover:text-white"
                             }`}
                           >
                             {sz}
@@ -1886,7 +1886,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     </div>
 
                     <div>
-                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                         Alignment
                       </label>
                       <div className="flex items-center gap-1 mt-1.5">
@@ -1896,8 +1896,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                             onClick={() => setTextAlign(al)}
                             className={`flex-1 py-1.5 rounded-xl text-xs font-bold capitalize transition-all ${
                               textAlign === al
-                                ? "bg-cyan-500 text-white shadow-sm"
-                                : "bg-slate-900 text-slate-400 hover:text-white"
+                                ? "bg-[#3390ec] text-white shadow-sm"
+                                : "bg-[#0e1621] text-[#7d8b99] hover:text-white"
                             }`}
                           >
                             {al}
@@ -1912,8 +1912,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {/* TAB 4: MONTAGE FILTERS */}
               {(mode === "image" || mode === "video") && studioTab === "filters" && (
                 <div className="flex flex-col gap-4">
-                  <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
-                    Advanced Color Presets & Filter Moods
+                  <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
+                    Color Presets & Filter Moods
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                     {FILTER_PRESETS.map((f) => (
@@ -1922,15 +1922,15 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         onClick={() => setActiveFilter(f.id)}
                         className={`p-3 rounded-2xl text-left border transition-all ${
                           activeFilter === f.id
-                            ? "bg-cyan-500/20 border-cyan-400 shadow-md shadow-cyan-400/20"
-                            : "bg-slate-900/60 border-slate-800 hover:border-slate-700"
+                            ? "bg-[#3390ec]/20 border-[#3390ec] shadow-md"
+                            : "bg-[#0e1621] border-[#242f3d] hover:border-[#3390ec]"
                         }`}
                       >
                         <div className="text-xs font-bold text-white flex items-center justify-between">
                           <span>{f.name}</span>
-                          {activeFilter === f.id && <Check className="w-3.5 h-3.5 text-cyan-400" />}
+                          {activeFilter === f.id && <Check className="w-3.5 h-3.5 text-[#3390ec]" />}
                         </div>
-                        <div className="text-[10px] text-slate-400 mt-1 truncate">
+                        <div className="text-[10px] text-[#7d8b99] mt-1 truncate">
                           {f.css === "none" ? "Original balance" : f.css}
                         </div>
                       </button>
@@ -1943,7 +1943,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {studioTab === "adjust" && (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Fine-Tuning Color Montage Sliders
                     </label>
                     <button
@@ -1955,7 +1955,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         setBlur(0);
                         setHueRotate(0);
                       }}
-                      className="text-xs text-cyan-400 hover:underline flex items-center gap-1"
+                      className="text-xs text-[#3390ec] hover:underline flex items-center gap-1"
                     >
                       <RefreshCw className="w-3 h-3" />
                       <span>Reset All</span>
@@ -1963,10 +1963,10 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                      <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                    <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                      <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                         <span>Brightness</span>
-                        <span>{brightness}%</span>
+                        <span className="text-white">{brightness}%</span>
                       </div>
                       <input
                         type="range"
@@ -1974,14 +1974,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         max="150"
                         value={brightness}
                         onChange={(e) => setBrightness(Number(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                      <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                    <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                      <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                         <span>Contrast</span>
-                        <span>{contrast}%</span>
+                        <span className="text-white">{contrast}%</span>
                       </div>
                       <input
                         type="range"
@@ -1989,14 +1989,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         max="150"
                         value={contrast}
                         onChange={(e) => setContrast(Number(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                      <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                    <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                      <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                         <span>Saturation</span>
-                        <span>{saturation}%</span>
+                        <span className="text-white">{saturation}%</span>
                       </div>
                       <input
                         type="range"
@@ -2004,14 +2004,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         max="200"
                         value={saturation}
                         onChange={(e) => setSaturation(Number(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                      <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                    <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                      <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                         <span>Warm Sepia</span>
-                        <span>{sepia}%</span>
+                        <span className="text-white">{sepia}%</span>
                       </div>
                       <input
                         type="range"
@@ -2019,14 +2019,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         max="100"
                         value={sepia}
                         onChange={(e) => setSepia(Number(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                      <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                    <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                      <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                         <span>Soft Blur</span>
-                        <span>{blur}px</span>
+                        <span className="text-white">{blur}px</span>
                       </div>
                       <input
                         type="range"
@@ -2035,14 +2035,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         step="0.5"
                         value={blur}
                         onChange={(e) => setBlur(Number(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                      <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                    <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                      <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                         <span>Hue Shift</span>
-                        <span>{hueRotate}°</span>
+                        <span className="text-white">{hueRotate}°</span>
                       </div>
                       <input
                         type="range"
@@ -2050,7 +2050,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         max="360"
                         value={hueRotate}
                         onChange={(e) => setHueRotate(Number(e.target.value))}
-                        className="w-full accent-cyan-400 cursor-pointer"
+                        className="w-full accent-[#3390ec] cursor-pointer"
                       />
                     </div>
                   </div>
@@ -2060,13 +2060,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {/* TAB 6: VIDEO MONTAGE (≤60s Trim & Speed) */}
               {mode === "video" && studioTab === "video" && (
                 <div className="flex flex-col gap-4">
-                  <div className="p-4 rounded-2xl bg-slate-900/60 border border-blue-900/40">
-                    <h4 className="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                  <div className="p-4 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                    <h4 className="text-xs font-bold text-[#3390ec] uppercase tracking-wider flex items-center gap-1.5">
                       <Scissors className="w-4 h-4" />
                       <span>Video Trimmer (Strict 60 Seconds Max)</span>
                     </h4>
-                    <p className="text-xs text-slate-400 mt-1">
-                      Total Duration: <strong className="text-white">{videoDuration}s</strong> • Trimmed Length: <strong className="text-cyan-400">{Math.max(1, videoTrimEnd - videoTrimStart)}s</strong>
+                    <p className="text-xs text-[#7d8b99] mt-1">
+                      Total Duration: <strong className="text-white">{videoDuration}s</strong> • Trimmed Length: <strong className="text-[#3390ec]">{Math.max(1, videoTrimEnd - videoTrimStart)}s</strong>
                     </p>
 
                     <div className="grid grid-cols-2 gap-4 mt-3">
@@ -2161,15 +2161,15 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {studioTab === "stickers" && (
                 <div className="flex flex-col gap-4">
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Tap to Add Emoji Sticker
                     </label>
-                    <div className="flex flex-wrap gap-2 mt-2 p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
+                    <div className="flex flex-wrap gap-2 mt-2 p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
                       {QUICK_EMOJIS.map((em) => (
                         <button
                           key={em}
                           onClick={() => handleAddEmojiSticker(em)}
-                          className="w-10 h-10 rounded-xl bg-slate-800 hover:bg-slate-700 text-2xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-sm"
+                          className="w-10 h-10 rounded-xl bg-[#17212b] hover:bg-[#242f3d] text-2xl flex items-center justify-center transition-transform hover:scale-110 active:scale-95 shadow-sm"
                         >
                           {em}
                         </button>
@@ -2177,8 +2177,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     </div>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 flex flex-col gap-2.5">
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  <div className="p-3.5 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex flex-col gap-2.5">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Add Custom Text Overlay Badge
                     </label>
                     <div className="flex items-center gap-2">
@@ -2187,11 +2187,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         value={newOverlayText}
                         onChange={(e) => setNewOverlayText(e.target.value)}
                         placeholder="e.g. Special Launch 🚀, Weekend Vibes..."
-                        className="flex-1 p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-400"
+                        className="flex-1 p-2.5 rounded-xl bg-[#17212b] border border-[#242f3d] text-white text-xs placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                       />
                       <button
                         onClick={handleAddTextOverlay}
-                        className="px-4 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md active:scale-95 transition-all"
+                        className="px-4 py-2.5 rounded-xl bg-[#3390ec] hover:bg-[#2880d8] text-white font-bold text-xs shadow-md active:scale-95 transition-all"
                       >
                         Add Text
                       </button>
@@ -2204,7 +2204,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               {studioTab === "draw" && (
                 <div className="flex flex-col gap-4">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Freehand Drawing on Canvas
                     </label>
                     <button
@@ -2217,22 +2217,22 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   <div className="flex items-center gap-2 overflow-x-auto py-1">
-                    {["#22d3ee", "#ec4899", "#fbbf24", "#34d399", "#a855f7", "#ffffff", "#000000", "#ef4444"].map((col) => (
+                    {["#3390ec", "#ec4899", "#fbbf24", "#34d399", "#a855f7", "#ffffff", "#000000", "#ef4444"].map((col) => (
                       <button
                         key={col}
                         onClick={() => setBrushColor(col)}
                         style={{ backgroundColor: col }}
                         className={`w-8 h-8 rounded-full border-2 transition-transform ${
-                          brushColor === col ? "border-white scale-110 shadow-md shadow-white/30" : "border-slate-800"
+                          brushColor === col ? "border-white scale-110 shadow-md shadow-white/30" : "border-[#242f3d]"
                         }`}
                       />
                     ))}
                   </div>
 
-                  <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800">
-                    <div className="flex justify-between text-xs text-slate-300 font-semibold mb-1">
+                  <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d]">
+                    <div className="flex justify-between text-xs text-[#7d8b99] font-semibold mb-1">
                       <span>Brush Thickness</span>
-                      <span>{brushSize}px</span>
+                      <span className="text-white">{brushSize}px</span>
                     </div>
                     <input
                       type="range"
@@ -2240,11 +2240,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       max="20"
                       value={brushSize}
                       onChange={(e) => setBrushSize(Number(e.target.value))}
-                      className="w-full accent-cyan-400"
+                      className="w-full accent-[#3390ec]"
                     />
                   </div>
 
-                  <p className="text-xs text-slate-400 italic">
+                  <p className="text-xs text-[#7d8b99] italic">
                     💡 Click and drag directly on the left preview screen to draw doodles!
                   </p>
                 </div>
@@ -2255,12 +2255,12 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 <div className="flex flex-col gap-4">
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                         Tag Friends (@mention)
                       </label>
                       <button
                         onClick={() => setShowFriendPicker(!showFriendPicker)}
-                        className="text-xs text-cyan-400 font-semibold flex items-center gap-1"
+                        className="text-xs text-[#3390ec] font-semibold flex items-center gap-1"
                       >
                         <Plus className="w-3.5 h-3.5" />
                         <span>Select User</span>
@@ -2268,13 +2268,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     </div>
 
                     {showFriendPicker && (
-                      <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col gap-2 mb-3">
+                      <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex flex-col gap-2 mb-3">
                         <input
                           type="text"
                           value={friendSearch}
                           onChange={(e) => setFriendSearch(e.target.value)}
                           placeholder="Search friends by name..."
-                          className="p-2 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white focus:outline-none"
+                          className="p-2 rounded-xl bg-[#17212b] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                         />
                         <div className="max-h-32 overflow-y-auto flex flex-col gap-1">
                           {allUsers
@@ -2283,7 +2283,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                               <button
                                 key={u.id}
                                 onClick={() => handleAddFriendTag(u)}
-                                className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-800 text-left transition-colors"
+                                className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-[#17212b] text-left transition-colors"
                               >
                                 <img src={u.avatar} alt={u.username} className="w-6 h-6 rounded-full object-cover" />
                                 <span className="text-xs text-slate-200 font-medium">{u.username}</span>
@@ -2295,7 +2295,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Add Hashtags (#tag)
                     </label>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -2305,11 +2305,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         onChange={(e) => setHashtagInput(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleAddHashtag()}
                         placeholder="#WavegramLaunch, #DesignSprint..."
-                        className="flex-1 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none focus:border-cyan-400"
+                        className="flex-1 p-2.5 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                       />
                       <button
                         onClick={handleAddHashtag}
-                        className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+                        className="px-3.5 py-2.5 rounded-xl bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-white text-xs font-semibold"
                       >
                         Add
                       </button>
@@ -2317,7 +2317,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Location Tag (📍)
                     </label>
                     <div className="flex items-center gap-2 mt-1.5">
@@ -2326,11 +2326,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         value={customLocationInput}
                         onChange={(e) => setCustomLocationInput(e.target.value)}
                         placeholder="Type custom location..."
-                        className="flex-1 p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none"
+                        className="flex-1 p-2.5 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                       />
                       <button
                         onClick={() => handleAddLocation(customLocationInput)}
-                        className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+                        className="px-3.5 py-2.5 rounded-xl bg-[#17212b] hover:bg-[#242f3d] border border-[#242f3d] text-white text-xs font-semibold"
                       >
                         Set
                       </button>
@@ -2343,8 +2343,8 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                           onClick={() => handleAddLocation(loc)}
                           className={`text-[11px] px-2.5 py-1 rounded-xl border transition-all ${
                             locationTag === loc
-                              ? "bg-cyan-500/20 border-cyan-400 text-cyan-300"
-                              : "bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white"
+                              ? "bg-[#3390ec]/20 border-[#3390ec] text-white"
+                              : "bg-[#0e1621] border border-[#242f3d] text-[#7d8b99] hover:text-white"
                           }`}
                         >
                           📍 {loc}
@@ -2354,7 +2354,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   <div>
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Music Sound Tag (🎵)
                     </label>
                     <div className="grid grid-cols-2 gap-2 mt-1.5">
@@ -2363,33 +2363,33 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         value={musicTitle}
                         onChange={(e) => setMusicTitle(e.target.value)}
                         placeholder="Song Title (e.g. Golden Hour)"
-                        className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none"
+                        className="p-2.5 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                       />
                       <input
                         type="text"
                         value={musicArtist}
                         onChange={(e) => setMusicArtist(e.target.value)}
                         placeholder="Artist (e.g. Wavegram Beats)"
-                        className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white focus:outline-none"
+                        className="p-2.5 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                       />
                     </div>
                   </div>
 
                   {tags.length > 0 && (
                     <div>
-                      <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                         Active Attached Tags
                       </label>
                       <div className="flex flex-wrap gap-1.5 mt-1.5">
                         {tags.map((t) => (
                           <div
                             key={t.id}
-                            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-blue-600/30 border border-blue-500/40 text-blue-200"
+                            className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-[#3390ec]/20 border border-[#3390ec]/40 text-white"
                           >
                             <span>{t.label}</span>
                             <button
                               onClick={() => handleRemoveTag(t.id)}
-                              className="text-blue-300 hover:text-white"
+                              className="text-[#7d8b99] hover:text-white"
                             >
                               <X className="w-3 h-3" />
                             </button>
@@ -2414,14 +2414,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
 
                   {/* Hidden List Toast */}
                   {hiddenSavedToast && (
-                    <div className="p-2.5 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
-                      <Check className="w-4 h-4 text-cyan-400" />
+                    <div className="p-2.5 rounded-xl bg-[#3390ec]/20 border border-[#3390ec]/40 text-[#3390ec] text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                      <Check className="w-4 h-4 text-[#3390ec]" />
                       <span>{hiddenSavedToast}</span>
                     </div>
                   )}
 
                   {/* 1. Manage Close Friends List */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-emerald-950/80 flex flex-col gap-3">
+                  <div className="p-4 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex flex-col gap-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2 text-emerald-400">
                         <Star className="w-4 h-4 fill-emerald-400 text-emerald-400" />
@@ -2433,7 +2433,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         Green Ring ⭐
                       </span>
                     </div>
-                    <p className="text-[11px] text-slate-400 leading-snug">
+                    <p className="text-[11px] text-[#7d8b99] leading-snug">
                       Add your closest contacts here. Stories shared to "Close Friends" are only visible to these selected users with an emerald ring.
                     </p>
 
@@ -2442,7 +2442,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       value={closeFriendsSearch}
                       onChange={(e) => setCloseFriendsSearch(e.target.value)}
                       placeholder="Search contacts for Close Friends..."
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-emerald-400"
+                      className="w-full p-2.5 rounded-xl bg-[#17212b] border border-[#242f3d] text-white text-xs placeholder-[#7d8b99] focus:outline-none focus:border-emerald-400"
                     />
 
                     <div className="max-h-44 overflow-y-auto flex flex-col gap-1.5 pr-1">
@@ -2462,7 +2462,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                               className={`p-2 rounded-xl flex items-center justify-between cursor-pointer border transition-colors ${
                                 isCF
                                   ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-300"
-                                  : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
+                                  : "bg-[#17212b] border-[#242f3d] text-slate-300 hover:border-[#3390ec]"
                               }`}
                             >
                               <div className="flex items-center gap-2">
@@ -2472,18 +2472,18 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                                   className="w-6 h-6 rounded-full object-cover border border-white/10"
                                 />
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-semibold">{u.username}</span>
-                                  <span className="text-[10px] text-slate-400">{u.status || "online"}</span>
+                                  <span className="text-xs font-semibold text-white">{u.username}</span>
+                                  <span className="text-[10px] text-[#7d8b99]">{u.status || "online"}</span>
                                 </div>
                               </div>
                               <div
                                 className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-all ${
                                   isCF
                                     ? "bg-emerald-500 text-slate-950 shadow-sm shadow-emerald-500/30"
-                                    : "bg-slate-800 border border-slate-700 text-slate-400 hover:text-white"
+                                    : "bg-[#0e1621] border border-[#242f3d] text-[#7d8b99] hover:text-white"
                                 }`}
                               >
-                                <Star className={`w-3 h-3 ${isCF ? "fill-slate-950 text-slate-950" : "text-slate-400"}`} />
+                                <Star className={`w-3 h-3 ${isCF ? "fill-slate-950 text-slate-950" : "text-[#7d8b99]"}`} />
                                 <span>{isCF ? "Added" : "Add"}</span>
                               </div>
                             </div>
@@ -2495,7 +2495,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       <button
                         type="button"
                         onClick={handleSaveCloseFriendsList}
-                        className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-400 hover:to-green-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 active:scale-95 transition-all"
+                        className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25 active:scale-95 transition-all"
                       >
                         <Check className="w-4 h-4 stroke-[3]" />
                         <span>Save Close Friends & Apply</span>
@@ -2504,7 +2504,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   {/* 2. Disable Sharing in Chats */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col gap-3">
+                  <div className="p-4 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex flex-col gap-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-2.5">
                         <div className="w-8 h-8 rounded-xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -2514,7 +2514,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                           <h4 className="text-xs font-bold text-white">
                             Block Story Sharing in Chats
                           </h4>
-                          <p className="text-[11px] text-slate-400 leading-snug">
+                          <p className="text-[11px] text-[#7d8b99] leading-snug">
                             When enabled, other users cannot forward or send your story into direct or group chats.
                           </p>
                         </div>
@@ -2523,7 +2523,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         type="button"
                         onClick={() => setDisableSharing(!disableSharing)}
                         className={`w-11 h-6 rounded-full transition-colors relative shrink-0 ${
-                          disableSharing ? "bg-amber-500" : "bg-slate-700"
+                          disableSharing ? "bg-amber-500" : "bg-[#242f3d]"
                         }`}
                       >
                         <div
@@ -2536,9 +2536,9 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                   </div>
 
                   {/* 3. Hide from specific users */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col gap-3">
+                  <div className="p-4 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex flex-col gap-3">
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2 text-cyan-400">
+                      <div className="flex items-center gap-2 text-[#3390ec]">
                         <EyeOff className="w-4 h-4" />
                         <h4 className="text-xs font-bold text-white">
                           Hide Story from Specific Users ({hiddenFromUserIds.length})
@@ -2554,7 +2554,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         </button>
                       )}
                     </div>
-                    <p className="text-[11px] text-slate-400">
+                    <p className="text-[11px] text-[#7d8b99]">
                       Selected contacts will not be able to view this story anywhere in their feed or profile.
                     </p>
 
@@ -2563,7 +2563,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       value={hideSearch}
                       onChange={(e) => setHideSearch(e.target.value)}
                       placeholder="Search users to hide this story from..."
-                      className="w-full p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-400"
+                      className="w-full p-2.5 rounded-xl bg-[#17212b] border border-[#242f3d] text-white text-xs placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                     />
 
                     <div className="max-h-44 overflow-y-auto flex flex-col gap-1.5 pr-1">
@@ -2589,7 +2589,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                               className={`p-2 rounded-xl flex items-center justify-between cursor-pointer border transition-colors ${
                                 isHidden
                                   ? "bg-red-500/10 border-red-500/40 text-red-300"
-                                  : "bg-slate-950/60 border-slate-800/80 text-slate-300 hover:border-slate-700"
+                                  : "bg-[#17212b] border-[#242f3d] text-slate-300 hover:border-[#3390ec]"
                               }`}
                             >
                               <div className="flex items-center gap-2">
@@ -2599,14 +2599,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                                   className="w-6 h-6 rounded-full object-cover border border-white/10"
                                 />
                                 <div className="flex flex-col">
-                                  <span className="text-xs font-semibold">{u.username}</span>
+                                  <span className="text-xs font-semibold text-white">{u.username}</span>
                                 </div>
                               </div>
                               <div
                                 className={`px-2 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 ${
                                   isHidden
                                     ? "bg-red-500 text-white"
-                                    : "border border-slate-700 bg-slate-800 text-slate-400"
+                                    : "border border-[#242f3d] bg-[#0e1621] text-[#7d8b99]"
                                 }`}
                               >
                                 {isHidden ? (
@@ -2627,7 +2627,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       <button
                         type="button"
                         onClick={handleSaveHiddenList}
-                        className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/25 active:scale-95 transition-all"
+                        className="flex-1 py-2.5 px-4 rounded-xl bg-[#3390ec] hover:bg-[#2880d8] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-[#3390ec]/25 active:scale-95 transition-all"
                       >
                         <Check className="w-4 h-4 stroke-[3]" />
                         <span>Save Modifications & Apply</span>
@@ -2636,7 +2636,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         <button
                           type="button"
                           onClick={() => setHiddenFromUserIds([])}
-                          className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-red-400 text-xs font-semibold"
+                          className="py-2.5 px-3 rounded-xl bg-[#17212b] hover:bg-[#242f3d] text-red-400 text-xs font-semibold"
                         >
                           Reset
                         </button>
@@ -2647,13 +2647,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
               )}
 
               {/* Bottom Caption & Audience Publish Bar */}
-              <div className="mt-auto pt-4 border-t border-blue-950/80 flex flex-col gap-3">
+              <div className="mt-auto pt-4 border-t border-[#242f3d] flex flex-col gap-3">
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                    <label className="text-xs font-bold text-[#7d8b99] uppercase tracking-wider">
                       Story Caption
                     </label>
-                    <span className="text-[10px] text-cyan-400">
+                    <span className="text-[10px] text-[#3390ec]">
                       Drag caption on preview to move
                     </span>
                   </div>
@@ -2662,14 +2662,14 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                     value={caption}
                     onChange={(e) => setCaption(e.target.value)}
                     placeholder="Write a captivating story caption..."
-                    className="w-full p-3 rounded-2xl bg-slate-900 border border-slate-800 text-white text-xs focus:outline-none focus:border-cyan-400"
+                    className="w-full p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] text-white text-xs placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
                   />
                 </div>
 
                 {/* Audience Selection Pills */}
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-slate-400">Audience:</span>
+                    <span className="text-xs font-bold text-[#7d8b99]">Audience:</span>
                     {hiddenFromUserIds.length > 0 && (
                       <span className="text-[10px] text-red-400 flex items-center gap-1 font-medium">
                         <EyeOff className="w-3 h-3" />
@@ -2683,13 +2683,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       onClick={() => setIsCloseFriendsOnly(false)}
                       className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                         !isCloseFriendsOnly
-                          ? "bg-blue-600 text-white shadow-md shadow-blue-600/30 border border-blue-400/40"
-                          : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-white"
+                          ? "bg-[#3390ec] text-white shadow-md border border-[#3390ec]/60"
+                          : "bg-[#0e1621] text-[#7d8b99] border border-[#242f3d] hover:text-white"
                       }`}
                     >
                       <Globe className="w-3.5 h-3.5" />
                       <div className="flex flex-col items-center">
-                        <span>All Chats List</span>
+                        <span>All Contacts</span>
                         {hiddenFromUserIds.length > 0 && (
                           <span className="text-[9px] opacity-75 font-normal">({hiddenFromUserIds.length} hidden)</span>
                         )}
@@ -2707,11 +2707,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       }}
                       className={`flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all ${
                         isCloseFriendsOnly
-                          ? "bg-gradient-to-r from-emerald-500 to-green-600 text-slate-950 font-black shadow-md shadow-emerald-500/30 border border-emerald-400/60"
-                          : "bg-slate-900 text-slate-400 border border-slate-800 hover:text-emerald-300"
+                          ? "bg-emerald-600 text-white font-bold shadow-md border border-emerald-500"
+                          : "bg-[#0e1621] text-[#7d8b99] border border-[#242f3d] hover:text-emerald-400"
                       }`}
                     >
-                      <Star className={`w-3.5 h-3.5 ${isCloseFriendsOnly ? "fill-slate-950 text-slate-950" : "text-emerald-400"}`} />
+                      <Star className={`w-3.5 h-3.5 ${isCloseFriendsOnly ? "fill-white text-white" : "text-emerald-400"}`} />
                       <div className="flex flex-col items-center">
                         <span>Close Friends ⭐</span>
                         <span className="text-[9px] opacity-80 font-normal">
@@ -2725,7 +2725,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                 <div className="flex items-center justify-between gap-2 pt-1">
                   <button
                     onClick={onClose}
-                    className="px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold shrink-0"
+                    className="px-3 py-2.5 rounded-xl bg-[#202b36] hover:bg-[#2c3847] text-[#7d8b99] hover:text-white text-xs font-semibold shrink-0"
                   >
                     Cancel
                   </button>
@@ -2736,7 +2736,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       id="publish-story-btn"
                       onClick={() => handlePublishStory()}
                       disabled={isSubmitting}
-                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-cyan-500/20"
+                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-[#3390ec] hover:bg-[#2481cc] text-white"
                     >
                       {isSubmitting ? (
                         <>
@@ -2756,11 +2756,11 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         id="publish-all-story-btn"
                         onClick={() => handlePublishStory(false)}
                         disabled={isSubmitting}
-                        className="flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/20 border border-blue-400/30"
+                        className="flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-[#3390ec] hover:bg-[#2481cc] text-white border border-[#3390ec]/50"
                       >
                         <div className="flex items-center gap-1">
                           <Globe className="w-3.5 h-3.5" />
-                          <span>All Chats</span>
+                          <span>All Contacts</span>
                         </div>
                         <span className="text-[9px] opacity-75 font-normal">
                           {hiddenFromUserIds.length > 0 ? `(${hiddenFromUserIds.length} hidden)` : "Everyone"}
@@ -2771,13 +2771,13 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                         id="publish-cf-story-btn"
                         onClick={() => handlePublishStory(true)}
                         disabled={isSubmitting}
-                        className="flex-1 py-2 px-2.5 rounded-xl text-xs font-black flex flex-col items-center justify-center shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-gradient-to-r from-emerald-400 via-green-500 to-lime-400 text-slate-950 shadow-emerald-500/25 hover:brightness-110 border border-emerald-300/40"
+                        className="flex-1 py-2 px-2.5 rounded-xl text-xs font-bold flex flex-col items-center justify-center shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-emerald-600 hover:bg-emerald-500 text-white shadow-emerald-500/25 border border-emerald-400/40"
                       >
                         <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 fill-slate-950" />
+                          <Star className="w-3.5 h-3.5 fill-white" />
                           <span>Close Friends ⭐</span>
                         </div>
-                        <span className="text-[9px] text-slate-900 font-bold">
+                        <span className="text-[9px] text-emerald-100 font-medium">
                           ({closeFriends.length} contacts)
                         </span>
                       </button>
@@ -2787,7 +2787,7 @@ export const StoryCreatorModal: React.FC<StoryCreatorModalProps> = ({
                       id="publish-story-btn"
                       onClick={() => handlePublishStory()}
                       disabled={isSubmitting}
-                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-gradient-to-r from-blue-600 via-indigo-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-cyan-500/20"
+                      className="flex-1 py-2.5 px-4 rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-lg active:scale-95 disabled:opacity-50 transition-all bg-[#3390ec] hover:bg-[#2481cc] text-white"
                     >
                       {isSubmitting ? (
                         <>

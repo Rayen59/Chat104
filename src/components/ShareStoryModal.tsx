@@ -139,31 +139,31 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
       onClick={onClose}
     >
       <div
-        className="w-full max-w-md bg-[#09112a] border border-blue-900/60 rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white animate-in zoom-in-95 duration-200 overflow-hidden max-h-[90vh]"
+        className="w-full max-w-md bg-[#17212b] border border-[#242f3d] rounded-3xl p-5 shadow-2xl flex flex-col gap-4 text-white animate-in zoom-in-95 duration-200 overflow-hidden max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-blue-950/80 pb-3">
+        <div className="flex items-center justify-between border-b border-[#242f3d] pb-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shadow-inner">
+            <div className="w-8 h-8 rounded-xl bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/30 flex items-center justify-center shadow-inner">
               <Share2 className="w-4 h-4" />
             </div>
             <div>
               <h3 className="text-sm font-bold text-white">Share Story</h3>
-              <p className="text-[11px] text-slate-400">Send story card directly to your chats</p>
+              <p className="text-[11px] text-[#7d8b99]">Send story card directly to your chats</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors"
+            className="p-1.5 rounded-xl hover:bg-[#202b36] text-[#7d8b99] hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Story Snapshot Preview Card */}
-        <div className="p-3 rounded-2xl bg-[#040816] border border-blue-950/80 flex items-center gap-3">
-          <div className="w-12 h-16 rounded-xl overflow-hidden bg-slate-900 shrink-0 border border-white/10 flex items-center justify-center relative">
+        <div className="p-3 rounded-2xl bg-[#0e1621] border border-[#242f3d] flex items-center gap-3">
+          <div className="w-12 h-16 rounded-xl overflow-hidden bg-[#242f3d] shrink-0 border border-white/10 flex items-center justify-center relative">
             {story.mediaUrl ? (
               <img
                 src={story.mediaUrl}
@@ -173,7 +173,7 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
             ) : (
               <div
                 className="w-full h-full p-1 text-[9px] font-bold text-white flex items-center justify-center text-center leading-tight"
-                style={{ background: story.textStyle?.backgroundGradient || "#06b6d4" }}
+                style={{ background: story.textStyle?.backgroundGradient || "#3390ec" }}
               >
                 {story.textContent ? story.textContent.substring(0, 20) + "..." : "Story"}
               </div>
@@ -190,12 +190,12 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
                 alt={story.userName}
                 className="w-4 h-4 rounded-full object-cover"
               />
-              <span className="text-xs font-bold text-cyan-300 truncate">@{story.userName}</span>
+              <span className="text-xs font-bold text-[#3390ec] truncate">@{story.userName}</span>
             </div>
             <p className="text-xs text-white/90 truncate mt-0.5 font-medium">
               {story.caption || story.textContent || (story.anonymousPrompt ? story.anonymousPrompt.question : "24h Story")}
             </p>
-            <span className="text-[10px] text-slate-400">
+            <span className="text-[10px] text-[#7d8b99]">
               Created {new Date(story.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
             </span>
           </div>
@@ -208,7 +208,7 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
             className={`flex-1 py-2 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
               copiedLink
                 ? "bg-emerald-500/20 border-emerald-400 text-emerald-300"
-                : "bg-slate-900/80 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+                : "bg-[#0e1621] border-[#242f3d] text-[#7d8b99] hover:text-white hover:border-[#3390ec]"
             }`}
           >
             {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -218,9 +218,9 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
           {typeof navigator !== "undefined" && typeof navigator.share === "function" && (
             <button
               onClick={handleNativeShare}
-              className="py-2 px-3 rounded-xl bg-slate-900/80 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 hover:text-white flex items-center justify-center gap-1.5 transition-colors"
+              className="py-2 px-3 rounded-xl bg-[#0e1621] hover:bg-[#202b36] border border-[#242f3d] text-xs font-semibold text-[#7d8b99] hover:text-white flex items-center justify-center gap-1.5 transition-colors"
             >
-              <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+              <Share2 className="w-3.5 h-3.5 text-[#3390ec]" />
               <span>More...</span>
             </button>
           )}
@@ -233,26 +233,26 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
             value={customNote}
             onChange={(e) => setCustomNote(e.target.value)}
             placeholder="Add an optional message or comment..."
-            className="w-full py-2 px-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+            className="w-full py-2 px-3 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
           />
         </div>
 
         {/* Search Chats */}
         <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-[#7d8b99] absolute left-3 top-2.5" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search chats & groups..."
-            className="w-full py-2 pl-9 pr-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-400"
+            className="w-full py-2 pl-9 pr-3 rounded-xl bg-[#0e1621] border border-[#242f3d] text-xs text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec]"
           />
         </div>
 
         {/* Conversation Picker List */}
         <div className="flex-1 overflow-y-auto max-h-[220px] flex flex-col gap-1.5 pr-1 scrollbar-thin">
           {filteredConversations.length === 0 ? (
-            <div className="py-6 text-center text-slate-500 text-xs">
+            <div className="py-6 text-center text-[#7d8b99] text-xs">
               No conversations found.
             </div>
           ) : (
@@ -266,8 +266,8 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
                   onClick={() => toggleSelectConversation(conv.id)}
                   className={`p-2.5 rounded-2xl border flex items-center justify-between cursor-pointer transition-all ${
                     isSelected
-                      ? "bg-cyan-500/15 border-cyan-500/50 text-white"
-                      : "bg-slate-950/60 border-slate-800/80 hover:bg-slate-900/80 text-slate-300"
+                      ? "bg-[#3390ec]/15 border-[#3390ec] text-white"
+                      : "bg-[#0e1621] border-[#242f3d] hover:bg-[#202b36] text-[#7d8b99]"
                   }`}
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
@@ -280,12 +280,12 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
                       <span className="text-xs font-bold truncate flex items-center gap-1 text-white">
                         <span>{details.name}</span>
                         {details.isGroup && (
-                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-[#3390ec]/20 text-[#3390ec] border border-[#3390ec]/30">
                             Group
                           </span>
                         )}
                       </span>
-                      <span className="text-[10px] text-slate-400 truncate">
+                      <span className="text-[10px] text-[#7d8b99] truncate">
                         {details.isGroup ? "Group Chat" : "Direct Message"}
                       </span>
                     </div>
@@ -294,8 +294,8 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
                   <div
                     className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-colors ${
                       isSelected
-                        ? "bg-cyan-500 border-cyan-400 text-slate-950"
-                        : "border-slate-700 bg-slate-900"
+                        ? "bg-[#3390ec] border-[#3390ec] text-white"
+                        : "border-[#242f3d] bg-[#17212b]"
                     }`}
                   >
                     {isSelected && <Check className="w-3.5 h-3.5 stroke-[3]" />}
@@ -322,8 +322,8 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
         )}
 
         {/* Action Footer */}
-        <div className="flex items-center justify-between border-t border-blue-950/80 pt-3 gap-2">
-          <span className="text-xs text-slate-400">
+        <div className="flex items-center justify-between border-t border-[#242f3d] pt-3 gap-2">
+          <span className="text-xs text-[#7d8b99]">
             {selectedConvIds.length > 0
               ? `${selectedConvIds.length} chat(s) selected`
               : "Select recipient chats"}
@@ -332,7 +332,7 @@ export const ShareStoryModal: React.FC<ShareStoryModalProps> = ({
           <button
             onClick={handleShareToSelectedChats}
             disabled={selectedConvIds.length === 0 || isSharing}
-            className="py-2.5 px-5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
+            className="py-2.5 px-5 rounded-2xl bg-[#3390ec] hover:bg-[#2481cc] text-white font-bold text-xs shadow-lg active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-1.5"
           >
             {isSharing ? (
               <span>Sending...</span>
