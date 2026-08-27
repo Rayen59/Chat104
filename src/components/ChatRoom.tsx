@@ -1461,6 +1461,15 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             <CheckSquare className="w-4 h-4" />
           </button>
 
+          {/* Typography & Text Style T Button */}
+          <button
+            onClick={() => setShowTypographyModal(true)}
+            title="Writing Style & Typography (T)"
+            className="p-2 rounded-full text-indigo-400 hover:text-white hover:bg-indigo-600/30 transition-colors cursor-pointer"
+          >
+            <Type className="w-4 h-4" />
+          </button>
+
           {!isOfficialChannel && (
             <>
               <button
@@ -3014,6 +3023,16 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   className="w-9 h-9 rounded-full text-[#7d8b99] hover:text-[#3390ec] hover:bg-[#202b36] flex items-center justify-center shrink-0 mb-0.5 transition-colors cursor-pointer"
                 >
                   <Smile className="w-5 h-5" />
+                </button>
+
+                {/* Left: Writing Style / Typography T Button */}
+                <button
+                  type="button"
+                  onClick={() => setShowTypographyModal(true)}
+                  title="Chat Typography & Text Style (T)"
+                  className="w-9 h-9 rounded-full text-indigo-400 hover:text-white hover:bg-indigo-600/30 flex items-center justify-center shrink-0 mb-0.5 transition-colors cursor-pointer"
+                >
+                  <Type className="w-4 h-4" />
                 </button>
 
                 {/* Middle: Auto-expanding Textarea */}
