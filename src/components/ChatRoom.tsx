@@ -63,7 +63,14 @@ import {
   Paintbrush,
   CheckSquare,
   Square,
-  PhoneCall
+  PhoneCall,
+  Bot,
+  Globe,
+  HelpCircle,
+  Code,
+  Flame,
+  BarChart3,
+  Terminal
 } from "lucide-react";
 
 import { translations, getSavedLanguage, Language } from "../i18n";
@@ -236,6 +243,11 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   const [mentionQuery, setMentionQuery] = useState<string | null>(null);
   const [mentionIndex, setMentionIndex] = useState<number>(0);
   const [selectedMentionIdx, setSelectedMentionIdx] = useState<number>(0);
+
+  // $ Quick AI Commands & Shortcuts Palette state
+  const [commandQuery, setCommandQuery] = useState<string | null>(null);
+  const [commandIndex, setCommandIndex] = useState<number>(0);
+  const [selectedCommandIdx, setSelectedCommandIdx] = useState<number>(0);
 
   // Scroll & UX states
   const [isScrolledUp, setIsScrolledUp] = useState(false);
@@ -742,6 +754,138 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
   const mentionCandidates = getMentionCandidates();
 
+  // AI Command Items computation for $ quick menu
+  interface AiCommandItem {
+    id: string;
+    name: string;
+    command: string;
+    badge: string;
+    icon: any;
+    description: string;
+    template: string;
+    action?: "insert" | "create_poll";
+  }
+
+  const aiCommandsList: AiCommandItem[] = [
+    {
+      id: "cmd_mk",
+      name: "$MK",
+      command: "$MK",
+      badge: "Gemini AI",
+      icon: Sparkles,
+      description: t.cmdMK || "Ask Gemini Deep AI anything directly in this chat",
+      template: "$MK "
+    },
+    {
+      id: "cmd_summary",
+      name: "$summary",
+      command: "$summary",
+      badge: "Summary",
+      icon: FileText,
+      description: t.cmdSummarize || "Summarize recent conversation history and takeaways",
+      template: "$summary"
+    },
+    {
+      id: "cmd_reply",
+      name: "$reply",
+      command: "$reply",
+      badge: "Smart Reply",
+      icon: Bot,
+      description: t.cmdReply || "Generate an intelligent contextual response",
+      template: "$reply "
+    },
+    {
+      id: "cmd_translate",
+      name: "$translate",
+      command: "$translate",
+      badge: "Translate",
+      icon: Globe,
+      description: t.cmdTranslate || "Translate recent messages to another language",
+      template: "$translate "
+    },
+    {
+      id: "cmd_explain",
+      name: "$explain",
+      command: "$explain",
+      badge: "Deep Reasoning",
+      icon: HelpCircle,
+      description: t.cmdExplain || "Explain any concept or topic step-by-step",
+      template: "$explain "
+    },
+    {
+      id: "cmd_code",
+      name: "$code",
+      command: "$code",
+      badge: "Dev Code",
+      icon: Code,
+      description: t.cmdCode || "Write, refactor, or debug code snippet",
+      template: "$code "
+    },
+    {
+      id: "cmd_creative",
+      name: "$creative",
+      command: "$creative",
+      badge: "Creative",
+      icon: Flame,
+      description: t.cmdCreative || "Brainstorm ideas or creative storytelling",
+      template: "$creative "
+    },
+    {
+      id: "cmd_poll",
+      name: "$poll",
+      command: "$poll",
+      badge: "Vote",
+      icon: BarChart3,
+      description: t.cmdPoll || "Create an interactive group poll with voting",
+      template: "$poll ",
+      action: "create_poll"
+    }
+  ];
+
+  const getCommandCandidates = () => {
+    if (commandQuery === null) return [];
+    const q = commandQuery.toLowerCase();
+    if (!q) return aiCommandsList;
+    return aiCommandsList.filter(
+      (c) =>
+        c.name.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        c.badge.toLowerCase().includes(q)
+    );
+  };
+
+  const commandCandidates = getCommandCandidates();
+
+  const handleSelectCommand = (cmd: AiCommandItem) => {
+    if (cmd.action === "create_poll") {
+      setShowCreatePollModal(true);
+      setCommandQuery(null);
+      return;
+    }
+
+    const textBefore = inputText.slice(0, commandIndex);
+    const textAfter = inputText.slice(commandIndex);
+    const match = textAfter.match(/^\$[a-zA-Z0-9._]*/);
+    const tokenLength = match ? match[0].length : 1;
+    const rest = textAfter.slice(tokenLength);
+
+    const newText = textBefore + cmd.template + (rest.startsWith(" ") ? rest.slice(1) : rest);
+
+    setInputText(newText);
+    setCommandQuery(null);
+
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      const newCursorPos = textBefore.length + cmd.template.length;
+      setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.selectionStart = newCursorPos;
+          textareaRef.current.selectionEnd = newCursorPos;
+        }
+      }, 20);
+    }
+  };
+
   const handleSelectMention = (candidate: { user: User; isAi?: boolean }) => {
     const textBefore = inputText.slice(0, mentionIndex);
     const textAfter = inputText.slice(mentionIndex);
@@ -774,11 +918,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
     e.target.style.height = "auto";
     e.target.style.height = `${Math.min(e.target.scrollHeight, 120)}px`;
 
-    // Check cursor position for @ trigger
+    // Check cursor position
     const cursorPos = e.target.selectionStart || val.length;
     const textUpToCursor = val.slice(0, cursorPos);
-    const lastAtIndex = textUpToCursor.lastIndexOf("@");
 
+    // 1. Check for $ command trigger
+    const lastDollarIndex = textUpToCursor.lastIndexOf("$");
+    if (lastDollarIndex !== -1) {
+      const charBeforeDollar = lastDollarIndex > 0 ? textUpToCursor[lastDollarIndex - 1] : " ";
+      if (/\s/.test(charBeforeDollar)) {
+        const query = textUpToCursor.slice(lastDollarIndex + 1);
+        if (!/\s/.test(query)) {
+          setCommandQuery(query);
+          setCommandIndex(lastDollarIndex);
+          setSelectedCommandIdx(0);
+          setMentionQuery(null);
+          return;
+        }
+      }
+    }
+    setCommandQuery(null);
+
+    // 2. Check cursor position for @ trigger
+    const lastAtIndex = textUpToCursor.lastIndexOf("@");
     if (lastAtIndex !== -1) {
       // Check that @ is either at start or preceded by whitespace
       const charBeforeAt = lastAtIndex > 0 ? textUpToCursor[lastAtIndex - 1] : " ";
@@ -797,6 +959,34 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Handle $ commands navigation
+    if (commandQuery !== null && commandCandidates.length > 0) {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        setSelectedCommandIdx((prev) => (prev + 1) % commandCandidates.length);
+        return;
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setSelectedCommandIdx((prev) => (prev - 1 + commandCandidates.length) % commandCandidates.length);
+        return;
+      }
+      if (e.key === "Enter" || e.key === "Tab") {
+        e.preventDefault();
+        const candidate = commandCandidates[selectedCommandIdx] || commandCandidates[0];
+        if (candidate) {
+          handleSelectCommand(candidate);
+        }
+        return;
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setCommandQuery(null);
+        return;
+      }
+    }
+
+    // Handle @ mentions navigation
     if (mentionQuery !== null && mentionCandidates.length > 0) {
       if (e.key === "ArrowDown") {
         e.preventDefault();
@@ -1518,27 +1708,35 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                         MK.ia
                       </span>
                       <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/40 font-bold">
-                        Gemini AI Assistant
+                        Gemini Deep AI
                       </span>
                     </div>
                   ) : (
-                    !isMe && conversation.type === "group" && (
-                      <button
-                        onClick={() => {
-                          const senderUser = allUsers.find((u) => u.id === msg.senderId);
-                          if (senderUser && onSelectUserProfile) {
-                            onSelectUserProfile(senderUser);
-                          }
-                        }}
-                        style={{ color: group?.themeColor || "#60a5fa" }}
-                        className="text-[10px] font-bold hover:underline mb-0.5 ml-1 text-left flex items-center gap-1"
-                      >
-                        <span>{msg.senderName}</span>
-                        {group && (group.creatorId === msg.senderId || group.adminIds?.includes(msg.senderId)) && (
-                          <ShieldCheck className="w-3 h-3 text-cyan-400 inline" />
-                        )}
-                      </button>
-                    )
+                    <div className="flex items-center gap-1.5 mb-0.5 ml-1">
+                      {!isMe && conversation.type === "group" && (
+                        <button
+                          onClick={() => {
+                            const senderUser = allUsers.find((u) => u.id === msg.senderId);
+                            if (senderUser && onSelectUserProfile) {
+                              onSelectUserProfile(senderUser);
+                            }
+                          }}
+                          style={{ color: group?.themeColor || "#60a5fa" }}
+                          className="text-[10px] font-bold hover:underline text-left flex items-center gap-1"
+                        >
+                          <span>{msg.senderName}</span>
+                          {group && (group.creatorId === msg.senderId || group.adminIds?.includes(msg.senderId)) && (
+                            <ShieldCheck className="w-3 h-3 text-cyan-400 inline" />
+                          )}
+                        </button>
+                      )}
+                      {msg.isAiAutoReply && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 font-semibold flex items-center gap-1">
+                          <Bot className="w-2.5 h-2.5 text-emerald-400" />
+                          <span>{t.aiAutoReplyTag || "AI Auto-Reply"}</span>
+                        </span>
+                      )}
+                    </div>
                   )}
 
                   {/* Quoted Reply if any */}
@@ -2510,6 +2708,60 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
               >
                 <X className="w-3.5 h-3.5" />
               </button>
+            </div>
+          )}
+
+          {/* $ Quick AI Commands & Shortcuts Popup */}
+          {commandQuery !== null && commandCandidates.length > 0 && (
+            <div className="max-w-4xl mx-auto mb-2 bg-[#09112a]/95 border border-purple-500/50 rounded-2xl p-2.5 shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-bottom-2 z-30">
+              <div className="flex items-center justify-between px-2.5 py-1.5 mb-1.5 border-b border-purple-950/80">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-purple-300 flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-purple-400 animate-pulse" />
+                  <span>{t.commands || "AI Commands & Shortcuts"}</span>
+                </span>
+                <span className="text-[10px] text-slate-400">
+                  Use ↑ ↓ to navigate, Enter or Tab to select
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-56 overflow-y-auto p-0.5">
+                {commandCandidates.map((cmd, idx) => {
+                  const isHighlighted = idx === selectedCommandIdx;
+                  const IconComponent = cmd.icon || Sparkles;
+                  return (
+                    <button
+                      key={cmd.id}
+                      type="button"
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSelectCommand(cmd);
+                      }}
+                      onMouseEnter={() => setSelectedCommandIdx(idx)}
+                      className={`w-full flex items-center gap-3 p-2.5 rounded-xl text-left transition-all cursor-pointer ${
+                        isHighlighted
+                          ? "bg-purple-950/70 border border-purple-500/60 shadow-lg shadow-purple-900/30 scale-[1.01]"
+                          : "bg-[#0b142c]/60 hover:bg-[#111e40] border border-white/5"
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded-xl bg-purple-600/20 border border-purple-500/30 text-purple-300 flex items-center justify-center shrink-0">
+                        <IconComponent className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="font-extrabold text-xs text-purple-200 tracking-wide">
+                            {cmd.name}
+                          </span>
+                          <span className="px-1.5 py-0.5 text-[9px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30 rounded-md">
+                            {cmd.badge}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                          {cmd.description}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
 

@@ -16,6 +16,7 @@ import { NotificationToast, AppNotification } from "./components/NotificationToa
 import { AdminPanelModal } from "./components/AdminPanelModal";
 import { ReportModal } from "./components/ReportModal";
 import { MessageSquare } from "lucide-react";
+import { applyTheme, getSavedTheme } from "./theme";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -54,6 +55,11 @@ export default function App() {
 
   // Notifications state
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+
+  // Initialize theme on mount
+  useEffect(() => {
+    applyTheme(getSavedTheme());
+  }, []);
 
   // Synthesize notification sound
   const playNotificationSound = () => {
@@ -1717,12 +1723,17 @@ export default function App() {
       {showProfileModal && (
         <ProfileModal
           currentUser={currentUser}
+          allUsers={allUsers}
           onClose={() => setShowProfileModal(false)}
           onUpdateProfile={(updated) => {
             setCurrentUser((prev) => (prev ? { ...prev, ...updated } : prev));
           }}
           onLogout={handleLogout}
           onDeleteAccount={handleDeleteAccount}
+          onOpenAdmin={() => {
+            setShowProfileModal(false);
+            setShowAdminPanel(true);
+          }}
         />
       )}
 

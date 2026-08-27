@@ -1008,7 +1008,7 @@ app.post("/api/auth/login", (req: Request, res: Response) => {
 
 // 4. Update Profile
 app.post("/api/users/profile", (req: Request, res: Response) => {
-  const { userId, username, avatar, bio, isPrivate, hideEmail, closeFriendsUserIds } = req.body;
+  const { userId, username, avatar, bio, isPrivate, hideEmail, closeFriendsUserIds, aiAutoResponder, status } = req.body;
   const user = store.users.find((u) => u.id === userId);
   if (!user) {
     return res.status(404).json({ error: "User not found." });
@@ -1019,14 +1019,35 @@ app.post("/api/users/profile", (req: Request, res: Response) => {
   if (bio !== undefined) user.bio = bio;
   if (isPrivate !== undefined) user.isPrivate = isPrivate;
   if (hideEmail !== undefined) user.hideEmail = hideEmail;
+  if (status && (status === "online" || status === "offline" || status === "away")) {
+    user.status = status;
+  }
   if (closeFriendsUserIds !== undefined && Array.isArray(closeFriendsUserIds)) {
     user.closeFriendsUserIds = closeFriendsUserIds;
+  }
+  if (aiAutoResponder !== undefined) {
+    user.aiAutoResponder = aiAutoResponder;
   }
 
   saveStore();
   broadcastEvent("user_updated", user);
 
   return res.json({ user });
+});
+
+// 4a. Update AI Auto-Responder Settings Endpoint
+app.post("/api/users/auto-responder", (req: Request, res: Response) => {
+  const { userId, aiAutoResponder } = req.body;
+  const user = store.users.find((u) => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ error: "User not found." });
+  }
+
+  user.aiAutoResponder = aiAutoResponder;
+  saveStore();
+  broadcastEvent("user_updated", user);
+
+  return res.json({ success: true, aiAutoResponder: user.aiAutoResponder, user });
 });
 
 // 4a. Close Friends Management Endpoint
@@ -1548,16 +1569,63 @@ app.post("/api/messages/send", (req: Request, res: Response) => {
 
   broadcastEvent("new_message", newMessage, conv.participants);
 
-  // Check if this message triggers MK.ia (@MK.ia, @mk.ia, MK.ia, @mkai, @wia, @lia, @meta ai, @ai, @bot, @gemini) or if it's a DM with MK.ia
+  // Check if this message triggers MK.ia ($MK, $mk, $MK.ia, @MK, @mk, @MK.ia, @mk.ia, $ai, $gemini, /mk, /ai) or if it's a DM with MK.ia
   const isMkAiTriggered =
-    /@(mk\.ia|mkia|mk-ia|mk_ia|mk\s*ia|mk\s*ai|wia|lia|meta\s*ai|ai|bot|gemini)\b/i.test(text || "") ||
-    /\b(MK\.ia|mk\.ia|@MK\.ia|@mk\.ia)\b/i.test(text || "") ||
+    /(^|\s|\$|@|\/)(mk\.ia|mkia|mk-ia|mk_ia|mk\s*ia|mk|ai|gemini|bot)\b/i.test(text || "") ||
+    /\$MK\b/i.test(text || "") ||
+    /\$mk\b/i.test(text || "") ||
+    /\$summary\b/i.test(text || "") ||
+    /\$translate\b/i.test(text || "") ||
+    /\$explain\b/i.test(text || "") ||
+    /\$code\b/i.test(text || "") ||
+    /\$reply\b/i.test(text || "") ||
+    /\$creative\b/i.test(text || "") ||
     (conv.type === "dm" && (conv.participants.includes(MK_AI_USER.id) || conv.participants.includes("user_wia_ai") || conv.participants.includes("user_lia_ai")));
 
   if (isMkAiTriggered && senderId !== MK_AI_USER.id && senderId !== "user_wia_ai") {
     setTimeout(() => {
       triggerMkAiResponse(conv, newMessage, sender);
     }, 200);
+  } else if (senderId !== MK_AI_USER.id && senderId !== "user_wia_ai") {
+    // Check for AI Auto-Responder / Absence Assistant for other participants
+    let recipientCandidates: User[] = [];
+    if (conv.type === "dm") {
+      const otherId = conv.participants.find((p) => p !== senderId);
+      const otherUser = store.users.find((u) => u.id === otherId);
+      if (otherUser) recipientCandidates.push(otherUser);
+    } else {
+      // In groups, check if any user is specifically mentioned (@username)
+      const mentionedUsernames = (text || "").match(/@([a-zA-Z0-9_\-\.]+)/g)?.map((m) => m.slice(1).toLowerCase()) || [];
+      recipientCandidates = store.users.filter(
+        (u) => u.id !== senderId && u.id !== MK_AI_USER.id && mentionedUsernames.includes(u.username.toLowerCase())
+      );
+    }
+
+    for (const recipient of recipientCandidates) {
+      const autoConfig = recipient.aiAutoResponder;
+      if (autoConfig && autoConfig.enabled) {
+        // Check trigger condition
+        const isAwayOrOffline = recipient.status === "away" || recipient.status === "offline";
+        const triggerConditionMet = autoConfig.triggerWhen === "always" || isAwayOrOffline;
+
+        // Check audience
+        let audienceMet = false;
+        if (!autoConfig.targetAudience || autoConfig.targetAudience === "everyone") {
+          audienceMet = true;
+        } else if (autoConfig.targetAudience === "dms_only") {
+          audienceMet = conv.type === "dm";
+        } else if (autoConfig.targetAudience === "specific_users") {
+          audienceMet = Array.isArray(autoConfig.allowedUserIds) && autoConfig.allowedUserIds.includes(senderId);
+        }
+
+        if (triggerConditionMet && audienceMet) {
+          setTimeout(() => {
+            triggerAiAutoResponder(conv, newMessage, sender, recipient);
+          }, 350);
+          break; // Trigger for primary target
+        }
+      }
+    }
   }
 
   return res.json({ message: newMessage });
@@ -1567,13 +1635,27 @@ app.post("/api/messages/send", (req: Request, res: Response) => {
 async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender: User) {
   try {
     const rawText = userMsg.text || "";
-    // Clean tag prefix e.g. @MK.ia, MK.ia, @wia, @lia, @Meta AI, @meta, @ai, @bot, @gemini
+    // Clean tag prefix e.g. $MK, $mk, @MK.ia, MK.ia, @wia, @lia, @Meta AI, @meta, @ai, @bot, @gemini
     let prompt = rawText
-      .replace(/@(mk\.ia|mkia|mk-ia|mk_ia|mk\s*ia|mk\s*ai|wia|lia|meta\s*ai|ai|bot|gemini)\b/gi, "")
-      .replace(/\b(MK\.ia|mk\.ia|@MK\.ia|@mk\.ia)\b/gi, "")
+      .replace(/(^|\s)(\$|@|\/)(mk\.ia|mkia|mk-ia|mk_ia|mk\s*ia|mk|ai|gemini|bot)\b/gi, "")
+      .replace(/\b(MK\.ia|mk\.ia|@MK\.ia|@mk\.ia|\$MK|\$mk)\b/gi, "")
       .trim();
+
+    const isSummaryCommand = /\$summary\b|\$summarize\b/i.test(rawText);
+    const isTranslateCommand = /\$translate\b/i.test(rawText);
+    const isExplainCommand = /\$explain\b/i.test(rawText);
+    const isCodeCommand = /\$code\b/i.test(rawText);
+    const isReplyCommand = /\$reply\b/i.test(rawText);
+    const isCreativeCommand = /\$creative\b/i.test(rawText);
+
     if (!prompt) {
-      prompt = "Hello MK.ia! Please introduce yourself, your capabilities, and how you can assist me.";
+      if (isSummaryCommand) {
+        prompt = "Please provide an executive summary and key highlights of our recent conversation.";
+      } else if (isReplyCommand) {
+        prompt = "Please analyze the conversation and suggest a smart, helpful contextual response.";
+      } else {
+        prompt = "Hello MK.ia! Please introduce yourself, your capabilities, and how you can assist me.";
+      }
     }
 
     // Get previous 16 messages for rich multi-turn conversational context
@@ -1581,13 +1663,17 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
       .filter((m) => m.conversationId === conv.id && m.id !== userMsg.id)
       .slice(-16);
 
-    const systemInstruction = `You are MK.ia, the elite intelligent AI assistant built natively into MK Wavegram, powered by Google Gemini.
+    const systemInstruction = `You are MK.ia, the elite, high-intelligence AI Assistant natively integrated into MK Wavegram, powered by Google Gemini.
 Your mission is to provide exceptionally deep, articulate, comprehensive, structured, and insightful answers:
-- Detect the user's language automatically. If the user writes in French (or is in French mode), reply in fluent, natural French (Français). If the user writes in English, reply in English. Always match the user's language smoothly.
-- Provide profound, well-reasoned, and structured answers (with clear Markdown headings, bullet points, structured tables, and concrete examples).
-- For technical, mathematical, or coding tasks: provide robust, error-free TypeScript/React/Python/Node.js snippets with clear step-by-step explanations.
-- For brainstorming, planning, stories, or strategic questions: deliver high-depth creative frameworks, actionable takeaways, and structured solutions.
-- For voice calls and conversations: be intelligent, polite, proactive, and deeply helpful. Maintain continuity with prior messages in this conversation.`;
+- Intelligence & Depth: Answer any question thoroughly, whether it is advanced programming, mathematics, science, literature, business strategy, creative writing, or everyday life. Never give shallow one-liners unless explicitly asked.
+- Language Fluidity: Automatically detect and respond in the language used by the user. Support fluent English, French (Français), Arabic (العربية), Hindi (हिन्दी), Chinese (中文), Russian (Русский), and any other requested language.
+- Rich Markdown Formatting: Use clear Markdown headings (###), bullet points, bold key terms, tables, and structured code blocks with syntax highlighting where appropriate.
+- Context Awareness: Read the previous conversation history carefully. Maintain continuity, reference previous topics naturally, and respond directly to what @${sender.username} and others said.
+- Special Command Handling:
+  - If requested to summarize ($summary), provide a structured bulleted breakdown of topics discussed and action items.
+  - If requested to translate ($translate), detect the target language and translate with high cultural and semantic accuracy.
+  - If requested to code ($code), provide modern, type-safe, production-ready code with step-by-step explanations.
+  - If requested for a smart reply ($reply), craft a polished, relevant response that fits the ongoing chat.`;
 
     let replyText = "";
     const gemini = getGeminiClient();
@@ -1705,6 +1791,131 @@ Your mission is to provide exceptionally deep, articulate, comprehensive, struct
     store.messages.push(errMessage);
     saveStore();
     broadcastEvent("new_message", errMessage, conv.participants);
+  }
+}
+
+// AI Auto-Responder / Absence Assistant proxy handler
+async function triggerAiAutoResponder(conv: Conversation, userMsg: Message, sender: User, recipient: User) {
+  try {
+    const config = recipient.aiAutoResponder || { enabled: true };
+    const customDirectives = config.customInstructions || "";
+    const responseStyle = config.responseStyle || "custom_instructions";
+    const prefLanguage = config.language || "auto";
+
+    // Gather previous 14 messages in this conversation for contextual understanding
+    const previousConversationMessages = store.messages
+      .filter((m) => m.conversationId === conv.id && m.id !== userMsg.id)
+      .slice(-14);
+
+    const systemInstruction = `You are the AI Absence Assistant & Auto-Responder acting on behalf of "${recipient.username}" on MK Wavegram.
+Context:
+- "${recipient.username}" is currently away or unavailable.
+- The person currently sending the message is "${sender.username}".
+- Your goal is to reply intelligently to "${sender.username}" based on the ongoing conversation context.
+- Behavioral Mode: ${responseStyle === "custom_instructions" && customDirectives ? `Follow the user's specific absence directives strictly: "${customDirectives}". Be polite, clear, and relevant to what ${sender.username} said.` : `Full Freedom: Be a courteous, smart AI proxy for ${recipient.username}. Acknowledge that ${recipient.username} is currently away, intelligently address or note what ${sender.username} said based on the conversation history, and assist them constructively.`}
+- Language requirement: ${prefLanguage !== "auto" ? `Respond in ${prefLanguage}.` : `Respond in the same language as ${sender.username}'s message (e.g., English, French, Arabic, Hindi, Chinese, Russian).`}
+- Format: Keep the reply conversational, natural, and helpful (1-3 sentences or clear bullet points if answering a question).`;
+
+    let replyText = "";
+    const gemini = getGeminiClient();
+    if (gemini) {
+      const rawTurns: Array<{ role: "user" | "model"; text: string }> = [];
+      previousConversationMessages.forEach((m) => {
+        const role: "user" | "model" = m.senderId === recipient.id ? "model" : "user";
+        const text = m.text || `[${m.type}]`;
+        if (text && text.trim()) {
+          rawTurns.push({
+            role,
+            text: `@${m.senderName}: ${text}`
+          });
+        }
+      });
+
+      rawTurns.push({
+        role: "user",
+        text: `@${sender.username}: ${userMsg.text || "[Media/Attachment]"}`
+      });
+
+      while (rawTurns.length > 0 && rawTurns[0].role === "model") {
+        rawTurns.shift();
+      }
+
+      const mergedTurns: Array<{ role: "user" | "model"; text: string }> = [];
+      for (const turn of rawTurns) {
+        if (mergedTurns.length > 0 && mergedTurns[mergedTurns.length - 1].role === turn.role) {
+          mergedTurns[mergedTurns.length - 1].text += "\n\n" + turn.text;
+        } else {
+          mergedTurns.push({ role: turn.role, text: turn.text });
+        }
+      }
+
+      const geminiContents = mergedTurns.map((t) => ({
+        role: t.role,
+        parts: [{ text: t.text }]
+      }));
+
+      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+      for (const candidateModel of modelsToTry) {
+        try {
+          const response = await gemini.models.generateContent({
+            model: candidateModel,
+            contents: geminiContents,
+            config: {
+              systemInstruction
+            }
+          });
+          if (response.text && response.text.trim().length > 0) {
+            replyText = response.text;
+            break;
+          }
+        } catch (candidateErr) {
+          console.warn(`Auto-responder model ${candidateModel} failed:`, candidateErr);
+        }
+      }
+    }
+
+    if (!replyText || replyText.trim().length === 0) {
+      if (customDirectives) {
+        replyText = `🤖 [Auto-Reply]: Hi @${sender.username}, ${recipient.username} is currently away. Note: ${customDirectives}`;
+      } else {
+        replyText = `🤖 [Auto-Reply]: Hi @${sender.username}, ${recipient.username} is currently away. Your message has been received and will be checked as soon as they return!`;
+      }
+    }
+
+    const autoReplyMessage: Message = {
+      id: "msg_auto_" + Math.random().toString(36).substring(2, 10),
+      conversationId: conv.id,
+      senderId: recipient.id,
+      senderName: recipient.username,
+      senderAvatar: recipient.avatar,
+      text: replyText.trim(),
+      type: "text",
+      isAiAutoReply: true,
+      reactions: {},
+      likes: [],
+      replyTo: {
+        id: userMsg.id,
+        senderName: sender.username,
+        text: userMsg.text,
+        type: userMsg.type
+      },
+      createdAt: new Date().toISOString()
+    };
+
+    store.messages.push(autoReplyMessage);
+
+    conv.lastMessage = {
+      text: replyText.trim().slice(0, 100) + (replyText.length > 100 ? "..." : ""),
+      senderId: recipient.id,
+      senderName: recipient.username,
+      createdAt: autoReplyMessage.createdAt
+    };
+    conv.updatedAt = autoReplyMessage.createdAt;
+    saveStore();
+
+    broadcastEvent("new_message", autoReplyMessage, conv.participants);
+  } catch (err) {
+    console.error("Error in AI auto responder:", err);
   }
 }
 

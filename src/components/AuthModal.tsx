@@ -338,6 +338,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ onLoginSuccess }) => {
                 </>
               )}
             </button>
+
+            {/* Quick Admin Auto-fill Button */}
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setEmail("addmmin@gmail.com");
+                  setPassword("adminadmin12");
+                }}
+                className="w-full py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>👑 Auto-fill Admin Login (`addmmin@gmail.com`)</span>
+              </button>
+            </div>
           </form>
         )}
 

@@ -1,10 +1,21 @@
+export interface AiAutoResponderConfig {
+  enabled: boolean;
+  triggerWhen?: 'always' | 'away_or_offline' | 'offline_only';
+  targetAudience?: 'everyone' | 'specific_users' | 'dms_only';
+  allowedUserIds?: string[]; // Specific user IDs when targetAudience is specific_users
+  responseStyle?: 'custom_instructions' | 'full_freedom';
+  customInstructions?: string;
+  language?: 'auto' | 'en' | 'fr' | 'ar' | 'hi' | 'zh' | 'ru' | string;
+  updatedAt?: string;
+}
+
 export interface User {
   id: string;
   email: string;
   username: string;
   avatar: string;
   bio?: string;
-  status: 'online' | 'offline' | 'away';
+  status: 'online' | 'offline' | 'away' | 'busy';
   lastSeen?: string;
   createdAt: string;
   badges?: string[];
@@ -21,6 +32,7 @@ export interface User {
   hasAccount?: boolean;
   acceptedPrivacyTerms?: boolean;
   privacyAcceptedAt?: string;
+  aiAutoResponder?: AiAutoResponderConfig;
   warnings?: {
     id: string;
     reason: string;
@@ -145,6 +157,7 @@ export interface Message {
   isDeletedForAll?: boolean;
   deletedForUsers?: string[]; // array of userIds who deleted for themselves
   isSystem?: boolean;
+  isAiAutoReply?: boolean;
   createdAt: string;
 }
 

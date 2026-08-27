@@ -31,7 +31,8 @@ import {
   ShieldAlert,
   ShieldCheck,
   Radio,
-  Languages
+  Languages,
+  Palette
 } from "lucide-react";
 import { translations, getSavedLanguage, setSavedLanguage, Language } from "../i18n";
 
@@ -133,8 +134,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [showDropdownMenu, setShowDropdownMenu] = useState(false);
   const [showFabMenu, setShowFabMenu] = useState(false);
 
+  const LANG_CYCLE: { code: Language; label: string; flag: string }[] = [
+    { code: "en", label: "EN", flag: "🇬🇧" },
+    { code: "fr", label: "FR", flag: "🇫🇷" },
+    { code: "ar", label: "AR", flag: "🇸🇦" },
+    { code: "hi", label: "HI", flag: "🇮🇳" },
+    { code: "zh", label: "ZH", flag: "🇨🇳" },
+    { code: "ru", label: "RU", flag: "🇷🇺" }
+  ];
+
   const handleToggleLanguage = () => {
-    const nextLang: Language = lang === "fr" ? "en" : "fr";
+    const currentIndex = LANG_CYCLE.findIndex((l) => l.code === lang);
+    const nextIndex = (currentIndex + 1) % LANG_CYCLE.length;
+    const nextLang = LANG_CYCLE[nextIndex].code;
     setLang(nextLang);
     setSavedLanguage(nextLang);
   };
@@ -270,10 +282,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
               {/* Language Switcher Badge */}
               <button
                 onClick={handleToggleLanguage}
-                title={lang === "fr" ? "Passer en Anglais" : "Switch to French"}
+                title="Switch Language / Сменить язык / 切换语言 / تغيير اللغة"
                 className="px-2 py-1 rounded-lg bg-[#202b36] hover:bg-[#283745] text-xs font-bold text-slate-200 border border-[#101921] flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer"
               >
-                <span>{lang === "fr" ? "🇫🇷 FR" : "🇬🇧 EN"}</span>
+                <span>
+                  {lang === "fr"
+                    ? "🇫🇷 FR"
+                    : lang === "ar"
+                    ? "🇸🇦 AR"
+                    : lang === "hi"
+                    ? "🇮🇳 HI"
+                    : lang === "zh"
+                    ? "🇨🇳 ZH"
+                    : lang === "ru"
+                    ? "🇷🇺 RU"
+                    : "🇬🇧 EN"}
+                </span>
+              </button>
+
+              {/* Theme Settings Button */}
+              <button
+                onClick={onOpenProfile}
+                title="Themes & Customization"
+                className="w-9 h-9 flex items-center justify-center rounded-full text-cyan-400 hover:text-white hover:bg-[#202b36] transition-colors cursor-pointer"
+              >
+                <Palette className="w-4.5 h-4.5" />
               </button>
 
               <button
@@ -343,6 +376,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           <span>Trust & Safety Center 🛡️</span>
                         </button>
                       )}
+
+                      <button
+                        onClick={() => {
+                          setShowDropdownMenu(false);
+                          onOpenProfile();
+                        }}
+                        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-[#17212b] text-cyan-300 transition-colors text-left"
+                      >
+                        <Palette className="w-4 h-4 text-cyan-400" />
+                        <span className="font-medium">Themes & Visual Styling</span>
+                      </button>
 
                       <button
                         onClick={() => {
