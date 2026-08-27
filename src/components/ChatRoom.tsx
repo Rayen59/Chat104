@@ -1461,15 +1461,6 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             <CheckSquare className="w-4 h-4" />
           </button>
 
-          {/* Typography & Text Style T Button */}
-          <button
-            onClick={() => setShowTypographyModal(true)}
-            title="Writing Style & Typography (T)"
-            className="p-2 rounded-full text-indigo-400 hover:text-white hover:bg-indigo-600/30 transition-colors cursor-pointer"
-          >
-            <Type className="w-4 h-4" />
-          </button>
-
           {!isOfficialChannel && (
             <>
               <button
