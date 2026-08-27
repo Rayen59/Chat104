@@ -80,7 +80,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const [lang, setLang] = useState<Language>(getSavedLanguage());
   const t = translations[lang] || translations.en;
 
-  const [activeSection, setActiveSection] = useState<"general" | "themes" | "ai_responder" | "admin" | "privacy" | "language">("general");
+  const [activeSection, setActiveSection] = useState<"general" | "themes" | "ai_responder" | "privacy" | "language">("general");
 
   const [username, setUsername] = useState(currentUser.username);
   const [bio, setBio] = useState(currentUser.bio || "");
@@ -281,19 +281,6 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
           <button
             type="button"
-            onClick={() => setActiveSection("admin")}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-              activeSection === "admin"
-                ? "bg-amber-600 text-white shadow-md"
-                : "text-amber-300 hover:bg-amber-950/40 hover:text-amber-200"
-            }`}
-          >
-            <KeyRound className="w-3.5 h-3.5" />
-            <span>Admin Info</span>
-          </button>
-
-          <button
-            type="button"
             onClick={() => setActiveSection("privacy")}
             className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               activeSection === "privacy"
@@ -444,6 +431,21 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   className="w-full bg-[#0e1621] border border-[#101921] rounded-xl py-2.5 px-3.5 text-sm text-white placeholder-[#7d8b99] focus:outline-none focus:border-[#3390ec] transition-colors resize-none leading-relaxed"
                 />
               </div>
+
+              {/* Admin Panel Quick Access for Logged-In Admin */}
+              {isAdmin && onOpenAdmin && (
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={onOpenAdmin}
+                    className="w-full py-2.5 px-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition cursor-pointer active:scale-98"
+                  >
+                    <ShieldCheck className="w-4 h-4" />
+                    <span>Launch Admin Control Panel</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -749,97 +751,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
             </div>
           )}
 
-          {/* SECTION 4: ADMIN INFORMATION */}
-          {activeSection === "admin" && (
-            <div className="space-y-4 animate-in fade-in">
-              <div className="p-4 bg-gradient-to-br from-amber-950/40 via-[#18130a] to-[#0e1621] border border-amber-500/40 rounded-2xl">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <div className="p-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                    <KeyRound className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                      <span>Administrator Account Credentials</span>
-                      <span className="px-1.5 py-0.5 text-[9px] font-extrabold bg-amber-500/30 text-amber-300 rounded-md">
-                        OFFICIAL
-                      </span>
-                    </h4>
-                    <p className="text-xs text-amber-200/70">
-                      Use these credentials to sign in as the Platform Administrator with full overseer permissions.
-                    </p>
-                  </div>
-                </div>
-
-                {/* Credentials Box */}
-                <div className="mt-3 space-y-2 bg-[#0e1621] p-3 rounded-xl border border-amber-500/20">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-medium">Admin Email:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-amber-300 font-bold select-all">addmmin@gmail.com</span>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard("addmmin@gmail.com", "email")}
-                        className="p-1 text-slate-400 hover:text-white transition cursor-pointer"
-                        title="Copy email"
-                      >
-                        {copiedKey === "email" ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-400 font-medium">Admin Password:</span>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-amber-300 font-bold select-all">adminadmin12</span>
-                      <button
-                        type="button"
-                        onClick={() => copyToClipboard("adminadmin12", "pwd")}
-                        className="p-1 text-slate-400 hover:text-white transition cursor-pointer"
-                        title="Copy password"
-                      >
-                        {copiedKey === "pwd" ? (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-800">
-                    <span className="text-slate-400 font-medium">Admin Username:</span>
-                    <span className="font-semibold text-white">MK Admin 👑</span>
-                  </div>
-                </div>
-
-                {/* Open Admin Panel Button if current user is admin */}
-                {isAdmin && onOpenAdmin && (
-                  <button
-                    type="button"
-                    onClick={onOpenAdmin}
-                    className="mt-3.5 w-full py-2.5 px-4 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white font-bold text-xs rounded-xl shadow-lg flex items-center justify-center gap-2 transition cursor-pointer active:scale-98"
-                  >
-                    <ShieldCheck className="w-4 h-4" />
-                    <span>Launch Admin Control Panel</span>
-                    <ExternalLink className="w-3.5 h-3.5" />
-                  </button>
-                )}
-              </div>
-
-              <div className="p-3.5 bg-[#0e1621] border border-[#101921] rounded-2xl flex items-start gap-3 text-xs text-slate-400">
-                <Info className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                <p>
-                  As an Administrator, you can view all user activities, broadcast announcements on the official MK Channel, manage reported content, grant VIP badges, and moderate groups.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* SECTION 5: PRIVACY */}
+          {/* SECTION 4: PRIVACY */}
           {activeSection === "privacy" && (
             <div className="space-y-3 animate-in fade-in">
               <div className="p-3.5 bg-[#0e1621] border border-[#101921] rounded-2xl flex items-center justify-between">

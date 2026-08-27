@@ -1650,11 +1650,11 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
 
     if (!prompt) {
       if (isSummaryCommand) {
-        prompt = "Please provide an executive summary and key highlights of our recent conversation.";
+        prompt = "Please provide a concise executive summary and key highlights of our recent conversation.";
       } else if (isReplyCommand) {
-        prompt = "Please analyze the conversation and suggest a smart, helpful contextual response.";
+        prompt = "Please analyze the ongoing conversation and suggest a smart, helpful contextual response.";
       } else {
-        prompt = "Hello MK.ia! Please introduce yourself, your capabilities, and how you can assist me.";
+        prompt = "Hello! How are you doing today?";
       }
     }
 
@@ -1663,17 +1663,19 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
       .filter((m) => m.conversationId === conv.id && m.id !== userMsg.id)
       .slice(-16);
 
-    const systemInstruction = `You are MK.ia, the elite, high-intelligence AI Assistant natively integrated into MK Wavegram, powered by Google Gemini.
-Your mission is to provide exceptionally deep, articulate, comprehensive, structured, and insightful answers:
-- Intelligence & Depth: Answer any question thoroughly, whether it is advanced programming, mathematics, science, literature, business strategy, creative writing, or everyday life. Never give shallow one-liners unless explicitly asked.
-- Language Fluidity: Automatically detect and respond in the language used by the user. Support fluent English, French (Français), Arabic (العربية), Hindi (हिन्दी), Chinese (中文), Russian (Русский), and any other requested language.
-- Rich Markdown Formatting: Use clear Markdown headings (###), bullet points, bold key terms, tables, and structured code blocks with syntax highlighting where appropriate.
-- Context Awareness: Read the previous conversation history carefully. Maintain continuity, reference previous topics naturally, and respond directly to what @${sender.username} and others said.
-- Special Command Handling:
-  - If requested to summarize ($summary), provide a structured bulleted breakdown of topics discussed and action items.
-  - If requested to translate ($translate), detect the target language and translate with high cultural and semantic accuracy.
-  - If requested to code ($code), provide modern, type-safe, production-ready code with step-by-step explanations.
-  - If requested for a smart reply ($reply), craft a polished, relevant response that fits the ongoing chat.`;
+    const systemInstruction = `You are MK.ia, an exceptionally intelligent, perceptive, articulate, empathetic, and sharp AI companion and assistant natively integrated into MK Wavegram, powered by Google Gemini.
+
+Core Behavior Guidelines:
+- High Intelligence & Depth: Always think deeply and provide clear, articulate, and accurate answers. For complex topics (coding, algorithms, mathematics, science, writing, strategy), give insightful, structured, and production-ready solutions with clean Markdown.
+- Authentic & Conversational: Speak naturally, warmly, and politely. Never use robotic clichés, canned fillers, or self-centered jargon (never say things like "I have processed your request", "Regarding your inquiry", "Analysis & Insights", or "Tailoring the solution to your workflow").
+- Casual & Social Interactions: For greetings and friendly check-ins (e.g. "hi", "how are you", "what's up", "tell me a joke"), reply warmly, naturally, and engagingly like a brilliant and considerate friend.
+- Multilingual Fluency: Automatically detect the language of the user (English, French, Arabic, Spanish, German, Hindi, Chinese, Russian, etc.) and reply natively, fluently, and idiomatically in that language.
+- Context Awareness: Read the conversation history carefully. Maintain conversational memory and refer to topics or the user (@${sender.username}) naturally.
+- Command Directives:
+  * $summary: Provide a crisp, bulleted summary of key points and next steps.
+  * $translate: Translate text with high semantic and cultural accuracy.
+  * $code: Provide clean, modern, type-safe code with clear explanatory annotations.
+  * $explain: Break down concepts simply and intuitively with clear analogies.`;
 
     let replyText = "";
     const gemini = getGeminiClient();
@@ -1717,8 +1719,14 @@ Your mission is to provide exceptionally deep, articulate, comprehensive, struct
         parts: [{ text: t.text }]
       }));
 
-      // Attempt multi-tier model cascade with active, supported Gemini models
-      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+      // Attempt multi-tier model cascade with active Gemini models
+      const modelsToTry = [
+        "gemini-2.5-flash",
+        "gemini-3.7-flash",
+        "gemini-flash-latest",
+        "gemini-2.5-flash-lite",
+        "gemini-3.1-flash-lite"
+      ];
       for (const candidateModel of modelsToTry) {
         try {
           const response = await gemini.models.generateContent({
@@ -1807,14 +1815,14 @@ async function triggerAiAutoResponder(conv: Conversation, userMsg: Message, send
       .filter((m) => m.conversationId === conv.id && m.id !== userMsg.id)
       .slice(-14);
 
-    const systemInstruction = `You are the AI Absence Assistant & Auto-Responder acting on behalf of "${recipient.username}" on MK Wavegram.
+    const systemInstruction = `You are the AI Absence Assistant acting courteously on behalf of "${recipient.username}" on MK Wavegram.
 Context:
 - "${recipient.username}" is currently away or unavailable.
 - The person currently sending the message is "${sender.username}".
-- Your goal is to reply intelligently to "${sender.username}" based on the ongoing conversation context.
-- Behavioral Mode: ${responseStyle === "custom_instructions" && customDirectives ? `Follow the user's specific absence directives strictly: "${customDirectives}". Be polite, clear, and relevant to what ${sender.username} said.` : `Full Freedom: Be a courteous, smart AI proxy for ${recipient.username}. Acknowledge that ${recipient.username} is currently away, intelligently address or note what ${sender.username} said based on the conversation history, and assist them constructively.`}
-- Language requirement: ${prefLanguage !== "auto" ? `Respond in ${prefLanguage}.` : `Respond in the same language as ${sender.username}'s message (e.g., English, French, Arabic, Hindi, Chinese, Russian).`}
-- Format: Keep the reply conversational, natural, and helpful (1-3 sentences or clear bullet points if answering a question).`;
+- Your mission is to reply thoughtfully and politely to "${sender.username}".
+- Mode: ${responseStyle === "custom_instructions" && customDirectives ? `Follow the user's custom instructions: "${customDirectives}". Address ${sender.username} politely and answer appropriately.` : `Be a helpful and courteous proxy. Inform ${sender.username} that ${recipient.username} is temporarily away, acknowledge their message warmly, and provide relevant assistance if possible.`}
+- Language requirement: ${prefLanguage !== "auto" ? `Respond in ${prefLanguage}.` : `Respond in the same language as ${sender.username}'s message.`}
+- Keep it natural, conversational, and polite (1-3 sentences).`;
 
     let replyText = "";
     const gemini = getGeminiClient();
@@ -1854,7 +1862,12 @@ Context:
         parts: [{ text: t.text }]
       }));
 
-      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite"];
+      const modelsToTry = [
+        "gemini-2.5-flash",
+        "gemini-3.7-flash",
+        "gemini-flash-latest",
+        "gemini-2.5-flash-lite"
+      ];
       for (const candidateModel of modelsToTry) {
         try {
           const response = await gemini.models.generateContent({
@@ -1876,9 +1889,9 @@ Context:
 
     if (!replyText || replyText.trim().length === 0) {
       if (customDirectives) {
-        replyText = `🤖 [Auto-Reply]: Hi @${sender.username}, ${recipient.username} is currently away. Note: ${customDirectives}`;
+        replyText = `Hi @${sender.username}! ${recipient.username} is currently away. Note: ${customDirectives}`;
       } else {
-        replyText = `🤖 [Auto-Reply]: Hi @${sender.username}, ${recipient.username} is currently away. Your message has been received and will be checked as soon as they return!`;
+        replyText = `Hi @${sender.username}! ${recipient.username} is currently away right now. Your message has been received and they'll get back to you as soon as they are back!`;
       }
     }
 
@@ -1919,42 +1932,131 @@ Context:
   }
 }
 
-// Smart contextual comprehensive fallback response generator for MK.ia
+// Truly smart, friendly, natural, and comprehensive conversational engine for MK.ia
 function generateSmartFallbackReply(prompt: string, username: string, conv?: Conversation): string {
-  const p = prompt.toLowerCase();
+  const p = prompt.toLowerCase().trim();
 
-  // Math expressions
-  const mathMatch = prompt.match(/(\d+[\s\+\-\*\/\^\%]+\d+)/);
+  // 1. Math expressions evaluation (e.g. "2+2", "45 * 12", "sqrt(144)")
+  const mathMatch = prompt.match(/(\d+[\s\+\-\*\/\^\%\.]+\d+)/);
   if (mathMatch) {
     try {
       const sanitized = mathMatch[0].replace(/[^0-9\+\-\*\/\.]/g, "");
       // eslint-disable-next-line no-eval
       const result = Function(`'use strict'; return (${sanitized})`)();
-      return `🔢 **MK.ia Mathematical Solution for @${username}**:\n\n### Equation\n\`${mathMatch[0]}\`\n\n### Computed Result\n**= ${result}** ✨\n\nIf you need multi-variable calculus, algorithmic proofs, or statistical modeling, feel free to tag \`@MK.ia\`!`;
+      if (typeof result === "number" && !isNaN(result)) {
+        return `The result for **\`${mathMatch[0].trim()}\`** is **${result}** ✨\n\nLet me know if you need help with algebraic proofs, geometry, calculus, or statistics!`;
+      }
     } catch (e) {}
   }
 
-  // Code & Programming
-  if (p.includes("code") || p.includes("javascript") || p.includes("typescript") || p.includes("python") || p.includes("react") || p.includes("html") || p.includes("css") || p.includes("bug") || p.includes("api") || p.includes("sql")) {
-    return `💻 **MK.ia Deep Engineering & Code Assistant for @${username}**\n\nI can analyze, write, refactor, and benchmark code across **TypeScript, React, Python, Node.js, Next.js, and SQL**.\n\n### Architecture Best Practice Example:\n\`\`\`typescript\n// Secure Real-Time Event Dispatcher Pattern\ninterface EventPayload<T = unknown> {\n  type: string;\n  data: T;\n  timestamp: number;\n}\n\nexport class EventDispatcher {\n  private subscribers = new Map<string, Set<(data: any) => void>>();\n\n  subscribe<T>(eventType: string, handler: (data: T) => void): () => void {\n    if (!this.subscribers.has(eventType)) {\n      this.subscribers.set(eventType, new Set());\n    }\n    this.subscribers.get(eventType)!.add(handler);\n    return () => this.subscribers.get(eventType)?.delete(handler);\n  }\n\n  publish<T>(eventType: string, data: T): void {\n    this.subscribers.get(eventType)?.forEach((handler) => handler(data));\n  }\n}\n\`\`\`\n\n**Next Steps:** Send me your specific component, database query, or bug snippet, and I will provide an optimized, production-ready solution.`;
+  // 2. Personal check-ins / "how are you" / "comment vas tu" / "ca va" / "kifak"
+  if (
+    /^(how\s+are\s+you|how're\s+you|how\s+are\s+things|how\s+do\s+you\s+feel|how's\s+it\s+going|hows\s+it\s+going|how\s+is\s+your\s+day)\b/i.test(p) ||
+    p.includes("how are you") ||
+    p.includes("how r u") ||
+    p.includes("how's it going") ||
+    p.includes("comment vas-tu") ||
+    p.includes("comment ca va") ||
+    p.includes("comment tu vas") ||
+    p.includes("ca va") ||
+    p.includes("ça va") ||
+    p.includes("kifak") ||
+    p.includes("labas")
+  ) {
+    return `I'm doing wonderfully, thank you for asking @${username}! 😊\n\nI'm feeling great and ready to help you with anything — whether it's coding, writing, answering questions, or brainstorming ideas. How is your day going so far?`;
   }
 
-  // Translation requests
-  if (p.includes("traduis") || p.includes("traduire") || p.includes("translate") || p.includes("traduction")) {
-    return `🌍 **MK.ia Multilingual Translation Engine**\n\nI provide high-fidelity contextual translation across:\n- **English, French, Spanish, German, Italian, Portuguese**\n- **Arabic (Modern Standard & Dialects: Tunisian, Egyptian, Moroccan, Levantine, Gulf)**\n- **Japanese, Korean, Chinese, Russian, Turkish**\n\n👉 Send me your sentence or transcript along with your desired target language!`;
+  // 3. Casual Greetings (hi, hello, hey, salut, bonjour, marhaba, coucou, salam)
+  if (
+    /^(hi|hello|hey|heyy|yo|hola|bonjour|salut|coucou|salam|marhaba|ahlan|namaste)\b/i.test(p) ||
+    p === "hi" ||
+    p === "hello" ||
+    p === "hey" ||
+    p === "salut" ||
+    p === "bonjour"
+  ) {
+    return `Hello @${username}! 👋 Great to see you here on MK Wavegram. How are you doing today? What can I help you with?`;
   }
 
-  // Greetings
-  if (p.includes("hello") || p.includes("hi") || p.includes("hey") || p.includes("salut") || p.includes("bonjour")) {
-    return `Hello @${username}! 👋 I am **MK.ia**, your native intelligent AI assistant on **MK Wavegram**, powered by Google Gemini.\n\n### How I can assist you:\n1. 🧠 **Deep Research & Analysis**: Thorough answers to complex queries in science, engineering, business, and philosophy.\n2. 💻 **Full-Stack Development**: Writing, debugging, and explaining React, TypeScript, Python, and backend APIs.\n3. 🎨 **Content Creation**: Drafting story captions, announcements, summaries, and creative brainstorming.\n4. 🌐 **Real-time Translation**: Instant translations across 50+ languages.\n\nTag me anytime with \`@MK.ia\` or \`@mk.ia\` in any chat! What would you like to explore today?`;
+  // 4. "What's up" / "What are you doing" / "Quoi de neuf"
+  if (
+    p.includes("what's up") ||
+    p.includes("whats up") ||
+    p.includes("what are you doing") ||
+    p.includes("quoi de neuf") ||
+    p.includes("tu fais quoi") ||
+    p.includes("what r u doing")
+  ) {
+    return `Not much, just here and ready to assist you in real time! 🚀 I'm tuned to help you with coding, creative tasks, quick translations, or whatever is on your mind. What are you working on today?`;
   }
 
-  if (p.includes("who are you") || p.includes("what are you") || p.includes("what can you do") || p.includes("qui es-tu")) {
-    return `I am **MK.ia** ⚡, the official high-intelligence AI assistant embedded directly into MK Wavegram, powered by Google Gemini.\n\n### Key Strengths:\n- **Deep Technical Understanding**: Architecture, algorithms, and full-stack development.\n- **Multi-Turn Context**: Maintaining coherent memory across long discussions.\n- **Analytical Depth**: Providing structured, actionable, and comprehensive breakdowns.\n\nFeel free to ask me anything or tag \`@MK.ia\` in any channel or direct chat!`;
+  // 5. "Who are you" / "What can you do" / "Qui es-tu"
+  if (
+    p.includes("who are you") ||
+    p.includes("what are you") ||
+    p.includes("what can you do") ||
+    p.includes("who made you") ||
+    p.includes("qui es tu") ||
+    p.includes("qui es-tu") ||
+    p.includes("que peux-tu faire")
+  ) {
+    return `I am **MK.ia** ⚡, your AI companion on **MK Wavegram**, powered by Google Gemini.\n\n### What I can help you with:\n- 💡 **Deep Thinking & Reasoning**: Solving complex problems in technology, science, business, and philosophy.\n- 💻 **Software & Engineering**: Writing, reviewing, and debugging React, TypeScript, Python, SQL, and backend APIs.\n- 🌐 **Multilingual Translations**: Translating and communicating fluently in English, French, Arabic, Spanish, German, and more.\n- ✍️ **Writing & Brainstorming**: Drafting articles, creative stories, summaries, and meeting notes.\n\nFeel free to ask me anything or tag \`@MK.ia\` in any chat!`;
   }
 
-  // General insightful contextual reply
-  return `⚡ **MK.ia Gemini Intelligence**: Greetings @${username}!\n\nRegarding your inquiry: **"${prompt}"**\n\n### Analysis & Insights:\nI have processed your request. Here are key points to consider:\n- **Context**: Tailoring the solution specifically to your workflow.\n- **Precision**: Providing verified, high-depth insights.\n\nWould you like me to elaborate on a specific angle, generate code, or outline a detailed action plan? Just reply with more details!`;
+  // 6. Gratitude / "Thank you" / "Merci" / "Shukran"
+  if (
+    p.includes("thank") ||
+    p.includes("thanks") ||
+    p.includes("merci") ||
+    p.includes("shukran") ||
+    p.includes("danke") ||
+    p.includes("gracias")
+  ) {
+    return `You're very welcome, @${username}! Always happy to help. Let me know if there's anything else you'd like to work on! ✨`;
+  }
+
+  // 7. Jokes & Humor ("tell me a joke", "raconte une blague", "joke")
+  if (p.includes("joke") || p.includes("blague") || p.includes("funny") || p.includes("humour")) {
+    const jokes = [
+      `Why do programmers prefer dark mode? Because light attracts bugs! 🐛💡`,
+      `There are 10 types of people in the world: those who understand binary, and those who don't. 💻`,
+      `Why was the JavaScript developer sad? Because they didn't Node how to Express themselves! 😄`,
+      `A SQL query walks into a bar, walks up to two tables and asks: "Can I join you?" 🍻`
+    ];
+    const chosenJoke = jokes[Math.floor(Math.random() * jokes.length)];
+    return `Here is one for you, @${username} 😄:\n\n> ${chosenJoke}`;
+  }
+
+  // 8. Programming & Code queries
+  if (
+    p.includes("code") ||
+    p.includes("javascript") ||
+    p.includes("typescript") ||
+    p.includes("python") ||
+    p.includes("react") ||
+    p.includes("html") ||
+    p.includes("css") ||
+    p.includes("bug") ||
+    p.includes("api") ||
+    p.includes("database") ||
+    p.includes("sql")
+  ) {
+    return `I can help you build, optimize, and debug high-performance code across **TypeScript, React, Python, Node.js, and SQL**.\n\n### Clean React Hook Pattern Example:\n\`\`\`typescript\nimport { useState, useEffect } from "react";\n\nexport function useDebounce<T>(value: T, delayMs: number = 300): T {\n  const [debouncedValue, setDebouncedValue] = useState<T>(value);\n\n  useEffect(() => {\n    const timer = setTimeout(() => setDebouncedValue(value), delayMs);\n    return () => clearTimeout(timer);\n  }, [value, delayMs]);\n\n  return debouncedValue;\n}\n\`\`\`\n\nShare your code snippet or specific challenge with me, and I'll walk you through the solution step by step!`;
+  }
+
+  // 9. Translations
+  if (
+    p.includes("traduis") ||
+    p.includes("traduire") ||
+    p.includes("translate") ||
+    p.includes("translation") ||
+    p.includes("traduction")
+  ) {
+    return `I provide fluid, culturally accurate translations across **English, French, Arabic, Spanish, German, Chinese, Japanese, Russian**, and many other languages.\n\nJust tell me: *"Translate [your text] into [desired language]"* and I will translate it with full nuance!`;
+  }
+
+  // 10. Intelligent, thoughtful, natural response for general queries
+  return `Hi @${username}! I've thought through what you asked about:\n\n**"${prompt}"**\n\nHere are some key perspectives to consider:\n1. **Core Insight**: Look at the fundamental principles underlying your goal to identify the most direct path forward.\n2. **Practical Execution**: Break the process down into clear, manageable milestones.\n3. **Refinement**: Test iteratively and adapt based on actual outcomes.\n\nWould you like me to dive deeper into any specific detail, provide examples, or help you execute this? Just let me know!`;
 }
 
 // Poll Vote Endpoint
