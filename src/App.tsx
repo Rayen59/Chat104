@@ -55,6 +55,8 @@ export default function App() {
 
   // Notifications state
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const [typingStatus, setTypingStatus] = useState<Record<string, Array<{ userId: string; username: string; avatar?: string; isThinking?: boolean; text?: string }>>>({});
+  const [appTheme, setAppTheme] = useState<string>(getSavedTheme());
 
   // Initialize theme and language on mount
   useEffect(() => {
@@ -62,6 +64,14 @@ export default function App() {
     if (typeof document !== "undefined") {
       document.documentElement.lang = "en";
     }
+
+    const handleThemeChange = (e: any) => {
+      if (e.detail?.id) {
+        setAppTheme(e.detail.id);
+      }
+    };
+    window.addEventListener("wavegram_theme_change", handleThemeChange);
+    return () => window.removeEventListener("wavegram_theme_change", handleThemeChange);
   }, []);
 
   // Synthesize notification sound
@@ -706,6 +716,51 @@ export default function App() {
           return s;
         })
       );
+    });
+
+    // Real-time AI thinking and typing events
+    eventSource.addEventListener("typing", (e: any) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.conversationId) {
+          setTypingStatus((prev) => {
+            const currentList = prev[data.conversationId] || [];
+            const filtered = currentList.filter((u) => u.userId !== data.userId);
+            return {
+              ...prev,
+              [data.conversationId]: [
+                ...filtered,
+                {
+                  userId: data.userId,
+                  username: data.username || "MK.ia",
+                  avatar: data.avatar,
+                  isThinking: !!data.isThinking,
+                  text: data.text
+                }
+              ]
+            };
+          });
+        }
+      } catch (err) {
+        console.error("Error parsing typing SSE:", err);
+      }
+    });
+
+    eventSource.addEventListener("typing_stopped", (e: any) => {
+      try {
+        const data = JSON.parse(e.data);
+        if (data.conversationId) {
+          setTypingStatus((prev) => {
+            const currentList = prev[data.conversationId] || [];
+            return {
+              ...prev,
+              [data.conversationId]: currentList.filter((u) => u.userId !== data.userId)
+            };
+          });
+        }
+      } catch (err) {
+        console.error("Error parsing typing_stopped SSE:", err);
+      }
     });
 
     return () => {
@@ -1622,6 +1677,7 @@ export default function App() {
             allConversations={conversations}
             allGroups={groups}
             group={activeGroup}
+            typingUsers={activeConv ? (typingStatus[activeConv.id] || []) : []}
             onSendMessage={handleSendMessage}
             onReactMessage={handleReactMessage}
             onEditMessage={handleEditMessage}

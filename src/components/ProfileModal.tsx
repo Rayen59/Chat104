@@ -141,12 +141,74 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   const handleSelectTheme = (themeId: string) => {
     setCurrentThemeId(themeId);
     applyTheme(themeId);
+    setSavedToast(true);
+    setTimeout(() => setSavedToast(false), 1500);
+  };
+
+  const updateAndSaveAiResponder = async (updatedFields: {
+    enabled?: boolean;
+    trigger?: "when_away" | "when_offline" | "always";
+    target?: "all" | "specific_contacts";
+    allowedUserIds?: string[];
+    customInstructions?: string;
+    language?: string;
+  }) => {
+    const isEn = updatedFields.enabled !== undefined ? updatedFields.enabled : aiEnabled;
+    const trig = updatedFields.trigger !== undefined ? updatedFields.trigger : aiTrigger;
+    const targ = updatedFields.target !== undefined ? updatedFields.target : aiTarget;
+    const allowed = updatedFields.allowedUserIds !== undefined ? updatedFields.allowedUserIds : aiAllowedUserIds;
+    const customInst = updatedFields.customInstructions !== undefined ? updatedFields.customInstructions : aiCustomInstructions;
+    const langVal = updatedFields.language !== undefined ? updatedFields.language : aiLanguage;
+
+    if (updatedFields.enabled !== undefined) setAiEnabled(updatedFields.enabled);
+    if (updatedFields.trigger !== undefined) setAiTrigger(updatedFields.trigger);
+    if (updatedFields.target !== undefined) setAiTarget(updatedFields.target);
+    if (updatedFields.allowedUserIds !== undefined) setAiAllowedUserIds(updatedFields.allowedUserIds);
+    if (updatedFields.customInstructions !== undefined) setAiCustomInstructions(updatedFields.customInstructions);
+    if (updatedFields.language !== undefined) setAiLanguage(updatedFields.language);
+
+    const aiConfig: AiAutoResponderConfig = {
+      enabled: isEn,
+      triggerWhen: trig === "always" ? "always" : trig === "when_offline" ? "offline_only" : "away_or_offline",
+      targetAudience: targ === "specific_contacts" ? "specific_users" : "everyone",
+      allowedUserIds: allowed,
+      responseStyle: customInst.trim() ? "custom_instructions" : "full_freedom",
+      customInstructions: customInst.trim(),
+      language: langVal,
+      updatedAt: new Date().toISOString()
+    };
+
+    try {
+      await fetch("/api/users/profile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId: currentUser.id,
+          username: username.trim(),
+          avatar: customAvatar.trim() || avatar,
+          bio,
+          status,
+          isPrivate,
+          hideEmail,
+          aiAutoResponder: aiConfig
+        })
+      });
+
+      onUpdateProfile({
+        aiAutoResponder: aiConfig
+      });
+      setSavedToast(true);
+      setTimeout(() => setSavedToast(false), 1500);
+    } catch (e) {
+      console.error("Auto-save AI responder error:", e);
+    }
   };
 
   const toggleAllowedUser = (userId: string) => {
-    setAiAllowedUserIds((prev) =>
-      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
-    );
+    const updated = aiAllowedUserIds.includes(userId)
+      ? aiAllowedUserIds.filter((id) => id !== userId)
+      : [...aiAllowedUserIds, userId];
+    updateAndSaveAiResponder({ allowedUserIds: updated });
   };
 
   const copyToClipboard = (text: string, keyName: string) => {
@@ -561,7 +623,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                     <input
                       type="checkbox"
                       checked={aiEnabled}
-                      onChange={(e) => setAiEnabled(e.target.checked)}
+                      onChange={(e) => updateAndSaveAiResponder({ enabled: e.target.checked })}
                       className="sr-only peer"
                     />
                     <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
@@ -579,7 +641,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => setAiTrigger("when_away")}
+                    onClick={() => updateAndSaveAiResponder({ trigger: "when_away" })}
                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       aiTrigger === "when_away"
                         ? "bg-purple-950/70 border-purple-500 text-purple-200 shadow-md"
@@ -592,7 +654,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setAiTrigger("when_offline")}
+                    onClick={() => updateAndSaveAiResponder({ trigger: "when_offline" })}
                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       aiTrigger === "when_offline"
                         ? "bg-purple-950/70 border-purple-500 text-purple-200 shadow-md"
@@ -605,7 +667,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setAiTrigger("always")}
+                    onClick={() => updateAndSaveAiResponder({ trigger: "always" })}
                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       aiTrigger === "always"
                         ? "bg-purple-950/70 border-purple-500 text-purple-200 shadow-md"
@@ -628,7 +690,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
-                    onClick={() => setAiTarget("all")}
+                    onClick={() => updateAndSaveAiResponder({ target: "all" })}
                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       aiTarget === "all"
                         ? "bg-purple-950/70 border-purple-500 text-purple-200 shadow-md"
@@ -641,7 +703,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
 
                   <button
                     type="button"
-                    onClick={() => setAiTarget("specific_contacts")}
+                    onClick={() => updateAndSaveAiResponder({ target: "specific_contacts" })}
                     className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer ${
                       aiTarget === "specific_contacts"
                         ? "bg-purple-950/70 border-purple-500 text-purple-200 shadow-md"
@@ -715,6 +777,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                   rows={3}
                   value={aiCustomInstructions}
                   onChange={(e) => setAiCustomInstructions(e.target.value)}
+                  onBlur={() => updateAndSaveAiResponder({ customInstructions: aiCustomInstructions })}
                   placeholder="e.g. Tell friends I'm traveling in Tokyo until next week, or leave blank to let AI reply naturally with contextual awareness."
                   className="w-full bg-[#17212b] border border-[#242f3d] rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-purple-500 resize-none leading-relaxed"
                 />
@@ -736,7 +799,7 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
                 </div>
                 <select
                   value={aiLanguage}
-                  onChange={(e) => setAiLanguage(e.target.value)}
+                  onChange={(e) => updateAndSaveAiResponder({ language: e.target.value })}
                   className="bg-[#17212b] border border-[#242f3d] text-xs font-bold rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-purple-500 cursor-pointer"
                 >
                   <option value="auto">🌐 Auto-detect</option>

@@ -1433,6 +1433,46 @@ app.get("/api/messages/:conversationId", (req: Request, res: Response) => {
   return res.json({ messages });
 });
 
+// Endpoint for broadcasting typing & thinking indicator in conversations
+app.post("/api/conversations/typing", (req: Request, res: Response) => {
+  const { conversationId, userId, isTyping = true, isThinking = false, text } = req.body;
+  if (!conversationId || !userId) {
+    return res.status(400).json({ error: "conversationId and userId are required." });
+  }
+
+  const conv = store.conversations.find((c) => c.id === conversationId);
+  const user = store.users.find((u) => u.id === userId);
+  if (!conv || !user) {
+    return res.status(404).json({ error: "Conversation or user not found." });
+  }
+
+  if (isTyping) {
+    broadcastEvent(
+      "typing",
+      {
+        conversationId,
+        userId: user.id,
+        username: user.username,
+        avatar: user.avatar,
+        isThinking: !!isThinking,
+        text: text || (isThinking ? "is thinking..." : "is typing...")
+      },
+      conv.participants
+    );
+  } else {
+    broadcastEvent(
+      "typing_stopped",
+      {
+        conversationId,
+        userId: user.id
+      },
+      conv.participants
+    );
+  }
+
+  return res.json({ success: true });
+});
+
 // 9. Send Message (supports text, image, video, audio, voice, file, gif, poll)
 app.post("/api/messages/send", (req: Request, res: Response) => {
   const {
@@ -1638,6 +1678,20 @@ app.post("/api/messages/send", (req: Request, res: Response) => {
 
 // MK.ia intelligent assistant handler powered by Gemini with robust multi-intelligence engine
 async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender: User) {
+  // 1. Immediately emit typing/thinking event to conversation participants
+  broadcastEvent(
+    "typing",
+    {
+      conversationId: conv.id,
+      userId: MK_AI_USER.id,
+      username: MK_AI_USER.username,
+      avatar: MK_AI_USER.avatar,
+      isThinking: true,
+      text: "MK.ia is thinking... ⚡"
+    },
+    conv.participants
+  );
+
   try {
     const rawText = userMsg.text || "";
     // Clean tag prefix e.g. $MK, $mk, @MK.ia, MK.ia, @wia, @lia, @Meta AI, @meta, @ai, @bot, @gemini
@@ -1693,7 +1747,7 @@ Core Behavior Guidelines:
 - High Intelligence & Depth: Always provide clear, articulate, accurate, and deeply insightful answers. For complex topics (algorithms, full-stack development, mathematics, physics, philosophy, business strategy, creative writing), give structured, production-ready, and high-value explanations with clean Markdown formatting.
 - Warm, Humble & Empathetic: You are genuinely helpful, polite, humble, and attentive. Never be selfish, dismissive, arrogant, or robotic. Treat every user with respect and encouragement.
 - Natural Communication: Speak naturally, warmly, and clearly without robotic boilerplate.
-- Strict Language Matching (CRITICAL): Automatically detect the language of the user's message (e.g. French, Arabic, English, Spanish, German, etc.) and ALWAYS reply fully and natively in that EXACT same language. For example, if the user speaks or prompts in French, YOUR ENTIRE ANSWER MUST BE IN ELEGANT, NATURAL FRENCH. Never default to English when the user writes in French or other languages.
+- Strict Language Matching (CRITICAL): Automatically detect the language of the user's message (e.g. French, Arabic, English, Spanish, German, etc.) and ALWAYS reply fully and natively in that EXACT same language. If the prompt is in French, respond in elegant French. If in English, respond in English.
 - Context Awareness: Read the conversation history carefully. Maintain conversational memory and address the user (@${sender.username}) with tailored helpfulness.
 ${modeDirective ? `\n- ${modeDirective}` : ""}`;
 
@@ -1818,11 +1872,35 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
     store.messages.push(errMessage);
     saveStore();
     broadcastEvent("new_message", errMessage, conv.participants);
+  } finally {
+    // Always clear typing indicator
+    broadcastEvent(
+      "typing_stopped",
+      {
+        conversationId: conv.id,
+        userId: MK_AI_USER.id
+      },
+      conv.participants
+    );
   }
 }
 
 // AI Auto-Responder / Absence Assistant proxy handler
 async function triggerAiAutoResponder(conv: Conversation, userMsg: Message, sender: User, recipient: User) {
+  // Emit thinking indicator for recipient's assistant
+  broadcastEvent(
+    "typing",
+    {
+      conversationId: conv.id,
+      userId: recipient.id,
+      username: recipient.username,
+      avatar: recipient.avatar,
+      isThinking: true,
+      text: `${recipient.username}'s AI Assistant is thinking... ⚡`
+    },
+    conv.participants
+  );
+
   try {
     const config = recipient.aiAutoResponder || { enabled: true };
     const customDirectives = config.customInstructions || "";
@@ -1948,6 +2026,15 @@ Context:
     broadcastEvent("new_message", autoReplyMessage, conv.participants);
   } catch (err) {
     console.error("Error in AI auto responder:", err);
+  } finally {
+    broadcastEvent(
+      "typing_stopped",
+      {
+        conversationId: conv.id,
+        userId: recipient.id
+      },
+      conv.participants
+    );
   }
 }
 

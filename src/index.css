@@ -32,6 +32,23 @@
   --tg-theme-msg-out: var(--app-bubble-out);
 }
 
+/* Dynamic Theme Utility Classes */
+.bg-app-bg { background-color: var(--app-bg) !important; }
+.bg-app-sidebar { background-color: var(--app-sidebar) !important; }
+.bg-app-card { background-color: var(--app-card) !important; }
+.bg-app-card-hover:hover { background-color: var(--app-card-hover) !important; }
+.bg-app-card-active { background-color: var(--app-card-active) !important; }
+.border-app-border { border-color: var(--app-border) !important; }
+.border-app-border-light { border-color: var(--app-border-light) !important; }
+.text-app-text { color: var(--app-text) !important; }
+.text-app-muted { color: var(--app-text-muted) !important; }
+.text-app-accent { color: var(--app-accent) !important; }
+.bg-app-accent { background-color: var(--app-accent) !important; }
+.bg-app-bubble-in { background-color: var(--app-bubble-in) !important; }
+.bg-app-bubble-out { background-color: var(--app-bubble-out) !important; }
+.text-app-bubble-in { color: var(--app-bubble-in-text) !important; }
+.text-app-bubble-out { color: var(--app-bubble-out-text) !important; }
+
 body {
   background-color: var(--app-bg, #0e1621);
   color: var(--app-text, #ffffff);
@@ -42,6 +59,31 @@ body {
   -moz-osx-font-smoothing: grayscale;
   letter-spacing: -0.01em;
   transition: background-color 0.25s cubic-bezier(0.16, 1, 0.3, 1), color 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Thinking Indicator 3-dots animation */
+@keyframes thinkingBounce {
+  0%, 80%, 100% {
+    transform: scale(0.6);
+    opacity: 0.4;
+  }
+  40% {
+    transform: scale(1.15) translateY(-3px);
+    opacity: 1;
+  }
+}
+
+.thinking-dot-1 {
+  animation: thinkingBounce 1.2s infinite ease-in-out;
+  animation-delay: 0s;
+}
+.thinking-dot-2 {
+  animation: thinkingBounce 1.2s infinite ease-in-out;
+  animation-delay: 0.2s;
+}
+.thinking-dot-3 {
+  animation: thinkingBounce 1.2s infinite ease-in-out;
+  animation-delay: 0.4s;
 }
 
 code, pre, .font-mono {

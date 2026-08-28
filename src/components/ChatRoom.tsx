@@ -121,6 +121,7 @@ interface ChatRoomProps {
   onBlockUser?: (targetUserId: string) => void;
   onToggleMute?: (convId: string, isMuted: boolean) => void;
   onOpenReportModal?: (type: "user" | "message" | "group", target: any) => void;
+  typingUsers?: Array<{ userId: string; username: string; avatar?: string; isThinking?: boolean; text?: string }>;
 }
 
 const EMOJI_LIST = [
@@ -137,6 +138,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   allConversations = [],
   allGroups = [],
   group,
+  typingUsers = [],
   onSendMessage,
   onReactMessage,
   onEditMessage,
@@ -290,6 +292,24 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
   // Multi-Intelligence AI Hub state
   const [activeAiMode, setActiveAiMode] = useState<AiIntelligenceMode>("deep_reasoning");
   const [showAiHubModal, setShowAiHubModal] = useState(false);
+  const [isLocalAiThinking, setIsLocalAiThinking] = useState(false);
+
+  // Auto-reset local thinking state when new messages arrive from AI or typing event updates
+  useEffect(() => {
+    if (isLocalAiThinking) {
+      const lastMsg = messages[messages.length - 1];
+      if (lastMsg && (lastMsg.senderId === "user_mk_ia" || lastMsg.senderName?.includes("MK.ia"))) {
+        setIsLocalAiThinking(false);
+      }
+    }
+  }, [messages, isLocalAiThinking]);
+
+  useEffect(() => {
+    // If typingUsers has an active thinking status for MK.ia, we can clear the manual local flag
+    if (typingUsers.some((u) => u.userId === "user_mk_ia")) {
+      setIsLocalAiThinking(false);
+    }
+  }, [typingUsers]);
 
   const handleSaveTypography = (config: ChatTypographyConfig) => {
     setUserTypography(config);
@@ -648,13 +668,32 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
 
   const handleSend = (e?: React.MouseEvent | React.TouchEvent | React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!inputText.trim()) return;
+    const trimmedText = inputText.trim();
+    if (!trimmedText) return;
     if (isOtherUserBlocked || isMeBlockedByOther || isRestrictedInGroup || isAnnouncementOnly) {
       return;
     }
 
+    // Detect if this prompt triggers MK.ia response or auto-responder
+    const isAiQuery =
+      trimmedText.toLowerCase().includes("@mk.ia") ||
+      trimmedText.toLowerCase().includes("@mk") ||
+      trimmedText.startsWith("$MK") ||
+      trimmedText.startsWith("$code") ||
+      trimmedText.startsWith("$summary") ||
+      trimmedText.startsWith("$reply") ||
+      trimmedText.startsWith("$translate") ||
+      trimmedText.startsWith("$explain") ||
+      trimmedText.startsWith("$creative") ||
+      otherUserId === "user_mk_ia" ||
+      conversation.id === "conv_mk_ia";
+
+    if (isAiQuery) {
+      setIsLocalAiThinking(true);
+    }
+
     onSendMessage({
-      text: inputText.trim(),
+      text: trimmedText,
       type: "text",
       replyTo: replyTo || undefined
     });
@@ -1400,13 +1439,29 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
                   </span>
                 )}
               </div>
-              <p className="text-[11px] text-[#7d8b99] leading-tight mt-0.5">
-                {conversation.type === "group"
-                  ? `${group?.memberIds.length || 1} members`
-                  : isOnline
-                  ? "online"
-                  : "last seen recently"}
-              </p>
+              {isLocalAiThinking || (typingUsers && typingUsers.length > 0) ? (
+                <div className="flex items-center gap-1.5 text-[11px] text-cyan-400 font-semibold leading-tight mt-0.5 animate-in fade-in duration-200">
+                  <Sparkles className="w-3 h-3 text-cyan-400 animate-pulse" />
+                  <span>
+                    {isLocalAiThinking
+                      ? "MK.ia is thinking"
+                      : `${typingUsers[0]?.username || "MK.ia"} is ${typingUsers[0]?.isThinking ? "thinking" : "typing"}`}
+                  </span>
+                  <span className="flex items-center gap-0.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 thinking-dot-1" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 thinking-dot-2" />
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 thinking-dot-3" />
+                  </span>
+                </div>
+              ) : (
+                <p className="text-[11px] text-[#7d8b99] leading-tight mt-0.5">
+                  {conversation.type === "group"
+                    ? `${group?.memberIds.length || 1} members`
+                    : isOnline
+                    ? "online"
+                    : "last seen recently"}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -2531,6 +2586,40 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           );
         })
         )}
+
+        {/* Animated AI Thinking & Real-time Typing Bubble with 3 Bouncing Dots */}
+        {(isLocalAiThinking || (typingUsers && typingUsers.length > 0)) && (
+          <div className="flex items-end gap-2.5 my-2.5 animate-in fade-in slide-in-from-bottom-2 duration-200">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md ring-2 ring-cyan-400/40 shrink-0">
+              <Sparkles className="w-4 h-4 text-white animate-pulse" />
+            </div>
+            <div className="flex flex-col max-w-[85%]">
+              <div className="flex items-center gap-1.5 ml-1 mb-1">
+                <Bot className="w-3 h-3 text-cyan-400" />
+                <span className="text-[11px] font-bold text-cyan-300">
+                  {isLocalAiThinking ? "MK.ia (Deep Reasoning)" : (typingUsers[0]?.username || "MK.ia")}
+                </span>
+                <span className="text-[10px] text-cyan-400/70 font-mono">
+                  {isLocalAiThinking || typingUsers[0]?.isThinking ? "thinking..." : "typing..."}
+                </span>
+              </div>
+              <div className="px-4 py-2.5 rounded-2xl rounded-bl-sm bg-[#17212b] border border-cyan-500/30 text-white shadow-xl flex items-center gap-3 backdrop-blur-md">
+                <span className="text-xs font-medium text-slate-200">
+                  {isLocalAiThinking
+                    ? "Analyzing context and computing response"
+                    : (typingUsers[0]?.isThinking ? "Thinking and processing" : "Typing a message")}
+                </span>
+                {/* 3 Animated Bouncing Dots */}
+                <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-cyan-950/60 border border-cyan-500/40 shadow-inner">
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 thinking-dot-1" />
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 thinking-dot-2" />
+                  <span className="w-2 h-2 rounded-full bg-cyan-400 thinking-dot-3" />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
