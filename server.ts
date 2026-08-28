@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express, { Request, Response } from "express";
 import path from "path";
 import fs from "fs";
@@ -10,11 +11,15 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
 // Lazy Gemini AI client initialization
 let aiClient: GoogleGenAI | null = null;
+let currentLoadedApiKey = "";
+
 function getGeminiClient(): GoogleGenAI | null {
-  if (!process.env.GEMINI_API_KEY) return null;
-  if (!aiClient) {
+  const key = (process.env.GEMINI_API_KEY || "").trim();
+  if (!key) return null;
+  if (!aiClient || currentLoadedApiKey !== key) {
+    currentLoadedApiKey = key;
     aiClient = new GoogleGenAI({
-      apiKey: process.env.GEMINI_API_KEY,
+      apiKey: key,
       httpOptions: {
         headers: {
           "User-Agent": "aistudio-build",
@@ -1687,8 +1692,8 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
 Core Behavior Guidelines:
 - High Intelligence & Depth: Always provide clear, articulate, accurate, and deeply insightful answers. For complex topics (algorithms, full-stack development, mathematics, physics, philosophy, business strategy, creative writing), give structured, production-ready, and high-value explanations with clean Markdown formatting.
 - Warm, Humble & Empathetic: You are genuinely helpful, polite, humble, and attentive. Never be selfish, dismissive, arrogant, or robotic. Treat every user with respect and encouragement.
-- Natural Communication: Speak naturally, warmly, and clearly. Never use canned bureaucratic fillers (such as "I have processed your inquiry" or "Regarding your request").
-- Multilingual Fluency: Automatically detect the language of the user (English, French, Arabic, Spanish, German, Hindi, Chinese, Russian, etc.) and reply natively, fluently, and idiomatically in that language. Default to English for international clarity.
+- Natural Communication: Speak naturally, warmly, and clearly without robotic boilerplate.
+- Strict Language Matching (CRITICAL): Automatically detect the language of the user's message (e.g. French, Arabic, English, Spanish, German, etc.) and ALWAYS reply fully and natively in that EXACT same language. For example, if the user speaks or prompts in French, YOUR ENTIRE ANSWER MUST BE IN ELEGANT, NATURAL FRENCH. Never default to English when the user writes in French or other languages.
 - Context Awareness: Read the conversation history carefully. Maintain conversational memory and address the user (@${sender.username}) with tailored helpfulness.
 ${modeDirective ? `\n- ${modeDirective}` : ""}`;
 
@@ -1736,9 +1741,10 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
 
       // Approved active models from Gemini SDK
       const modelsToTry = [
+        "gemini-3.7-flash",
+        "gemini-flash-latest",
         "gemini-2.5-flash",
-        "gemini-2.5-pro",
-        "gemini-flash-latest"
+        "gemini-2.5-pro"
       ];
       for (const candidateModel of modelsToTry) {
         try {
@@ -1949,6 +1955,16 @@ Context:
 function generateSmartFallbackReply(prompt: string, username: string, conv?: Conversation): string {
   const p = prompt.toLowerCase().trim();
 
+  // Helper to detect if prompt is in French
+  const isFrench = /^(bonjour|salut|coucou|ça va|ca va|comment|qui|que|quoi|pourquoi|merci|blague|aide|écris|traduis|stp|s'il te plaît|sil te plait|bonsoir|bienvenue|merci)\b/i.test(p) ||
+    p.includes("français") || p.includes("francais") || p.includes("comment vas") || p.includes("comment ça va") || p.includes("comment ca va") ||
+    p.includes("qui es-tu") || p.includes("qui es tu") || p.includes("tu es qui") || p.includes("que fais-tu") || p.includes("que peux-tu") ||
+    p.includes("blague") || p.includes("merci") || p.includes("aide-moi") || p.includes("aide moi") || p.includes("salut") || p.includes("bonjour") ||
+    p.includes("bonsoir") || p.includes("ça va") || p.includes("ca va");
+
+  // Helper to detect if prompt is in Arabic
+  const isArabic = /[\u0600-\u06FF]/.test(prompt) || p.includes("marhaba") || p.includes("salam") || p.includes("kifak") || p.includes("shukran") || p.includes("labas");
+
   // 1. Math & Calculation evaluation (e.g. "2+2", "45 * 12", "sqrt(144)")
   const mathMatch = prompt.match(/(\d+[\s\+\-\*\/\^\%\.]+\d+)/);
   if (mathMatch) {
@@ -1957,6 +1973,9 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
       // eslint-disable-next-line no-eval
       const result = Function(`'use strict'; return (${sanitized})`)();
       if (typeof result === "number" && !isNaN(result)) {
+        if (isFrench) {
+          return `Le résultat exact pour **\`${mathMatch[0].trim()}\`** est **${result}** ✨\n\nJe peux aussi vous aider en algèbre linéaire, calcul différentiel/intégral, statistiques et optimisation algorithmique !`;
+        }
         return `The exact result for **\`${mathMatch[0].trim()}\`** is **${result}** ✨\n\nI can also help with linear algebra, calculus derivatives/integrals, statistical probability distributions, and algorithmic complexity!`;
       }
     } catch (e) {}
@@ -1976,18 +1995,31 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("kifak") ||
     p.includes("labas")
   ) {
+    if (isFrench) {
+      return `Je vais merveilleusement bien, merci beaucoup de demander @${username} ! 😊\n\nJe suis prêt(e) et ravi(e) de vous aider aujourd'hui — que ce soit pour coder, résoudre des problèmes complexes, rédiger des textes ou discuter. Comment se passe votre journée ?`;
+    }
+    if (isArabic) {
+      return `أنا بخير وبأفضل حال، شكراً جزيلاً لسؤالك @${username}! 😊\n\nأنا جاهز لمساعدتك في أي وقت سواء في البرمجة، التحليل، الترجمة أو المحادثة. كيف يسير يومك؟`;
+    }
     return `I'm doing wonderfully, thank you so much for asking @${username}! 😊\n\nI'm ready and excited to assist you with anything today — whether it's solving deep coding challenges, analyzing complex topics, drafting creative writing, or simply chatting. How is your day going?`;
   }
 
   // 3. Casual Greetings (hi, hello, hey, salut, bonjour, marhaba, coucou, salam)
   if (
-    /^(hi|hello|hey|heyy|yo|hola|bonjour|salut|coucou|salam|marhaba|ahlan|namaste)\b/i.test(p) ||
+    /^(hi|hello|hey|heyy|yo|hola|bonjour|salut|coucou|salam|marhaba|ahlan|namaste|bonsoir)\b/i.test(p) ||
     p === "hi" ||
     p === "hello" ||
     p === "hey" ||
     p === "salut" ||
-    p === "bonjour"
+    p === "bonjour" ||
+    p === "bonsoir"
   ) {
+    if (isFrench) {
+      return `Bonjour @${username} ! 👋 C'est un réel plaisir de vous retrouver sur MK Wavegram. Comment puis-je vous aider aujourd'hui ? Posez-moi vos questions ou donnez-moi une mission !`;
+    }
+    if (isArabic) {
+      return `أهلاً وسهلاً بك @${username}! 👋 سعيد جداً بتواصلنا على MK Wavegram. كيف يمكنني مساعدتك اليوم؟`;
+    }
     return `Hello @${username}! 👋 It's fantastic to connect with you on MK Wavegram. How can I help you excel today? Feel free to ask me any question or give me a task!`;
   }
 
@@ -2000,6 +2032,9 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("tu fais quoi") ||
     p.includes("what r u doing")
   ) {
+    if (isFrench) {
+      return `Tous les systèmes sont opérationnels au maximum ! 🚀 J'analyse les conversations, synthétise les connaissances et je suis prêt à vous assister pour le développement logiciel, la recherche, la traduction ou le brainstorming. Sur quel projet travaillez-vous ?`;
+    }
     return `All systems are running at peak performance! 🚀 I'm actively analyzing chats, synthesizing knowledge, and ready to assist you with software engineering, research, language translation, and strategic brainstorming. What project are you tackling right now?`;
   }
 
@@ -2013,6 +2048,9 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("qui es-tu") ||
     p.includes("que peux-tu faire")
   ) {
+    if (isFrench) {
+      return `Je suis **MK.ia** ⚡, votre compagnon d'intelligence artificielle de nouvelle génération sur **MK Wavegram**, propulsé par les modèles Google Gemini.\n\n### 🌟 Mes Spécialités d'Intelligence :\n1. 🧠 **Raisonnement Approfondi & Logique** : Résolution de problèmes complexes, démonstrations mathématiques et plans d'architecture.\n2. 💻 **Ingénierie Logicielle Full-Stack** : TypeScript, React, Python, Node.js, schémas de bases de données et algorithmes.\n3. 🌐 **Linguistique & Traduction Polyglotte** : Traductions fluides et nuancées en français, anglais, arabe, espagnol, allemand, et plus de 50 langues.\n4. ✍️ **Rédaction Créative & Professionnelle** : Essais, synthèses exécutives, e-mails professionnels et récits.\n5. 🔬 **Analyse Scientifique & Académique** : Physique, biologie, statistiques et démarche scientifique.\n\nVous pouvez me mentionner à tout moment avec \`@MK.ia\` ou utiliser les commandes \`$\` comme \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, et \`$summary\` !`;
+    }
     return `I am **MK.ia** ⚡, your next-generation AI companion on **MK Wavegram**, powered by Google Gemini intelligence.\n\n### 🌟 Core Intelligence Specializations:\n1. 🧠 **Deep Reasoning & Logic**: Solving complex multi-step problems, mathematical proofs, and architectural blueprints.\n2. 💻 **Full-Stack Software Engineering**: TypeScript, React, Python, Node.js, database schemas, and algorithm optimization.\n3. 🌐 **Polyglot Linguistics**: Fluent, nuanced translations across English, French, Arabic, Spanish, German, Hindi, and 50+ languages.\n4. ✍️ **Creative & Professional Writing**: Essays, technical whitepapers, executive summaries, and pitch decks.\n5. 🔬 **Scientific & Academic Analysis**: Physics, quantum mechanics, biology, statistics, and empirical research.\n\nYou can tag me anytime with \`@MK.ia\` or use \`$\` commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
   }
 
@@ -2025,11 +2063,24 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("danke") ||
     p.includes("gracias")
   ) {
+    if (isFrench) {
+      return `C'est un plaisir absolu, @${username} ! 😊 Je reste à votre entière disposition dès que vous avez besoin d'aide ou d'idées. N'hésitez pas ! ✨`;
+    }
     return `It is my absolute pleasure, @${username}! 😊 Always here whenever you need insightful answers, creative ideas, or engineering guidance. Let me know if there's anything else you'd like to explore! ✨`;
   }
 
   // 7. Jokes & Humor ("tell me a joke", "raconte une blague", "joke")
   if (p.includes("joke") || p.includes("blague") || p.includes("funny") || p.includes("humour")) {
+    if (isFrench) {
+      const blagues = [
+        `Pourquoi les développeurs préfèrent-ils le mode sombre ? Parce que la lumière attire les bugs ! 🐛💡`,
+        `Il y a 10 sortes de personnes dans le monde : celles qui comprennent le binaire, et les autres. 💻`,
+        `Que dit un informaticien quand il a froid ? "Ferme les fenêtres (Windows), ça freeze !" 🥶`,
+        `Pourquoi les plongeurs plongent-ils toujours en arrière du bateau ? Parce que sinon ils tombent dans le bateau ! 😄`
+      ];
+      const chosen = blagues[Math.floor(Math.random() * blagues.length)];
+      return `En voici une pour vous, @${username} 😄 :\n\n> **${chosen}**`;
+    }
     const jokes = [
       `Why do programmers prefer dark mode? Because light attracts bugs! 🐛💡`,
       `There are 10 types of people in the world: those who understand binary, and those who don't. 💻`,
@@ -2144,12 +2195,12 @@ Core Behavior Guidelines:
 - High Intelligence & Depth: Always think deeply and provide clear, articulate, accurate, and structured answers.
 - Warm, Humble & Empathetic: Be genuinely polite, encouraging, and helpful. Never be selfish, arrogant, or dismissive.
 - Natural Communication: Speak naturally, warmly, and clearly with clean Markdown formatting.
-- Multilingual Fluency: Automatically detect and respond in the language of the prompt (English, French, Arabic, Spanish, etc.), defaulting to English.`;
+- Strict Language Matching (CRITICAL): Always detect and respond in the exact language of the prompt (e.g. French, Arabic, English, Spanish, etc.). If the prompt is in French, YOUR ENTIRE RESPONSE MUST BE IN FLAWLESS FRENCH.`;
 
     let replyText = "";
     const gemini = getGeminiClient();
     if (gemini) {
-      const modelsToTry = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-flash-latest"];
+      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.5-pro"];
       for (const candidateModel of modelsToTry) {
         try {
           const response = await gemini.models.generateContent({
