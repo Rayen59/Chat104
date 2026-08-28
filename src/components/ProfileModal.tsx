@@ -93,6 +93,16 @@ export const ProfileModal: React.FC<ProfileModalProps> = ({
   // Theme State
   const [currentThemeId, setCurrentThemeId] = useState<string>(getSavedTheme());
 
+  useEffect(() => {
+    const handleThemeChange = (e: any) => {
+      if (e.detail?.id) {
+        setCurrentThemeId(e.detail.id);
+      }
+    };
+    window.addEventListener("wavegram_theme_change", handleThemeChange);
+    return () => window.removeEventListener("wavegram_theme_change", handleThemeChange);
+  }, []);
+
   // AI Auto-Responder State
   const initialAi = currentUser.aiAutoResponder || {};
   const [aiEnabled, setAiEnabled] = useState<boolean>(!!initialAi.enabled);

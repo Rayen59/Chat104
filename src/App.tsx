@@ -15,6 +15,7 @@ import { NotesModal } from "./components/NotesModal";
 import { NotificationToast, AppNotification } from "./components/NotificationToast";
 import { AdminPanelModal } from "./components/AdminPanelModal";
 import { ReportModal } from "./components/ReportModal";
+import { CeoShowcaseHubModal } from "./components/CeoShowcaseHubModal";
 import { MessageSquare } from "lucide-react";
 import { applyTheme, getSavedTheme } from "./theme";
 
@@ -37,6 +38,7 @@ export default function App() {
   const [mobileShowChat, setMobileShowChat] = useState<boolean>(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showCeoShowcaseModal, setShowCeoShowcaseModal] = useState(false);
   const [reportModalState, setReportModalState] = useState<{
     open: boolean;
     type: "user" | "message" | "group";
@@ -1658,6 +1660,7 @@ export default function App() {
           onOpenAdminPanel={() => setShowAdminPanel(true)}
           onToggleMuteConversation={handleToggleMuteConversation}
           onOpenReportModal={handleOpenReportModal}
+          onOpenCeoShowcase={() => setShowCeoShowcaseModal(true)}
         />
       </div>
 
@@ -1884,6 +1887,14 @@ export default function App() {
           conversationId={reportModalState.conversationId}
           onClose={() => setReportModalState(null)}
           onSuccess={handleReportSubmitted}
+        />
+      )}
+
+      {/* CEO Med Rayen Bouazizi Showcase & Talking Emojis Hub Modal */}
+      {showCeoShowcaseModal && (
+        <CeoShowcaseHubModal
+          isOpen={showCeoShowcaseModal}
+          onClose={() => setShowCeoShowcaseModal(false)}
         />
       )}
 

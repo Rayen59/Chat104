@@ -32,7 +32,8 @@ import {
   ShieldCheck,
   Radio,
   Languages,
-  Palette
+  Palette,
+  Crown
 } from "lucide-react";
 import { translations, getSavedLanguage, setSavedLanguage, Language } from "../i18n";
 
@@ -63,6 +64,7 @@ interface SidebarProps {
   onOpenAdminPanel?: () => void;
   onToggleMuteConversation?: (convId: string, isMuted: boolean) => void;
   onOpenReportModal?: (type: "user" | "group" | "message", target: any) => void;
+  onOpenCeoShowcase?: () => void;
 }
 
 // MK Wavegram Signature vibrant Avatar color palette based on name hash
@@ -124,7 +126,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenStoryViewer,
   onOpenAdminPanel,
   onToggleMuteConversation,
-  onOpenReportModal
+  onOpenReportModal,
+  onOpenCeoShowcase
 }) => {
   const [lang, setLang] = useState<Language>(getSavedLanguage());
   const t = translations[lang];
@@ -300,6 +303,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </span>
               </button>
 
+              {/* CEO & Official Showcase Button */}
+              {onOpenCeoShowcase && (
+                <button
+                  id="sidebar-ceo-showcase-btn"
+                  onClick={onOpenCeoShowcase}
+                  title="CEO Med Rayen Bouazizi & Official App Showcase 👑"
+                  className="w-9 h-9 flex items-center justify-center rounded-full bg-amber-500/10 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 ring-1 ring-amber-400/40 transition-all cursor-pointer shadow-md"
+                >
+                  <Crown className="w-4.5 h-4.5 animate-pulse" />
+                </button>
+              )}
+
               {/* Theme Settings Button */}
               <button
                 onClick={onOpenProfile}
@@ -333,8 +348,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       className="fixed inset-0 z-30"
                       onClick={() => setShowDropdownMenu(false)}
                     />
-                    <div className="absolute right-0 top-11 w-56 bg-[#242f3d] border border-[#101921] rounded-xl shadow-2xl py-1.5 z-40 text-sm text-white animate-in fade-in zoom-in-95 duration-100">
+                    <div className="absolute right-0 top-11 w-64 bg-[#242f3d] border border-[#101921] rounded-xl shadow-2xl py-1.5 z-40 text-sm text-white animate-in fade-in zoom-in-95 duration-100">
                       
+                      {/* CEO Med Rayen Bouazizi Showcase */}
+                      {onOpenCeoShowcase && (
+                        <button
+                          onClick={() => {
+                            setShowDropdownMenu(false);
+                            onOpenCeoShowcase();
+                          }}
+                          className="w-full px-4 py-2.5 flex items-center gap-3 bg-gradient-to-r from-amber-500/15 via-yellow-500/10 to-transparent hover:bg-amber-500/25 text-amber-300 transition-colors text-left border-b border-[#101921]"
+                        >
+                          <Crown className="w-4.5 h-4.5 text-amber-400 shrink-0" />
+                          <div className="flex flex-col">
+                            <span className="font-bold text-xs text-white">CEO Med Rayen Bouazizi 👑</span>
+                            <span className="text-[10px] text-amber-400">Official Showcase & Talking Emojis</span>
+                          </div>
+                        </button>
+                      )}
+
                       {/* Language Switch Menu Item */}
                       <button
                         onClick={() => {

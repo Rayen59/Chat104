@@ -49,6 +49,152 @@
 .text-app-bubble-in { color: var(--app-bubble-in-text) !important; }
 .text-app-bubble-out { color: var(--app-bubble-out-text) !important; }
 
+/* Dynamic Theme Overrides for Telegram/Wavegram color palettes */
+[data-theme] body,
+[data-theme] #root {
+  background-color: var(--app-bg) !important;
+  color: var(--app-text) !important;
+}
+
+[data-theme] .bg-\[\#0e1621\],
+[data-theme] .bg-\[\#030612\],
+[data-theme] .bg-\[\#0b101b\],
+[data-theme] .bg-\[\#0b131e\],
+[data-theme] .bg-\[\#0c071e\],
+[data-theme] .bg-\[\#05130b\],
+[data-theme] .bg-\[\#15080a\],
+[data-theme] .bg-\[\#120e06\] {
+  background-color: var(--app-bg) !important;
+}
+
+[data-theme] .bg-\[\#17212b\],
+[data-theme] .bg-\[\#09090b\],
+[data-theme] .bg-\[\#140c2e\],
+[data-theme] .bg-\[\#0b2014\],
+[data-theme] .bg-\[\#220e12\],
+[data-theme] .bg-\[\#1f180c\],
+[data-theme] .bg-\[\#132132\] {
+  background-color: var(--app-sidebar) !important;
+}
+
+[data-theme] .bg-\[\#242f3d\],
+[data-theme] .bg-\[\#202b36\],
+[data-theme] .bg-\[\#18181b\],
+[data-theme] .bg-\[\#22144d\],
+[data-theme] .bg-\[\#133b26\],
+[data-theme] .bg-\[\#3b1920\],
+[data-theme] .bg-\[\#362a15\],
+[data-theme] .bg-\[\#1f3652\],
+[data-theme] .bg-\[\#1f2c3a\]\/70,
+[data-theme] .hover\:bg-\[\#202b36\]:hover {
+  background-color: var(--app-card-hover) !important;
+}
+
+[data-theme] .bg-\[\#2b5278\],
+[data-theme] .bg-app-bubble-out,
+[data-theme] .wavegram-bubble-out {
+  background-color: var(--app-bubble-out) !important;
+  color: var(--app-bubble-out-text, #ffffff) !important;
+}
+
+[data-theme] .bg-\[\#182533\],
+[data-theme] .bg-app-bubble-in,
+[data-theme] .wavegram-bubble-in {
+  background-color: var(--app-bubble-in) !important;
+  color: var(--app-bubble-in-text, #ffffff) !important;
+}
+
+[data-theme] .bg-\[\#3390ec\],
+[data-theme] .bg-app-accent {
+  background-color: var(--app-accent) !important;
+}
+
+[data-theme] .hover\:bg-\[\#2481cc\]:hover {
+  background-color: var(--app-accent-hover) !important;
+}
+
+/* Border mappings */
+[data-theme] .border-\[\#101921\],
+[data-theme] .border-\[\#131b26\],
+[data-theme] .border-\[\#18181b\],
+[data-theme] .border-\[\#211245\],
+[data-theme] .border-\[\#0f3320\],
+[data-theme] .border-\[\#36161d\],
+[data-theme] .border-\[\#332612\],
+[data-theme] .border-\[\#1b3049\] {
+  border-color: var(--app-border) !important;
+}
+
+[data-theme] .border-\[\#242f3d\],
+[data-theme] .border-\[\#27272a\],
+[data-theme] .border-\[\#331c69\],
+[data-theme] .border-\[\#194d31\],
+[data-theme] .border-\[\#4c1f29\],
+[data-theme] .border-\[\#4a381b\],
+[data-theme] .border-\[\#28466b\] {
+  border-color: var(--app-border-light) !important;
+}
+
+[data-theme] .border-\[\#3390ec\] {
+  border-color: var(--app-accent) !important;
+}
+
+/* Text mappings */
+[data-theme] .text-\[\#3390ec\],
+[data-theme] .text-app-accent {
+  color: var(--app-accent) !important;
+}
+
+[data-theme] .text-\[\#7d8b99\],
+[data-theme] .text-app-muted {
+  color: var(--app-text-muted) !important;
+}
+
+/* Light Mode Overrides */
+[data-theme-category="light"] {
+  color-scheme: light;
+}
+
+[data-theme-category="light"] body {
+  background-color: var(--app-bg) !important;
+  color: var(--app-text) !important;
+}
+
+[data-theme-category="light"] .text-white:not(
+  button.bg-\[\#3390ec\],
+  button.bg-app-accent,
+  button.bg-blue-600,
+  button.bg-cyan-500,
+  button.bg-purple-600,
+  button.bg-rose-600,
+  button.bg-emerald-600,
+  button.bg-amber-500,
+  button.bg-gradient-to-r,
+  .badge,
+  .pill,
+  .wavegram-bubble-out,
+  .wavegram-bubble-out *,
+  .bg-gradient-to-r *,
+  .bg-gradient-to-br *
+) {
+  color: #0f172a !important;
+}
+
+[data-theme-category="light"] .text-slate-200,
+[data-theme-category="light"] .text-slate-300 {
+  color: #1e293b !important;
+}
+
+[data-theme-category="light"] .text-slate-400,
+[data-theme-category="light"] .text-slate-500 {
+  color: #64748b !important;
+}
+
+[data-theme-category="light"] input::placeholder,
+[data-theme-category="light"] textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
 body {
   background-color: var(--app-bg, #0e1621);
   color: var(--app-text, #ffffff);
@@ -254,14 +400,14 @@ code, pre, .font-mono {
 }
 
 .wavegram-bubble-in {
-  background-color: #182533;
-  color: #ffffff;
+  background-color: var(--app-bubble-in, #182533) !important;
+  color: var(--app-bubble-in-text, #ffffff) !important;
   border-radius: 16px 16px 16px 4px;
 }
 
 .wavegram-bubble-out {
-  background-color: #2b5278;
-  color: #ffffff;
+  background-color: var(--app-bubble-out, #2b5278) !important;
+  color: var(--app-bubble-out-text, #ffffff) !important;
   border-radius: 16px 16px 4px 16px;
 }
 
