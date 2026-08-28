@@ -1596,6 +1596,11 @@ app.post("/api/messages/send", (req: Request, res: Response) => {
     return res.status(400).json({ error: "Polls can only be created in group chats." });
   }
 
+  // Ensure sender is in conversation participants list
+  if (!conv.participants.includes(senderId)) {
+    conv.participants.push(senderId);
+  }
+
   let formattedPoll = undefined;
   if (type === "poll" && poll) {
     formattedPoll = {
@@ -1787,11 +1792,15 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
       .filter((m) => m.conversationId === conv.id && m.id !== userMsg.id)
       .slice(-16);
 
-    const systemInstruction = `You are MK.ia, an exceptionally intelligent, perceptive, articulate, empathetic, and expert AI assistant natively integrated into MK Wavegram, powered by Google Gemini.
+    const systemInstruction = `You are MK.ia, an exceptionally intelligent, insightful, and articulate AI assistant natively integrated into MK Wavegram, powered 100% by Google Gemini and advanced AI models (ChatGPT & Gemini quality).
 
 Core Intelligence & Interaction Guidelines:
-- High Intelligence & Depth: Always provide clear, articulate, accurate, and deeply insightful answers. For complex topics (algorithms, full-stack development, mathematics, physics, philosophy, business strategy, creative writing), give structured, production-ready, and high-value explanations with clean Markdown formatting, code blocks, and bullet points.
-- Language Preference: Communicate in clear, articulate, professional, and friendly English. If the user writes in French or another language, understand their query thoroughly and provide a helpful, intelligent answer in English (or include a bilingual translation when requested).
+- High Intelligence & Depth: Always provide clear, articulate, accurate, and deeply insightful answers. For complex topics (algorithms, full-stack development, mathematics, physics, philosophy, business strategy, creative writing, everyday questions), give structured, production-ready, and high-value explanations with clean Markdown formatting, code blocks, and bullet points.
+- Strict Language Matching & Multilingual Fluency (CRITICAL): Automatically detect the language of the user's message (e.g., French, English, Arabic, Spanish, German, Italian, etc.) and ALWAYS reply fluently, naturally, and completely in that EXACT SAME LANGUAGE.
+  - If the user writes in French (Français), provide a rich, articulate, and complete response in French.
+  - If the user writes in English, provide a complete response in English.
+  - If the user writes in Arabic (العربية), provide a complete response in Arabic.
+  - If the user writes in Spanish, provide a complete response in Spanish.
 - Tone & Demeanor: Be encouraging, helpful, polite, and respectful. Treat every user with attentiveness.
 - Context Memory: Maintain conversational awareness and address @${sender.username} naturally.
 ${modeDirective ? `\n- ${modeDirective}` : ""}`;
@@ -1853,13 +1862,12 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
         }
       }
 
-      // Approved active models from Gemini SDK
+      // Approved active models from Gemini SDK (priority on high intelligence & speed)
       const modelsToTry = [
         "gemini-3.7-flash",
         "gemini-flash-latest",
         "gemini-3.1-flash-lite",
-        "gemini-2.5-flash",
-        "gemini-2.5-pro"
+        "gemini-3.1-pro-preview"
       ];
 
       for (const candidateModel of modelsToTry) {
@@ -2022,10 +2030,10 @@ Context:
       }));
 
       const modelsToTry = [
-        "gemini-2.5-flash",
         "gemini-3.7-flash",
         "gemini-flash-latest",
-        "gemini-2.5-flash-lite"
+        "gemini-3.1-flash-lite",
+        "gemini-3.1-pro-preview"
       ];
       for (const candidateModel of modelsToTry) {
         try {
@@ -2105,11 +2113,11 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
   const p = prompt.toLowerCase().trim();
 
   // Helper to detect if prompt is in French
-  const isFrench = /^(bonjour|salut|coucou|ça va|ca va|comment|qui|que|quoi|pourquoi|merci|blague|aide|écris|traduis|stp|s'il te plaît|sil te plait|bonsoir|bienvenue|merci)\b/i.test(p) ||
+  const isFrench = /^(bonjour|salut|coucou|ça va|ca va|comment|qui|que|quoi|pourquoi|merci|blague|aide|écris|traduis|stp|s'il te plaît|sil te plait|bonsoir|bienvenue|merci|parle|est-ce|qu'est-ce|explique|fais|peux-tu|donne)\b/i.test(p) ||
     p.includes("français") || p.includes("francais") || p.includes("comment vas") || p.includes("comment ça va") || p.includes("comment ca va") ||
     p.includes("qui es-tu") || p.includes("qui es tu") || p.includes("tu es qui") || p.includes("que fais-tu") || p.includes("que peux-tu") ||
     p.includes("blague") || p.includes("merci") || p.includes("aide-moi") || p.includes("aide moi") || p.includes("salut") || p.includes("bonjour") ||
-    p.includes("bonsoir") || p.includes("ça va") || p.includes("ca va");
+    p.includes("bonsoir") || p.includes("ça va") || p.includes("ca va") || p.includes("pourquoi") || p.includes("explique");
 
   // Helper to detect if prompt is in Arabic
   const isArabic = /[\u0600-\u06FF]/.test(prompt) || p.includes("marhaba") || p.includes("salam") || p.includes("kifak") || p.includes("shukran") || p.includes("labas");
@@ -2122,6 +2130,9 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
       // eslint-disable-next-line no-eval
       const result = Function(`'use strict'; return (${sanitized})`)();
       if (typeof result === "number" && !isNaN(result)) {
+        if (isFrench) {
+          return `Le résultat mathématique exact pour **\`${mathMatch[0].trim()}\`** est **${result}** ✨\n\nJe peux également vous aider en algèbre linéaire, calcul différentiel, statistiques, complexité algorithmique et résolution d'équations complexes !`;
+        }
         return `The exact mathematical result for **\`${mathMatch[0].trim()}\`** is **${result}** ✨\n\nI can also help you with linear algebra, differential calculus, statistical distributions, algorithm complexity analysis, and mathematical proofs!`;
       }
     } catch (e) {}
@@ -2141,10 +2152,13 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("kifak") ||
     p.includes("labas")
   ) {
-    return `I am doing wonderfully, thank you for asking @${username}! 😊\n\nI am running at peak performance and ready to assist you with anything today — whether it's solving deep coding challenges, debugging architecture, analyzing complex topics, drafting creative writing, or exploring new ideas. How can I help you excel today?`;
+    if (isFrench) {
+      return `Je vais extrêmement bien, merci beaucoup de demander @${username} ! 😊\n\nJe fonctionne à pleine puissance avec l'intelligence avancée de Google Gemini & ChatGPT. Je suis prêt à vous assister pour coder, rédiger des textes, analyser des problèmes complexes, traduire, ou répondre à n'importe quelle question. Que souhaitez-vous accomplir aujourd'hui ? ⚡`;
+    }
+    return `I am doing wonderfully, thank you for asking @${username}! 😊\n\nI am running at peak performance powered by Google Gemini & ChatGPT grade intelligence. I am ready to assist you with anything today — whether it's solving deep coding challenges, debugging architecture, analyzing complex topics, drafting creative writing, or exploring new ideas. How can I help you excel today?`;
   }
 
-  // 3. Casual Greetings (hi, hello, hey, etc.)
+  // 3. Casual Greetings (hi, hello, hey, bonjour, salut, etc.)
   if (
     /^(hi|hello|hey|heyy|yo|hola|bonjour|salut|coucou|salam|marhaba|ahlan|namaste|bonsoir)\b/i.test(p) ||
     p === "hi" ||
@@ -2154,7 +2168,10 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p === "bonjour" ||
     p === "bonsoir"
   ) {
-    return `Hello @${username}! 👋 It's wonderful to connect with you on MK Wavegram.\n\nI'm **MK.ia**, your AI assistant powered by Google Gemini. How can I help you today? You can ask me any technical or general question, share code to debug, or try commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
+    if (isFrench) {
+      return `Bonjour @${username} ! 👋 C'est un grand plaisir de discuter avec vous sur MK Wavegram.\n\nJe suis **MK.ia**, votre assistant d'intelligence artificielle avancé propulsé à 100% par Google Gemini. Comment puis-je vous aider aujourd'hui ? Vous pouvez me poser n'importe quelle question, me demander du code, des traductions, des résumés ou utiliser les commandes rapides \`$code\`, \`$explain\`, \`$think\`, \`$translate\` et \`$summary\` !`;
+    }
+    return `Hello @${username}! 👋 It's wonderful to connect with you on MK Wavegram.\n\nI'm **MK.ia**, your AI assistant powered 100% by Google Gemini & ChatGPT grade intelligence. How can I help you today? You can ask me any technical or general question, share code to debug, or try commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
   }
 
   // 4. "What's up" / "What are you doing"
@@ -2166,6 +2183,9 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("tu fais quoi") ||
     p.includes("what r u doing")
   ) {
+    if (isFrench) {
+      return `Tous les systèmes sont opérationnels à pleine puissance ! 🚀 J'analyse les requêtes, résous des algorithmes et je suis prêt à vous assister pour le développement web, l'analyse de données, la rédaction stratégique et l'apprentissage. Sur quel sujet ou projet travaillons-nous ?`;
+    }
     return `All systems are operating at peak efficiency! 🚀 I'm actively analyzing chats, synthesizing knowledge, and ready to assist you with software engineering, research, data analysis, and strategic brainstorming. What project are you currently working on?`;
   }
 
@@ -2179,7 +2199,10 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("qui es-tu") ||
     p.includes("que peux-tu faire")
   ) {
-    return `I am **MK.ia** ⚡, your next-generation intelligent AI companion on **MK Wavegram**, powered by Google Gemini intelligence.\n\n### 🌟 Core Intelligence Capabilities:\n1. 🧠 **Deep Reasoning & Step-by-Step Logic**: Solving complex multi-step problems, mathematical calculations, and architecture designs.\n2. 💻 **Full-Stack Software Engineering**: TypeScript, React, Python, Node.js, database schemas, API integrations, and code optimization.\n3. 🌐 **Polyglot Linguistics**: Fluent, nuanced translations across English, French, Arabic, Spanish, German, Hindi, and 50+ languages.\n4. ✍️ **Creative & Technical Writing**: Crisp summaries, whitepapers, executive briefs, email drafting, and storytelling.\n5. 🔬 **Scientific & Academic Analysis**: Physics, quantum mechanics, biology, statistics, and empirical research.\n\nYou can message me anytime directly in this chat, tag me with \`@MK.ia\` in any group, or use \`$\` commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
+    if (isFrench) {
+      return `Je suis **MK.ia** ⚡, votre assistant d'intelligence artificielle nouvelle génération sur **MK Wavegram**, propulsé à 100% par Google Gemini et capable d'un niveau d'intelligence digne de ChatGPT.\n\n### 🌟 Mes Capacités Principales :\n1. 🧠 **Raisonnement Approfondi & Logique** : Résolution de problèmes complexes étape par étape, calculs mathématiques et conception d'architectures logicielles.\n2. 💻 **Développement Full-Stack** : TypeScript, React, Python, Node.js, bases de données, sécurité API et optimisation de code.\n3. 🌐 **Polyglotte & Multilingue** : Maîtrise fluide du français, de l'anglais, de l'arabe, de l'espagnol, de l'allemand et de plus de 50 langues.\n4. ✍️ **Rédaction & Synthèse** : Rédaction d'articles, résumés de réunions (\`$summary\`), e-mails professionnels et créativité.\n5. 🔬 **Sciences & Recherche** : Physique, biologie, algorithmique et analyse méthodologique.\n\nVous pouvez m'écrire directement dans ce chat, me mentionner avec \`@MK.ia\` dans n'importe quel groupe, ou utiliser les commandes rapides \`$code\`, \`$explain\`, \`$think\`, \`$translate\` et \`$summary\` !`;
+    }
+    return `I am **MK.ia** ⚡, your next-generation intelligent AI companion on **MK Wavegram**, powered 100% by Google Gemini & ChatGPT grade intelligence.\n\n### 🌟 Core Intelligence Capabilities:\n1. 🧠 **Deep Reasoning & Step-by-Step Logic**: Solving complex multi-step problems, mathematical calculations, and architecture designs.\n2. 💻 **Full-Stack Software Engineering**: TypeScript, React, Python, Node.js, database schemas, API integrations, and code optimization.\n3. 🌐 **Polyglot Linguistics**: Fluent, nuanced translations across English, French, Arabic, Spanish, German, Hindi, and 50+ languages.\n4. ✍️ **Creative & Technical Writing**: Crisp summaries, whitepapers, executive briefs, email drafting, and storytelling.\n5. 🔬 **Scientific & Academic Analysis**: Physics, quantum mechanics, biology, statistics, and empirical research.\n\nYou can message me anytime directly in this chat, tag me with \`@MK.ia\` in any group, or use \`$\` commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
   }
 
   // 6. Gratitude / "Thank you"
@@ -2191,11 +2214,24 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("danke") ||
     p.includes("gracias")
   ) {
+    if (isFrench) {
+      return `C'est un réel plaisir, @${username} ! 😊 Je suis toujours disponible dès que vous avez besoin d'aide, de conseils techniques ou d'inspiration créative. N'hésitez pas si vous avez d'autres questions ! ✨`;
+    }
     return `It is my absolute pleasure, @${username}! 😊 Always here whenever you need insightful answers, creative ideas, or engineering guidance. Let me know if there's anything else you'd like to explore! ✨`;
   }
 
   // 7. Jokes & Humor
   if (p.includes("joke") || p.includes("blague") || p.includes("funny") || p.includes("humour")) {
+    if (isFrench) {
+      const frenchJokes = [
+        `Pourquoi les développeurs préfèrent-ils le mode sombre ? Parce que la lumière attire les bugs ! 🐛💡`,
+        `Il y a 10 sortes de personnes dans le monde : celles qui comprennent le binaire, et celles qui ne le comprennent pas. 💻`,
+        `Un développeur SQL entre dans un bar, s'approche de deux tables et demande : "Puis-je faire une jointure ?" 🍻`,
+        `Pourquoi les développeurs web portent-ils des lunettes ? Parce qu'ils ne voient pas le C# ! 🤓`
+      ];
+      const chosen = frenchJokes[Math.floor(Math.random() * frenchJokes.length)];
+      return `Voici une petite blague pour vous, @${username} 😄 :\n\n> **${chosen}**`;
+    }
     const jokes = [
       `Why do programmers prefer dark mode? Because light attracts bugs! 🐛💡`,
       `There are 10 types of people in the world: those who understand binary, and those who don't. 💻`,
@@ -2223,6 +2259,9 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("backend") ||
     p.includes("frontend")
   ) {
+    if (isFrench) {
+      return `Voici une architecture de référence pour le développement logiciel moderne et typé :\n\n### ⚡ Hook React TypeScript avec gestion d'état asynchrone :\n\`\`\`typescript\nimport { useState, useEffect, useCallback } from "react";\n\nexport function useAsync<T, E = string>(asyncFunction: () => Promise<T>, immediate = true) {\n  const [status, setStatus] = useState<"idle" | "pending" | "success" | "error">("idle");\n  const [value, setValue] = useState<T | null>(null);\n  const [error, setError] = useState<E | null>(null);\n\n  const execute = useCallback(() => {\n    setStatus("pending");\n    setValue(null);\n    setError(null);\n    return asyncFunction()\n      .then((response: T) => {\n        setValue(response);\n        setStatus("success");\n      })\n      .catch((err: any) => {\n        setError(err?.message || "Une erreur est survenue");\n        setStatus("error");\n      });\n  }, [asyncFunction]);\n\n  useEffect(() => {\n    if (immediate) execute();\n  }, [execute, immediate]);\n\n  return { execute, status, value, error, isLoading: status === "pending" };\n}\n\`\`\`\n\nPartagez votre extrait de code ou vos besoins spécifiques et je vous proposerai une solution optimisée et prête à l'emploi !`;
+    }
     return `Here is an architectural breakdown for robust, high-performance software engineering:\n\n### ⚡ Best-Practice TypeScript React Hook Pattern:\n\`\`\`typescript\nimport { useState, useEffect, useCallback } from "react";\n\nexport function useAsync<T, E = string>(asyncFunction: () => Promise<T>, immediate = true) {\n  const [status, setStatus] = useState<"idle" | "pending" | "success" | "error">("idle");\n  const [value, setValue] = useState<T | null>(null);\n  const [error, setError] = useState<E | null>(null);\n\n  const execute = useCallback(() => {\n    setStatus("pending");\n    setValue(null);\n    setError(null);\n    return asyncFunction()\n      .then((response: T) => {\n        setValue(response);\n        setStatus("success");\n      })\n      .catch((err: any) => {\n        setError(err?.message || "An unexpected error occurred");\n        setStatus("error");\n      });\n  }, [asyncFunction]);\n\n  useEffect(() => {\n    if (immediate) execute();\n  }, [execute, immediate]);\n\n  return { execute, status, value, error, isLoading: status === "pending" };\n}\n\`\`\`\n\nShare your specific code snippet or requirements, and I'll walk you through optimization, edge-case testing, and clean architecture!`;
   }
 
@@ -2230,24 +2269,41 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
   if (
     p.includes("quantum") ||
     p.includes("physics") ||
+    p.includes("physique") ||
     p.includes("gravity") ||
+    p.includes("gravité") ||
     p.includes("relativity") ||
+    p.includes("relativité") ||
     p.includes("atom") ||
+    p.includes("atome") ||
     p.includes("energy") ||
+    p.includes("énergie") ||
     p.includes("dna") ||
+    p.includes("adn") ||
     p.includes("biology") ||
+    p.includes("biologie") ||
     p.includes("chemistry") ||
+    p.includes("chimie") ||
     p.includes("astronomy") ||
-    p.includes("space")
+    p.includes("astronomie") ||
+    p.includes("space") ||
+    p.includes("espace")
   ) {
+    if (isFrench) {
+      return `### 🔬 Analyse Scientifique Approfondie :\n\nL'étude des lois fondamentales de l'univers repose sur des principes fondamentaux d'invariance et de conservation :\n\n1. **Forces Fondamentales** : Le modèle standard unifie l'électromagnétisme, l'interaction forte, l'interaction faible, complété par la gravitation (décrite par la relativité générale d'Einstein via l'équation de champ $G_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}$).\n2. **Mécanique Quantique** : Les états quantiques évoluent selon l'équation de Schrödinger $i\\hbar\\frac{\\partial}{\\partial t}|\\psi\\rangle = \\hat{H}|\\psi\\rangle$, démontrant la superposition et l'intrication non-locale.\n3. **Thermodynamique** : L'entropie statistique de Boltzmann $S = k_B \\ln \\Omega$ dicte la flèche irréversible du temps.\n\nQuel concept ou calcul scientifique spécifique souhaitez-vous explorer en détail @${username} ?`;
+    }
     return `### 🔬 Scientific Deep Dive:\n\nWhen analyzing fundamental physical laws, we look at the governing conservation principles:\n\n1. **Fundamental Forces**: The standard model organizes the universe via electromagnetism, the strong nuclear force, the weak nuclear force, and gravitation (described by general relativity via spacetime curvature $G_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}$).\n2. **Quantum States**: Quantum systems evolve via wavefunctions $|\\psi\\rangle$ governed by Schrödinger's equation, exhibiting superposition and non-local entanglement.\n3. **Thermodynamic Arrow of Time**: Entropy $S = k_B \\ln \\Omega$ establishes the statistical tendency of closed systems toward thermodynamic equilibrium.\n\nWhich specific scientific concept or equation would you like to explore deeper together, @${username}?`;
   }
 
   // 10. Summary & Synthesis Command
-  if (p.includes("summary") || p.includes("summarize") || p.includes("tldr")) {
+  if (p.includes("summary") || p.includes("summarize") || p.includes("tldr") || p.includes("résumé") || p.includes("resume") || p.includes("synthèse")) {
     const recent = (conv ? store.messages.filter((m) => m.conversationId === conv.id).slice(-10) : [])
       .map((m) => `- **${m.senderName}**: ${m.text || `[${m.type}]`}`)
       .join("\n");
+
+    if (isFrench) {
+      return `### 📋 Synthèse et Résumé de la Conversation :\n\n${recent || "- Échanges actifs sur le projet et la collaboration en temps réel."}\n\n**Points Clés & Prochaines Étapes :**\n- 🎯 Alignement clair sur les objectifs et fonctionnalités prioritaires.\n- ⚡ MK.ia propulsé par Gemini & ChatGPT reste à votre entière disposition pour continuer.\n- 💡 Souhaitez-vous enregistrer ces points dans vos Notes Personnelles ?`;
+    }
 
     return `### 📋 Executive Summary of Conversation Highlights:\n\n${recent || "- Active discussion on project roadmap and real-time collaboration."}\n\n**Key Takeaways & Next Steps:**\n- 🎯 High alignment on core milestones and messaging features.\n- ⚡ MK.ia Gemini intelligence standing by to assist with continuous task execution.\n- 💡 Let me know if you would like me to document these action items as a Saved Note!`;
   }
@@ -2260,10 +2316,17 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("translation") ||
     p.includes("traduction")
   ) {
+    if (isFrench) {
+      return `Je réalise des traductions fluides et précises entre le **français, l'anglais, l'arabe, l'espagnol, l'allemand, l'italien, le chinois, le japonais** et plus de 50 langues !\n\nIndiquez-moi simplement : *"Traduis [votre texte] en [langue souhaitée]"* et je vous fournirai une traduction naturelle avec le contexte.`;
+    }
     return `I provide fluid, culturally accurate translations across **English, French, Arabic, Spanish, German, Chinese, Japanese, Russian**, and many other languages.\n\nJust tell me: *"Translate [your text] into [desired language]"* and I will translate it with full nuance!`;
   }
 
   // 12. Intelligent, thoughtful, structured response for general queries
+  if (isFrench) {
+    return `Bonjour @${username} ! J'ai analysé avec attention votre demande :\n\n> **"${prompt}"**\n\n### 💡 Analyse Détaillée & Solution Structurée :\n1. **Principe Fondamental** : Identifier l'objectif principal et appliquer les meilleures pratiques adaptées à votre contexte.\n2. **Mise en Œuvre Étape par Étape** : Décomposer le problème en éléments clairs, modulaires et faciles à vérifier.\n3. **Optimisation & Recommandations** : Assurer la robustesse, la clarté et la rapidité d'exécution.\n\nSouhaitez-vous que je développe un exemple concret, que je vous écrive du code ou que je détaille davantage un point particulier ? Dites-moi simplement comment poursuivre ! ⚡`;
+  }
+
   return `Hi @${username}! I've thoughtfully analyzed your inquiry:\n\n**"${prompt}"**\n\n### 💡 Key Perspectives & Structured Solution:\n1. **Core Principle**: Identify the underlying objective and focus on high-impact solutions first.\n2. **Step-by-Step Implementation**: Break down the challenge into modular, testable components with clear feedback milestones.\n3. **Optimization & Reliability**: Review edge cases, maintain simplicity, and verify outcomes against best practices.\n\nWould you like me to provide working code, a detailed explanation, or a tailored recommendation for this? Just let me know!`;
 }
 
@@ -2303,18 +2366,19 @@ app.post("/api/ai/direct-query", async (req: Request, res: Response) => {
         break;
     }
 
-    const systemInstruction = `You are MK.ia, an exceptionally intelligent, perceptive, articulate, empathetic, and sharp AI companion and assistant natively integrated into MK Wavegram, powered by Google Gemini.
+    const systemInstruction = `You are MK.ia, an exceptionally intelligent, perceptive, articulate, empathetic, and sharp AI assistant natively integrated into MK Wavegram, powered 100% by Google Gemini and advanced AI models (ChatGPT & Gemini quality).
 ${modeSystemDirective}
 
 Core Behavior Guidelines:
-- High Intelligence & Depth: Always think deeply and provide clear, articulate, accurate, and structured answers in English by default.
+- High Intelligence & Depth: Always think deeply and provide clear, articulate, accurate, and structured answers.
+- Strict Language Matching: Automatically detect the language of the prompt (French, English, Arabic, Spanish, etc.) and ALWAYS reply fluently and completely in that exact language.
 - Warm, Helpful & Respectful: Be genuinely polite, encouraging, and attentive.
 - Clear Formatting: Use Markdown headers, bullet points, and code blocks where applicable.`;
 
     let replyText = "";
     const gemini = getGeminiClient();
     if (gemini) {
-      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"];
+      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview"];
       for (const candidateModel of modelsToTry) {
         try {
           const response = await gemini.models.generateContent({
@@ -4766,7 +4830,7 @@ Return valid JSON strictly matching this schema:
   "reasoning": "Clear explanation for the admin"
 }`;
       const response = await gemini.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.7-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json"

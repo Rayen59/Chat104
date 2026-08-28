@@ -3061,6 +3061,60 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
           )}
 
           {/* RECORDING MODE BANNER */}
+          {/* Quick AI Prompt Chips for Direct AI Chat */}
+          {(otherUserId === "user_mk_ia" || conversation.id.includes("mk_ia") || conversation.id === "conv_mk_ia") && (
+            <div className="max-w-4xl mx-auto mb-2 flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
+              <button
+                type="button"
+                onClick={() => setInputText("Bonjour ! Comment peux-tu m'aider aujourd'hui ?")}
+                className="px-2.5 py-1 rounded-full bg-blue-950/80 hover:bg-blue-900 border border-blue-500/40 text-blue-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <span>🇫🇷</span>
+                <span>Bonjour</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputText("Explique-moi comment fonctionne l'intelligence artificielle étape par étape.")}
+                className="px-2.5 py-1 rounded-full bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3 text-indigo-300" />
+                <span>Expliquer l'IA</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputText("$code Écris un composant React moderne en TypeScript avec hooks et styles Tailwind.")}
+                className="px-2.5 py-1 rounded-full bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Code className="w-3 h-3 text-cyan-300" />
+                <span>Code TypeScript</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputText("$think Analyse en profondeur et résous ce problème logique : ")}
+                className="px-2.5 py-1 rounded-full bg-purple-950/80 hover:bg-purple-900 border border-purple-500/40 text-purple-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <HelpCircle className="w-3 h-3 text-purple-300" />
+                <span>Raisonnement logique</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputText("$translate Traduis ce texte en anglais et en français : ")}
+                className="px-2.5 py-1 rounded-full bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <Globe className="w-3 h-3 text-emerald-300" />
+                <span>Traduction</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setInputText("$summary Fais un résumé clair et structuré des points clés.")}
+                className="px-2.5 py-1 rounded-full bg-amber-950/80 hover:bg-amber-900 border border-amber-500/40 text-amber-200 shrink-0 flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <FileText className="w-3 h-3 text-amber-300" />
+                <span>$summary</span>
+              </button>
+            </div>
+          )}
+
           {isRecording ? (
             <div className="max-w-4xl mx-auto w-full bg-[#0e1621] border border-rose-500/40 rounded-full px-4 py-2 flex items-center justify-between text-rose-300 text-xs shadow-2xl backdrop-blur-lg">
               <div className="flex items-center gap-2.5">

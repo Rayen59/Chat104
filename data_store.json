@@ -1,0 +1,885 @@
+{
+  "users": [
+    {
+      "id": "user_admin_mk",
+      "email": "addmmin@gmail.com",
+      "username": "MK Admin 👑",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKAdminMasterHQ&backgroundColor=3390ec,0e1621",
+      "bio": "Official System Administrator & Platform Overseer of MK Wavegram.",
+      "status": "online",
+      "role": "admin",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "badges": [
+        "Admin Panel",
+        "System Overseer",
+        "Verified"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2025-01-01T00:00:00.000Z",
+      "isBanned": false
+    },
+    {
+      "id": "user_alex",
+      "email": "alex@wavegram.com",
+      "username": "Alex Morgan",
+      "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "bio": "Exploring the world with MK-wavegram 🚀",
+      "status": "online",
+      "createdAt": "2026-08-28T22:19:48.959Z",
+      "badges": [
+        "VIP",
+        "Verified"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2026-08-28T22:19:48.959Z"
+    },
+    {
+      "id": "user_sarah",
+      "email": "sarah@wavegram.com",
+      "username": "Sarah Jenkins",
+      "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      "bio": "Design lead @ MK-wavegram | Coffee enthusiast ☕",
+      "status": "online",
+      "createdAt": "2026-08-28T22:19:48.959Z",
+      "badges": [
+        "Design Team"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2026-08-28T22:19:48.959Z"
+    },
+    {
+      "id": "user_david",
+      "email": "david@wavegram.com",
+      "username": "David Chen",
+      "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "bio": "Audio engineer & podcaster 🎙️",
+      "status": "away",
+      "createdAt": "2026-08-28T22:19:48.959Z",
+      "badges": [
+        "Voice Master"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2026-08-28T22:19:48.959Z"
+    },
+    {
+      "id": "user_mk_ia",
+      "email": "mk.ia@wavegram.internal",
+      "username": "MK.ia",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "bio": "MK Wavegram Official AI Assistant ⚡ Tag @MK.ia or @mk.ia in any chat for deep, real-time Gemini intelligence!",
+      "status": "online",
+      "createdAt": "2025-01-01T00:00:00.000Z",
+      "badges": [
+        "MK.ia",
+        "Gemini Deep AI",
+        "Verified"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "user_01p87kn8",
+      "email": "bouazizighaith67@gmail.com",
+      "username": "Jhh",
+      "avatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "bio": "Hey there! I am using MK Wavegram.",
+      "status": "online",
+      "role": "user",
+      "createdAt": "2026-08-28T22:40:50.870Z",
+      "badges": [
+        "Member"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2026-08-28T22:40:50.870Z"
+    }
+  ],
+  "conversations": [
+    {
+      "id": "conv_mk_official",
+      "type": "group",
+      "participants": [
+        "user_admin_mk",
+        "user_alex",
+        "user_sarah",
+        "user_david",
+        "user_mk_ia",
+        "user_01p87kn8"
+      ],
+      "groupId": "group_mk_official",
+      "isOfficialChannel": true,
+      "lastMessage": {
+        "text": "⚡ Welcome to MK Wavegram! Follow official platform announcements and safety alerts here.",
+        "senderId": "user_admin_mk",
+        "senderName": "MK Admin 👑",
+        "createdAt": "2026-08-28T22:19:48.960Z"
+      },
+      "updatedAt": "2026-08-28T22:19:48.960Z"
+    },
+    {
+      "id": "conv_group_tech",
+      "type": "group",
+      "participants": [
+        "user_alex",
+        "user_sarah",
+        "user_david"
+      ],
+      "groupId": "group_tech",
+      "lastMessage": {
+        "text": "Welcome to Wavegram! Double tap any message to react ❤️",
+        "senderId": "user_alex",
+        "senderName": "Alex Morgan",
+        "createdAt": "2026-08-28T22:19:48.959Z"
+      },
+      "updatedAt": "2026-08-28T22:19:48.959Z"
+    },
+    {
+      "id": "conv_mk_ia_user_admin_mk",
+      "type": "dm",
+      "participants": [
+        "user_admin_mk",
+        "user_mk_ia"
+      ],
+      "lastMessage": {
+        "text": "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+        "senderId": "user_mk_ia",
+        "senderName": "MK.ia",
+        "createdAt": "2026-08-28T22:24:35.865Z"
+      },
+      "updatedAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "conv_mk_ia_user_alex",
+      "type": "dm",
+      "participants": [
+        "user_alex",
+        "user_mk_ia"
+      ],
+      "lastMessage": {
+        "text": "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+        "senderId": "user_mk_ia",
+        "senderName": "MK.ia",
+        "createdAt": "2026-08-28T22:24:35.865Z"
+      },
+      "updatedAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "conv_mk_ia_user_sarah",
+      "type": "dm",
+      "participants": [
+        "user_sarah",
+        "user_mk_ia"
+      ],
+      "lastMessage": {
+        "text": "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+        "senderId": "user_mk_ia",
+        "senderName": "MK.ia",
+        "createdAt": "2026-08-28T22:24:35.865Z"
+      },
+      "updatedAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "conv_mk_ia_user_david",
+      "type": "dm",
+      "participants": [
+        "user_david",
+        "user_mk_ia"
+      ],
+      "lastMessage": {
+        "text": "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+        "senderId": "user_mk_ia",
+        "senderName": "MK.ia",
+        "createdAt": "2026-08-28T22:24:35.865Z"
+      },
+      "updatedAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "conv_mk_ia_user_01p87kn8",
+      "type": "dm",
+      "participants": [
+        "user_01p87kn8",
+        "user_mk_ia"
+      ],
+      "lastMessage": {
+        "text": "Bonjour MK.ia ! Peux-tu me donner 3 conseils pour réussir un projet web en TypeScript ?",
+        "senderId": "user_01p87kn8",
+        "senderName": "Jhh",
+        "createdAt": "2026-08-28T22:42:08.905Z"
+      },
+      "updatedAt": "2026-08-28T22:42:08.905Z"
+    }
+  ],
+  "messages": [
+    {
+      "id": "msg_mk_welcome_1",
+      "conversationId": "conv_mk_official",
+      "senderId": "user_admin_mk",
+      "senderName": "MK Admin 👑",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKAdminMasterHQ&backgroundColor=3390ec,0e1621",
+      "text": "⚡ **Welcome to the official MK Wavegram channel!**\n\nThis channel is dedicated to official announcements, security notices, and feature releases.\n\n🛡️ *Safety & Moderation*: Your private chats are protected and a direct reporting system is active across the platform.",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_admin_mk"
+        ],
+        "🚀": [
+          "user_alex"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-08-28T22:19:48.960Z"
+    },
+    {
+      "id": "msg_init_1",
+      "conversationId": "conv_group_tech",
+      "senderId": "user_alex",
+      "senderName": "Alex Morgan",
+      "senderAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "text": "Welcome to Wavegram! You can send HD audio voice notes, gifs, files, and start crystal clear voice calls!",
+      "type": "text",
+      "reactions": {
+        "❤️": [
+          "user_sarah"
+        ],
+        "🚀": [
+          "user_david"
+        ]
+      },
+      "likes": [
+        "user_sarah"
+      ],
+      "createdAt": "2026-08-28T21:19:48.959Z"
+    },
+    {
+      "id": "msg_ai_welcome_user_admin_mk",
+      "conversationId": "conv_mk_ia_user_admin_mk",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_mk_ia"
+        ],
+        "🚀": [
+          "user_admin_mk"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "msg_ai_welcome_user_alex",
+      "conversationId": "conv_mk_ia_user_alex",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_mk_ia"
+        ],
+        "🚀": [
+          "user_alex"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "msg_ai_welcome_user_sarah",
+      "conversationId": "conv_mk_ia_user_sarah",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_mk_ia"
+        ],
+        "🚀": [
+          "user_sarah"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "msg_ai_welcome_user_david",
+      "conversationId": "conv_mk_ia_user_david",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_mk_ia"
+        ],
+        "🚀": [
+          "user_david"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-08-28T22:24:35.865Z"
+    },
+    {
+      "id": "msg_ai_welcome_user_01p87kn8",
+      "conversationId": "conv_mk_ia_user_01p87kn8",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_mk_ia"
+        ],
+        "🚀": [
+          "user_01p87kn8"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-08-28T22:40:51.085Z"
+    },
+    {
+      "id": "msg_kwlgg8q6",
+      "conversationId": "conv_mk_ia_user_01p87kn8",
+      "senderId": "user_01p87kn8",
+      "senderName": "Jhh",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "G",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-08-28T22:40:55.145Z"
+    },
+    {
+      "id": "msg_mkia_qsp13o0x",
+      "conversationId": "conv_mk_ia_user_01p87kn8",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "Bonjour ! Je suis **MK.ia**, votre assistant intelligent intégré à **MK Wavegram**.\n\nIl semble que vous ayez entamé votre message par « G ». Comment puis-je vous aider aujourd'hui ? Que vous ayez besoin d'une analyse technique, d'une rédaction créative, d'une aide au développement ou simplement d'une réponse à une question complexe, je suis à votre entière disposition.\n\nDites-moi en quoi je peux vous assister !",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "replyTo": {
+        "id": "msg_kwlgg8q6",
+        "senderName": "Jhh",
+        "text": "G",
+        "type": "text"
+      },
+      "createdAt": "2026-08-28T22:40:56.840Z"
+    },
+    {
+      "id": "msg_f9i727h8",
+      "conversationId": "conv_mk_ia_user_01p87kn8",
+      "senderId": "user_01p87kn8",
+      "senderName": "Jhh",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "Bonjour MK.ia ! Peux-tu me donner 3 conseils pour réussir un projet web en TypeScript ?",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-08-28T22:42:08.905Z"
+    }
+  ],
+  "groups": [
+    {
+      "id": "group_mk_official",
+      "name": "MK Official ⚡",
+      "description": "Official MK Wavegram announcement & security updates channel. Pinned for all users.",
+      "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKOfficialChannel&backgroundColor=3390ec,0e1621",
+      "creatorId": "user_admin_mk",
+      "adminIds": [
+        "user_admin_mk"
+      ],
+      "memberIds": [
+        "user_admin_mk",
+        "user_alex",
+        "user_sarah",
+        "user_david",
+        "user_mk_ia",
+        "user_01p87kn8"
+      ],
+      "isPrivate": false,
+      "announcementMode": true,
+      "inviteCode": "MK-OFFICIAL-2026",
+      "themeColor": "#3390ec",
+      "badges": [
+        {
+          "userId": "user_admin_mk",
+          "badgeName": "Owner / Admin",
+          "color": "#3390ec"
+        }
+      ],
+      "createdAt": "2025-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "group_tech",
+      "name": "Wavegram Tech Pioneers",
+      "description": "Official community group for tech updates and audio innovations!",
+      "avatar": "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=150&auto=format&fit=crop&q=80",
+      "creatorId": "user_alex",
+      "adminIds": [
+        "user_alex"
+      ],
+      "memberIds": [
+        "user_alex",
+        "user_sarah",
+        "user_david"
+      ],
+      "isPrivate": false,
+      "inviteCode": "WAVE-TECH-2026",
+      "themeColor": "#ec4899",
+      "badges": [
+        {
+          "userId": "user_alex",
+          "badgeName": "Founder",
+          "color": "#f59e0b"
+        },
+        {
+          "userId": "user_sarah",
+          "badgeName": "UI/UX",
+          "color": "#ec4899"
+        }
+      ],
+      "createdAt": "2026-08-28T22:19:48.959Z"
+    }
+  ],
+  "passwords": {
+    "alex@wavegram.com": "password123",
+    "sarah@wavegram.com": "password123",
+    "david@wavegram.com": "password123",
+    "addmmin@gmail.com": "adminadmin12",
+    "admin@gmail.com": "adminadmin12",
+    "admin@wavegram.com": "adminadmin12",
+    "bouazizighaith67@gmail.com": "hhhhhh"
+  },
+  "chatRequests": [],
+  "stories": [
+    {
+      "id": "story_sarah_1",
+      "userId": "user_sarah",
+      "userName": "Sarah Jenkins",
+      "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      "type": "image",
+      "mediaUrl": "https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?w=1080&auto=format&fit=crop&q=80",
+      "caption": "Creative morning sprint at the design studio! Crafting new story filters ☕🎨✨",
+      "duration": 6,
+      "montage": {
+        "filter": "vivid",
+        "brightness": 105,
+        "contrast": 110,
+        "saturation": 115,
+        "sepia": 0,
+        "blur": 0,
+        "hueRotate": 0,
+        "aspectRatio": "9:16",
+        "stickers": [
+          {
+            "id": "stk_1",
+            "emoji": "✨",
+            "x": 80,
+            "y": 15,
+            "scale": 1.4,
+            "rotation": 12
+          },
+          {
+            "id": "stk_2",
+            "emoji": "🎨",
+            "x": 15,
+            "y": 75,
+            "scale": 1.3,
+            "rotation": -10
+          }
+        ],
+        "textOverlays": [
+          {
+            "id": "txt_1",
+            "text": "Design Sprint #42",
+            "color": "#ffffff",
+            "background": "rgba(14, 165, 233, 0.75)",
+            "x": 50,
+            "y": 20,
+            "scale": 1.1,
+            "font": "sans-serif"
+          }
+        ]
+      },
+      "tags": [
+        {
+          "id": "t1",
+          "type": "user",
+          "label": "Alex Morgan",
+          "value": "user_alex",
+          "userId": "user_alex"
+        },
+        {
+          "id": "t2",
+          "type": "hashtag",
+          "label": "#DesignThinking",
+          "value": "DesignThinking"
+        },
+        {
+          "id": "t3",
+          "type": "location",
+          "label": "📍 Blue Bottle Studio",
+          "value": "Blue Bottle Studio"
+        },
+        {
+          "id": "t4",
+          "type": "music",
+          "label": "🎵 Chill Vibes - Lofi Sunset",
+          "value": "Chill Vibes"
+        }
+      ],
+      "location": "Blue Bottle Studio, San Francisco",
+      "music": {
+        "title": "Chill Vibes",
+        "artist": "Lofi Sunset Studio"
+      },
+      "reactions": {
+        "❤️": [
+          "user_alex",
+          "user_david"
+        ],
+        "🔥": [
+          "user_alex"
+        ],
+        "😍": [
+          "user_david"
+        ]
+      },
+      "comments": [
+        {
+          "id": "sc_1",
+          "storyId": "story_sarah_1",
+          "userId": "user_alex",
+          "userName": "Alex Morgan",
+          "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          "text": "Love the palette! Can't wait to release this feature 🚀",
+          "createdAt": "2026-08-28T21:19:48.959Z",
+          "likes": [
+            "user_sarah"
+          ]
+        },
+        {
+          "id": "sc_2",
+          "storyId": "story_sarah_1",
+          "userId": "user_sarah",
+          "userName": "Sarah Jenkins",
+          "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+          "text": "Thanks Alex! Full typography engine is ready too!",
+          "createdAt": "2026-08-28T21:29:48.959Z",
+          "parentId": "sc_1",
+          "replyToUserName": "Alex Morgan"
+        }
+      ],
+      "viewers": [
+        {
+          "userId": "user_alex",
+          "userName": "Alex Morgan",
+          "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          "viewedAt": "2026-08-28T21:13:08.959Z",
+          "reaction": "❤️"
+        },
+        {
+          "userId": "user_david",
+          "userName": "David Chen",
+          "userAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+          "viewedAt": "2026-08-28T21:38:08.959Z",
+          "reaction": "😍"
+        }
+      ],
+      "createdAt": "2026-08-28T20:49:48.959Z",
+      "expiresAt": "2026-08-29T22:19:48.959Z"
+    },
+    {
+      "id": "story_sarah_2",
+      "userId": "user_sarah",
+      "userName": "Sarah Jenkins",
+      "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      "type": "text",
+      "textContent": "Good design is as little design as possible. Less, but better – because it concentrates on the essential aspects.",
+      "textStyle": {
+        "template": "neon_glow",
+        "backgroundGradient": "linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #0f172a 100%)",
+        "textColor": "#38bdf8",
+        "fontSize": "lg",
+        "textAlign": "center",
+        "fontFamily": "sans-serif",
+        "highlightCard": true
+      },
+      "duration": 6,
+      "tags": [
+        {
+          "id": "t5",
+          "type": "hashtag",
+          "label": "#DieterRams",
+          "value": "DieterRams"
+        },
+        {
+          "id": "t6",
+          "type": "hashtag",
+          "label": "#Minimalism",
+          "value": "Minimalism"
+        }
+      ],
+      "reactions": {
+        "⚡": [
+          "user_alex"
+        ],
+        "💯": [
+          "user_david"
+        ]
+      },
+      "comments": [],
+      "viewers": [
+        {
+          "userId": "user_alex",
+          "userName": "Alex Morgan",
+          "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          "viewedAt": "2026-08-28T21:59:48.959Z",
+          "reaction": "⚡"
+        }
+      ],
+      "createdAt": "2026-08-28T21:19:48.959Z",
+      "expiresAt": "2026-08-29T22:19:48.959Z"
+    },
+    {
+      "id": "story_alex_1",
+      "userId": "user_alex",
+      "userName": "Alex Morgan",
+      "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+      "type": "image",
+      "mediaUrl": "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1080&auto=format&fit=crop&q=80",
+      "caption": "Sunset overlooking the Pacific Coast. Nature's ultimate high definition canvas 🌅",
+      "duration": 6,
+      "montage": {
+        "filter": "sunset",
+        "brightness": 108,
+        "contrast": 105,
+        "saturation": 120,
+        "sepia": 10,
+        "blur": 0,
+        "hueRotate": 0,
+        "aspectRatio": "9:16",
+        "stickers": [
+          {
+            "id": "stk_3",
+            "emoji": "🌅",
+            "x": 50,
+            "y": 15,
+            "scale": 1.5,
+            "rotation": 0
+          },
+          {
+            "id": "stk_4",
+            "emoji": "🏄",
+            "x": 80,
+            "y": 80,
+            "scale": 1.2,
+            "rotation": -15
+          }
+        ]
+      },
+      "tags": [
+        {
+          "id": "t7",
+          "type": "location",
+          "label": "📍 Big Sur, California",
+          "value": "Big Sur"
+        },
+        {
+          "id": "t8",
+          "type": "hashtag",
+          "label": "#SunsetChaser",
+          "value": "SunsetChaser"
+        },
+        {
+          "id": "t9",
+          "type": "music",
+          "label": "🎵 Golden Hour - Wavescape",
+          "value": "Golden Hour"
+        }
+      ],
+      "location": "Big Sur, California",
+      "music": {
+        "title": "Golden Hour",
+        "artist": "Wavescape Ambient"
+      },
+      "reactions": {
+        "🔥": [
+          "user_sarah",
+          "user_david"
+        ],
+        "❤️": [
+          "user_sarah"
+        ]
+      },
+      "comments": [
+        {
+          "id": "sc_3",
+          "storyId": "story_alex_1",
+          "userId": "user_sarah",
+          "userName": "Sarah Jenkins",
+          "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+          "text": "Breathtaking colors! Did you use the sunset montage preset?",
+          "createdAt": "2026-08-28T20:23:08.959Z"
+        }
+      ],
+      "viewers": [
+        {
+          "userId": "user_sarah",
+          "userName": "Sarah Jenkins",
+          "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+          "viewedAt": "2026-08-28T20:19:48.959Z",
+          "reaction": "🔥"
+        }
+      ],
+      "createdAt": "2026-08-28T20:06:28.959Z",
+      "expiresAt": "2026-08-29T22:19:48.959Z"
+    },
+    {
+      "id": "story_david_1",
+      "userId": "user_david",
+      "userName": "David Chen",
+      "userAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+      "type": "text",
+      "textContent": "🎙️ Sound Check & Waveform Test: Spatial acoustics calibrated. New studio gear unlocked! 🎧",
+      "textStyle": {
+        "template": "cyberpunk",
+        "backgroundGradient": "linear-gradient(135deg, #05050d 0%, #0f172a 50%, #022c22 100%)",
+        "textColor": "#22c55e",
+        "fontSize": "lg",
+        "textAlign": "center",
+        "fontFamily": "monospace",
+        "highlightCard": true
+      },
+      "duration": 6,
+      "tags": [
+        {
+          "id": "t10",
+          "type": "hashtag",
+          "label": "#AudioEngineering",
+          "value": "AudioEngineering"
+        },
+        {
+          "id": "t11",
+          "type": "location",
+          "label": "📍 SoundLab Tokyo",
+          "value": "SoundLab Tokyo"
+        }
+      ],
+      "reactions": {
+        "🚀": [
+          "user_alex"
+        ],
+        "👏": [
+          "user_sarah"
+        ]
+      },
+      "comments": [],
+      "viewers": [
+        {
+          "userId": "user_alex",
+          "userName": "Alex Morgan",
+          "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          "viewedAt": "2026-08-28T18:09:48.959Z",
+          "reaction": "🚀"
+        }
+      ],
+      "createdAt": "2026-08-28T17:53:08.959Z",
+      "expiresAt": "2026-08-29T22:19:48.959Z"
+    }
+  ],
+  "notes": [
+    {
+      "id": "note_demo_1",
+      "userId": "user_alex",
+      "userName": "Alex Rivers",
+      "userAvatar": "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80",
+      "title": "Late Night Coding & Beats 🎧",
+      "content": "Building the next generation of MK Wavegram with deep AI & story studios.",
+      "category": "Work",
+      "color": "#3390ec",
+      "moodEmoji": "⚡",
+      "music": {
+        "id": "track_1",
+        "title": "Midnight City Lights",
+        "artist": "Wavegram Lofi",
+        "coverUrl": "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=300&q=80",
+        "audioUrl": "https://cdn.freesound.org/previews/612/612628_5674468-lq.mp3",
+        "duration": 32
+      },
+      "isPinned": true,
+      "likes": [
+        "user_sarah"
+      ],
+      "createdAt": "2026-08-28T20:19:48.959Z",
+      "updatedAt": "2026-08-28T21:19:48.959Z",
+      "expiresAt": "2026-08-29T20:19:48.959Z"
+    },
+    {
+      "id": "note_demo_2",
+      "userId": "user_sarah",
+      "userName": "Sarah Jenkins",
+      "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+      "title": "Chill Coffee Break ☕",
+      "content": "Listening to peaceful piano melodies while sketching new UI concepts.",
+      "category": "Ideas",
+      "color": "#10b981",
+      "moodEmoji": "✨",
+      "music": {
+        "id": "track_3",
+        "title": "Peaceful Piano Reflections",
+        "artist": "Aura Melodies",
+        "coverUrl": "https://images.unsplash.com/photo-1520523839898-507127054976?w=300&q=80",
+        "audioUrl": "https://cdn.freesound.org/previews/530/530415_11565251-lq.mp3",
+        "duration": 45
+      },
+      "isPinned": true,
+      "likes": [
+        "user_alex"
+      ],
+      "createdAt": "2026-08-28T17:19:48.959Z",
+      "updatedAt": "2026-08-28T19:19:48.959Z",
+      "expiresAt": "2026-08-29T17:19:48.959Z"
+    },
+    {
+      "id": "note_demo_3",
+      "userId": "user_marcus",
+      "userName": "Marcus Vance",
+      "userAvatar": "https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150&auto=format&fit=crop&q=80",
+      "title": "Weekend Road Trip 🚗💨",
+      "content": "On the road with acoustic tunes and great vibes!",
+      "category": "Personal",
+      "color": "#f59e0b",
+      "moodEmoji": "🌴",
+      "music": {
+        "id": "track_5",
+        "title": "Ocean Breeze Acoustic",
+        "artist": "Sunset Guitars",
+        "coverUrl": "https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=300&q=80",
+        "audioUrl": "https://cdn.freesound.org/previews/573/573381_11861866-lq.mp3",
+        "duration": 40
+      },
+      "isPinned": false,
+      "likes": [],
+      "createdAt": "2026-08-28T14:19:48.959Z",
+      "updatedAt": "2026-08-28T14:19:48.959Z",
+      "expiresAt": "2026-08-29T14:19:48.959Z"
+    }
+  ],
+  "reports": []
+}
