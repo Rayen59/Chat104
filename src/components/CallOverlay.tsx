@@ -155,11 +155,9 @@ export const CallOverlay: React.FC<CallOverlayProps> = ({
   const otherName = isCaller ? call.targetName : call.callerName;
   const otherAvatar = isCaller ? "" : call.callerAvatar;
   const isAiCall =
-    call.targetId === "user_mk_ai" ||
-    call.targetId === "user_wia_ai" ||
     call.targetId === "user_mk_ia" ||
     otherName.toLowerCase().includes("mk.ia") ||
-    otherName.toLowerCase().includes("ai");
+    otherName.toLowerCase().includes("ia");
 
   // Listen to language changes
   useEffect(() => {

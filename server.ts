@@ -13,6 +13,15 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 let aiClient: GoogleGenAI | null = null;
 let currentLoadedApiKey = "";
 
+function withTimeout<T>(promise: Promise<T>, ms = 6000): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error(`Timeout after ${ms}ms`)), ms)
+    )
+  ]);
+}
+
 function getGeminiClient(): GoogleGenAI | null {
   const key = (process.env.GEMINI_API_KEY || "").trim();
   if (!key) return null;
@@ -312,7 +321,7 @@ function ensureOfficialEntities() {
           type: "dm",
           participants: [u.id, MK_AI_USER.id],
           lastMessage: {
-            text: "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+            text: "⚡ Bonjour ! Je suis MK.ia, votre assistant d'intelligence artificielle sur MK Wavegram. Comment puis-je vous aider aujourd'hui ?",
             senderId: MK_AI_USER.id,
             senderName: MK_AI_USER.username,
             createdAt: new Date().toISOString()
@@ -330,7 +339,7 @@ function ensureOfficialEntities() {
           senderId: MK_AI_USER.id,
           senderName: MK_AI_USER.username,
           senderAvatar: MK_AI_USER.avatar,
-          text: "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+          text: "⚡ **Bonjour ! Je suis MK.ia, votre assistant IA officiel sur MK Wavegram, propulsé à 100% par Google Gemini.**\n\nJe suis à votre entière disposition pour répondre à toutes vos questions en français (ou dans votre langue) :\n- 🧠 **Raisonnement Approfondi & Analyse Logique**\n- 💻 **Développement Full-Stack, Code TypeScript & Debugging**\n- ✍️ **Rédaction de Textes, E-mails & Résumés**\n- 🌐 **Traductions Fluides & Explications Claires**\n- 🔬 **Sciences, Mathématiques & Stratégie**\n\n💬 *Posez-moi vos questions directement ici ou mentionnez `@MK.ia` dans les groupes !*",
           type: "text",
           reactions: { "⚡": [MK_AI_USER.id], "🚀": [u.id] },
           likes: [],
@@ -1674,13 +1683,13 @@ app.post("/api/messages/send", (req: Request, res: Response) => {
     /\$code\b/i.test(text || "") ||
     /\$reply\b/i.test(text || "") ||
     /\$creative\b/i.test(text || "") ||
-    (conv.type === "dm" && (conv.participants.includes(MK_AI_USER.id) || conv.participants.includes("user_wia_ai") || conv.participants.includes("user_lia_ai")));
+    (conv.type === "dm" && conv.participants.includes(MK_AI_USER.id));
 
-  if (isMkAiTriggered && senderId !== MK_AI_USER.id && senderId !== "user_wia_ai") {
+  if (isMkAiTriggered && senderId !== MK_AI_USER.id) {
     setTimeout(() => {
       triggerMkAiResponse(conv, newMessage, sender);
     }, 200);
-  } else if (senderId !== MK_AI_USER.id && senderId !== "user_wia_ai") {
+  } else if (senderId !== MK_AI_USER.id) {
     // Check for AI Auto-Responder / Absence Assistant for other participants
     let recipientCandidates: User[] = [];
     if (conv.type === "dm") {
@@ -1812,7 +1821,7 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
       const rawTurns: Array<{ role: "user" | "model"; parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> }> = [];
 
       previousConversationMessages.forEach((m) => {
-        const role: "user" | "model" = (m.senderId === MK_AI_USER.id || m.senderId === "user_mk_ai" || m.senderId === "user_wia_ai") ? "model" : "user";
+        const role: "user" | "model" = (m.senderId === MK_AI_USER.id) ? "model" : "user";
         const text = m.text || `[${m.type}]`;
         if (text && text.trim()) {
           rawTurns.push({
@@ -1872,13 +1881,16 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
 
       for (const candidateModel of modelsToTry) {
         try {
-          const response = await gemini.models.generateContent({
-            model: candidateModel,
-            contents: mergedTurns,
-            config: {
-              systemInstruction
-            }
-          });
+          const response = await withTimeout(
+            gemini.models.generateContent({
+              model: candidateModel,
+              contents: mergedTurns,
+              config: {
+                systemInstruction
+              }
+            }),
+            5000
+          );
           if (response.text && response.text.trim().length > 0) {
             replyText = response.text;
             break;
@@ -2381,13 +2393,16 @@ Core Behavior Guidelines:
       const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-3.1-pro-preview"];
       for (const candidateModel of modelsToTry) {
         try {
-          const response = await gemini.models.generateContent({
-            model: candidateModel,
-            contents: prompt.trim(),
-            config: {
-              systemInstruction
-            }
-          });
+          const response = await withTimeout(
+            gemini.models.generateContent({
+              model: candidateModel,
+              contents: prompt.trim(),
+              config: {
+                systemInstruction
+              }
+            }),
+            5000
+          );
           if (response.text && response.text.trim().length > 0) {
             replyText = response.text;
             break;
@@ -3634,8 +3649,8 @@ app.post("/api/calls/signal", (req: Request, res: Response) => {
     broadcastEvent("call_incoming", call);
     broadcastEvent("call_started", call);
 
-    // If target is MK.ia AI or demo bots, automatically answer the call after 2.5s
-    if (targetId === MK_AI_USER.id || targetId === "user_wia_ai") {
+    // If target is MK.ia AI, automatically answer the call after 2.5s
+    if (targetId === MK_AI_USER.id) {
       setTimeout(() => {
         const active = currentActiveCalls[call.id];
         if (active && active.status === "ringing") {

@@ -1786,7 +1786,7 @@ export const ChatRoom: React.FC<ChatRoomProps> = ({
             }
 
             const isMe = msg.senderId === currentUser.id;
-            const isMkAi = msg.senderId === "user_mk_ia" || msg.senderId === "user_wia_ai";
+            const isMkAi = msg.senderId === "user_mk_ia";
             const hasLiked = msg.likes?.includes(currentUser.id);
             const isSelected = selectedMessageIds.includes(msg.id);
             const canDeleteForAll = isMe || (conversation.type === "group" && (group?.adminIds.includes(currentUser.id) || group?.creatorId === currentUser.id));

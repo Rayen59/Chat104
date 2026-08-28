@@ -531,42 +531,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* CHATS TAB */}
         {activeTab === "chats" && (
           <div className="divide-y divide-[#101921]/40">
-            {/* Dedicated MK.ia Gemini & ChatGPT 100% Quick Access Banner */}
-            <div
-              onClick={() => onStartDMWithUser("user_mk_ia")}
-              className="p-3 bg-gradient-to-r from-blue-950/60 via-[#17212b] to-indigo-950/60 hover:from-blue-900/60 hover:to-indigo-900/60 flex items-center justify-between cursor-pointer transition-all border-b border-blue-500/20 group"
-            >
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-11 h-11 rounded-full p-[2px] bg-gradient-to-tr from-cyan-400 via-blue-500 to-indigo-500 shadow-[0_0_15px_rgba(51,144,236,0.4)] flex items-center justify-center">
-                    <img
-                      src="https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b"
-                      alt="MK.ia AI"
-                      className="w-full h-full rounded-full object-cover bg-[#09112a]"
-                    />
-                  </div>
-                  <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-[#42ab58] border-2 border-[#17212b]" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[14px] font-bold text-white group-hover:text-cyan-300 transition-colors">
-                      MK.ia AI Assistant
-                    </span>
-                    <span className="px-1.5 py-0.2 rounded-full bg-gradient-to-r from-cyan-500/20 to-blue-500/20 text-cyan-300 border border-cyan-500/40 text-[9px] font-extrabold flex items-center gap-0.5">
-                      <Sparkles className="w-2.5 h-2.5" />
-                      Gemini 100%
-                    </span>
-                  </div>
-                  <div className="text-[12px] text-slate-400 flex items-center gap-1 mt-0.5">
-                    <span>⚡ Fluent English, French, Code & Reasoning</span>
-                  </div>
-                </div>
-              </div>
-              <div className="px-2.5 py-1 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/40 border border-blue-400/30 text-cyan-300 text-xs font-bold transition-colors">
-                Chat
-              </div>
-            </div>
-
             {pendingIncomingRequests.length > 0 && (
               <div
                 onClick={() => setActiveTab("requests")}
@@ -636,9 +600,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   isVerified = isOfficial || otherUser?.hasAccount !== false;
                 }
 
+                const isMkAi = !isGroup && (conv.participants.includes("user_mk_ia") || conv.id.includes("mk_ia"));
                 const isActive = conv.id === activeConversationId;
-                const avatarColor = isOfficial ? "bg-gradient-to-tr from-[#3390ec] to-[#8a4fff]" : getTelegramAvatarColor(name);
-                const initials = isOfficial ? "MK" : getTelegramInitials(name);
+                const avatarColor = isOfficial
+                  ? "bg-gradient-to-tr from-[#3390ec] to-[#8a4fff]"
+                  : isMkAi
+                  ? "bg-gradient-to-tr from-cyan-500 to-blue-600"
+                  : getTelegramAvatarColor(name);
+                const initials = isOfficial ? "MK" : isMkAi ? "IA" : getTelegramInitials(name);
 
                 return (
                   <div
@@ -649,6 +618,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         ? "bg-[#2b5278] text-white"
                         : isOfficial
                         ? "bg-[#1f2c3a]/70 hover:bg-[#202b36] border-l-4 border-[#3390ec]"
+                        : isMkAi
+                        ? "bg-gradient-to-r from-blue-950/40 via-[#0e1621] to-[#0e1621] hover:bg-[#202b36] border-l-4 border-cyan-400 text-white"
                         : "hover:bg-[#202b36] bg-[#0e1621] text-white"
                     }`}
                   >
@@ -658,14 +629,22 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         <img
                           src={avatar}
                           alt={name}
-                          className={`w-12 h-12 rounded-full object-cover bg-[#242f3d] ${isOfficial ? "ring-2 ring-[#3390ec]" : ""}`}
+                          className={`w-12 h-12 rounded-full object-cover bg-[#242f3d] ${
+                            isOfficial
+                              ? "ring-2 ring-[#3390ec]"
+                              : isMkAi
+                              ? "ring-2 ring-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.3)]"
+                              : ""
+                          }`}
                           onError={(e) => {
                             (e.currentTarget as HTMLElement).style.display = "none";
                           }}
                         />
                       ) : (
                         <div
-                          className={`w-12 h-12 rounded-full ${avatarColor} text-white flex items-center justify-center font-bold text-base shadow-sm ${isOfficial ? "ring-2 ring-[#3390ec]" : ""}`}
+                          className={`w-12 h-12 rounded-full ${avatarColor} text-white flex items-center justify-center font-bold text-base shadow-sm ${
+                            isOfficial ? "ring-2 ring-[#3390ec]" : isMkAi ? "ring-2 ring-cyan-400" : ""
+                          }`}
                         >
                           {initials}
                         </div>
@@ -687,7 +666,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                               Official
                             </span>
                           )}
-                          {isVerified && !isOfficial && (
+                          {isMkAi && (
+                            <span className="text-[10px] px-1.5 py-0.2 bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 rounded font-bold shrink-0 flex items-center gap-0.5">
+                              <Sparkles className="w-2.5 h-2.5" />
+                              IA Gemini
+                            </span>
+                          )}
+                          {isVerified && !isOfficial && !isMkAi && (
                             <BadgeCheck className="w-4 h-4 text-[#3390ec] shrink-0" />
                           )}
                           {isMuted && (
