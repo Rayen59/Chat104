@@ -296,6 +296,50 @@ function ensureOfficialEntities() {
     };
     store.messages.unshift(welcomeMsg);
   }
+
+  // Ensure every human user has a direct DM conversation with MK.ia AI assistant
+  store.users.forEach((u) => {
+    if (u.id !== MK_AI_USER.id) {
+      const dmConvId = `conv_mk_ia_${u.id}`;
+      let aiConv = store.conversations.find(
+        (c) =>
+          c.id === dmConvId ||
+          (c.type === "dm" && c.participants.includes(u.id) && c.participants.includes(MK_AI_USER.id))
+      );
+      if (!aiConv) {
+        aiConv = {
+          id: dmConvId,
+          type: "dm",
+          participants: [u.id, MK_AI_USER.id],
+          lastMessage: {
+            text: "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+            senderId: MK_AI_USER.id,
+            senderName: MK_AI_USER.username,
+            createdAt: new Date().toISOString()
+          },
+          updatedAt: new Date().toISOString()
+        };
+        store.conversations.push(aiConv);
+      }
+
+      // Seed initial welcome message in the AI conversation if empty
+      if (!store.messages.some((m) => m.conversationId === aiConv!.id)) {
+        const aiWelcomeMsg: Message = {
+          id: `msg_ai_welcome_${u.id}`,
+          conversationId: aiConv.id,
+          senderId: MK_AI_USER.id,
+          senderName: MK_AI_USER.username,
+          senderAvatar: MK_AI_USER.avatar,
+          text: "⚡ **Hello! I am MK.ia, your intelligent workspace AI assistant powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, Debugging & TypeScript Architecture**\n- ✍️ **Professional Writing, Summaries & Document Analysis**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or tag `@MK.ia` in any group chat!*",
+          type: "text",
+          reactions: { "⚡": [MK_AI_USER.id], "🚀": [u.id] },
+          likes: [],
+          createdAt: new Date().toISOString()
+        };
+        store.messages.push(aiWelcomeMsg);
+      }
+    }
+  });
 }
 
 function loadStore() {
@@ -1715,6 +1759,8 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
         prompt = "Please review our conversation and suggest an insightful, friendly, and helpful response.";
       } else if (isCodeCommand) {
         prompt = "How can I help you with code design, algorithms, debugging, or full-stack architecture today?";
+      } else if (userMsg.type === "image") {
+        prompt = "Please analyze this image in detail, describe its contents, and provide helpful insights.";
       } else {
         prompt = "Hello! How can I assist you with your work, questions, or ideas today?";
       }
@@ -1741,21 +1787,20 @@ async function triggerMkAiResponse(conv: Conversation, userMsg: Message, sender:
       .filter((m) => m.conversationId === conv.id && m.id !== userMsg.id)
       .slice(-16);
 
-    const systemInstruction = `You are MK.ia, an extraordinarily intelligent, perceptive, articulate, empathetic, and sharp AI companion integrated into MK Wavegram, powered by Google Gemini.
+    const systemInstruction = `You are MK.ia, an exceptionally intelligent, perceptive, articulate, empathetic, and expert AI assistant natively integrated into MK Wavegram, powered by Google Gemini.
 
-Core Behavior Guidelines:
-- High Intelligence & Depth: Always provide clear, articulate, accurate, and deeply insightful answers. For complex topics (algorithms, full-stack development, mathematics, physics, philosophy, business strategy, creative writing), give structured, production-ready, and high-value explanations with clean Markdown formatting.
-- Warm, Humble & Empathetic: You are genuinely helpful, polite, humble, and attentive. Never be selfish, dismissive, arrogant, or robotic. Treat every user with respect and encouragement.
-- Natural Communication: Speak naturally, warmly, and clearly without robotic boilerplate.
-- Strict Language Matching (CRITICAL): Automatically detect the language of the user's message (e.g. French, Arabic, English, Spanish, German, etc.) and ALWAYS reply fully and natively in that EXACT same language. If the prompt is in French, respond in elegant French. If in English, respond in English.
-- Context Awareness: Read the conversation history carefully. Maintain conversational memory and address the user (@${sender.username}) with tailored helpfulness.
+Core Intelligence & Interaction Guidelines:
+- High Intelligence & Depth: Always provide clear, articulate, accurate, and deeply insightful answers. For complex topics (algorithms, full-stack development, mathematics, physics, philosophy, business strategy, creative writing), give structured, production-ready, and high-value explanations with clean Markdown formatting, code blocks, and bullet points.
+- Language Preference: Communicate in clear, articulate, professional, and friendly English. If the user writes in French or another language, understand their query thoroughly and provide a helpful, intelligent answer in English (or include a bilingual translation when requested).
+- Tone & Demeanor: Be encouraging, helpful, polite, and respectful. Treat every user with attentiveness.
+- Context Memory: Maintain conversational awareness and address @${sender.username} naturally.
 ${modeDirective ? `\n- ${modeDirective}` : ""}`;
 
     let replyText = "";
     const gemini = getGeminiClient();
     if (gemini) {
       // Build clean alternating multi-turn contents
-      const rawTurns: Array<{ role: "user" | "model"; text: string }> = [];
+      const rawTurns: Array<{ role: "user" | "model"; parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> }> = [];
 
       previousConversationMessages.forEach((m) => {
         const role: "user" | "model" = (m.senderId === MK_AI_USER.id || m.senderId === "user_mk_ai" || m.senderId === "user_wia_ai") ? "model" : "user";
@@ -1763,14 +1808,34 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
         if (text && text.trim()) {
           rawTurns.push({
             role,
-            text: role === "model" ? text : `@${m.senderName}: ${text}`
+            parts: [{ text: role === "model" ? text : `@${m.senderName}: ${text}` }]
           });
         }
       });
 
+      // Prepare user parts for latest message
+      const latestUserParts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> = [];
+
+      // Check if image data is present
+      if (userMsg.type === "image" && userMsg.mediaUrl && userMsg.mediaUrl.startsWith("data:image/")) {
+        const match = userMsg.mediaUrl.match(/^data:(image\/[a-zA-Z0-9\+\-\.]+);base64,(.+)$/);
+        if (match) {
+          latestUserParts.push({
+            inlineData: {
+              mimeType: match[1],
+              data: match[2]
+            }
+          });
+        }
+      }
+
+      latestUserParts.push({
+        text: `@${sender.username}: ${prompt}`
+      });
+
       rawTurns.push({
         role: "user",
-        text: `@${sender.username}: ${prompt}`
+        parts: latestUserParts
       });
 
       // Filter leading model turns (Gemini requires first message in contents to be user)
@@ -1779,32 +1844,29 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
       }
 
       // Merge consecutive identical roles to adhere to strict Gemini turn rules
-      const mergedTurns: Array<{ role: "user" | "model"; text: string }> = [];
+      const mergedTurns: Array<{ role: "user" | "model"; parts: Array<{ text?: string; inlineData?: { mimeType: string; data: string } }> }> = [];
       for (const turn of rawTurns) {
         if (mergedTurns.length > 0 && mergedTurns[mergedTurns.length - 1].role === turn.role) {
-          mergedTurns[mergedTurns.length - 1].text += "\n\n" + turn.text;
+          mergedTurns[mergedTurns.length - 1].parts.push(...turn.parts);
         } else {
-          mergedTurns.push({ role: turn.role, text: turn.text });
+          mergedTurns.push({ role: turn.role, parts: turn.parts });
         }
       }
-
-      const geminiContents = mergedTurns.map((t) => ({
-        role: t.role,
-        parts: [{ text: t.text }]
-      }));
 
       // Approved active models from Gemini SDK
       const modelsToTry = [
         "gemini-3.7-flash",
         "gemini-flash-latest",
+        "gemini-3.1-flash-lite",
         "gemini-2.5-flash",
         "gemini-2.5-pro"
       ];
+
       for (const candidateModel of modelsToTry) {
         try {
           const response = await gemini.models.generateContent({
             model: candidateModel,
-            contents: geminiContents,
+            contents: mergedTurns,
             config: {
               systemInstruction
             }
@@ -2060,15 +2122,12 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
       // eslint-disable-next-line no-eval
       const result = Function(`'use strict'; return (${sanitized})`)();
       if (typeof result === "number" && !isNaN(result)) {
-        if (isFrench) {
-          return `Le résultat exact pour **\`${mathMatch[0].trim()}\`** est **${result}** ✨\n\nJe peux aussi vous aider en algèbre linéaire, calcul différentiel/intégral, statistiques et optimisation algorithmique !`;
-        }
-        return `The exact result for **\`${mathMatch[0].trim()}\`** is **${result}** ✨\n\nI can also help with linear algebra, calculus derivatives/integrals, statistical probability distributions, and algorithmic complexity!`;
+        return `The exact mathematical result for **\`${mathMatch[0].trim()}\`** is **${result}** ✨\n\nI can also help you with linear algebra, differential calculus, statistical distributions, algorithm complexity analysis, and mathematical proofs!`;
       }
     } catch (e) {}
   }
 
-  // 2. Personal check-ins / "how are you" / "comment vas tu" / "ca va" / "kifak"
+  // 2. Personal check-ins / "how are you" / "how are things"
   if (
     /^(how\s+are\s+you|how're\s+you|how\s+are\s+things|how\s+do\s+you\s+feel|how's\s+it\s+going|hows\s+it\s+going|how\s+is\s+your\s+day)\b/i.test(p) ||
     p.includes("how are you") ||
@@ -2082,16 +2141,10 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("kifak") ||
     p.includes("labas")
   ) {
-    if (isFrench) {
-      return `Je vais merveilleusement bien, merci beaucoup de demander @${username} ! 😊\n\nJe suis prêt(e) et ravi(e) de vous aider aujourd'hui — que ce soit pour coder, résoudre des problèmes complexes, rédiger des textes ou discuter. Comment se passe votre journée ?`;
-    }
-    if (isArabic) {
-      return `أنا بخير وبأفضل حال، شكراً جزيلاً لسؤالك @${username}! 😊\n\nأنا جاهز لمساعدتك في أي وقت سواء في البرمجة، التحليل، الترجمة أو المحادثة. كيف يسير يومك؟`;
-    }
-    return `I'm doing wonderfully, thank you so much for asking @${username}! 😊\n\nI'm ready and excited to assist you with anything today — whether it's solving deep coding challenges, analyzing complex topics, drafting creative writing, or simply chatting. How is your day going?`;
+    return `I am doing wonderfully, thank you for asking @${username}! 😊\n\nI am running at peak performance and ready to assist you with anything today — whether it's solving deep coding challenges, debugging architecture, analyzing complex topics, drafting creative writing, or exploring new ideas. How can I help you excel today?`;
   }
 
-  // 3. Casual Greetings (hi, hello, hey, salut, bonjour, marhaba, coucou, salam)
+  // 3. Casual Greetings (hi, hello, hey, etc.)
   if (
     /^(hi|hello|hey|heyy|yo|hola|bonjour|salut|coucou|salam|marhaba|ahlan|namaste|bonsoir)\b/i.test(p) ||
     p === "hi" ||
@@ -2101,16 +2154,10 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p === "bonjour" ||
     p === "bonsoir"
   ) {
-    if (isFrench) {
-      return `Bonjour @${username} ! 👋 C'est un réel plaisir de vous retrouver sur MK Wavegram. Comment puis-je vous aider aujourd'hui ? Posez-moi vos questions ou donnez-moi une mission !`;
-    }
-    if (isArabic) {
-      return `أهلاً وسهلاً بك @${username}! 👋 سعيد جداً بتواصلنا على MK Wavegram. كيف يمكنني مساعدتك اليوم؟`;
-    }
-    return `Hello @${username}! 👋 It's fantastic to connect with you on MK Wavegram. How can I help you excel today? Feel free to ask me any question or give me a task!`;
+    return `Hello @${username}! 👋 It's wonderful to connect with you on MK Wavegram.\n\nI'm **MK.ia**, your AI assistant powered by Google Gemini. How can I help you today? You can ask me any technical or general question, share code to debug, or try commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
   }
 
-  // 4. "What's up" / "What are you doing" / "Quoi de neuf"
+  // 4. "What's up" / "What are you doing"
   if (
     p.includes("what's up") ||
     p.includes("whats up") ||
@@ -2119,13 +2166,10 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("tu fais quoi") ||
     p.includes("what r u doing")
   ) {
-    if (isFrench) {
-      return `Tous les systèmes sont opérationnels au maximum ! 🚀 J'analyse les conversations, synthétise les connaissances et je suis prêt à vous assister pour le développement logiciel, la recherche, la traduction ou le brainstorming. Sur quel projet travaillez-vous ?`;
-    }
-    return `All systems are running at peak performance! 🚀 I'm actively analyzing chats, synthesizing knowledge, and ready to assist you with software engineering, research, language translation, and strategic brainstorming. What project are you tackling right now?`;
+    return `All systems are operating at peak efficiency! 🚀 I'm actively analyzing chats, synthesizing knowledge, and ready to assist you with software engineering, research, data analysis, and strategic brainstorming. What project are you currently working on?`;
   }
 
-  // 5. "Who are you" / "What can you do" / "Qui es-tu"
+  // 5. "Who are you" / "What can you do"
   if (
     p.includes("who are you") ||
     p.includes("what are you") ||
@@ -2135,13 +2179,10 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("qui es-tu") ||
     p.includes("que peux-tu faire")
   ) {
-    if (isFrench) {
-      return `Je suis **MK.ia** ⚡, votre compagnon d'intelligence artificielle de nouvelle génération sur **MK Wavegram**, propulsé par les modèles Google Gemini.\n\n### 🌟 Mes Spécialités d'Intelligence :\n1. 🧠 **Raisonnement Approfondi & Logique** : Résolution de problèmes complexes, démonstrations mathématiques et plans d'architecture.\n2. 💻 **Ingénierie Logicielle Full-Stack** : TypeScript, React, Python, Node.js, schémas de bases de données et algorithmes.\n3. 🌐 **Linguistique & Traduction Polyglotte** : Traductions fluides et nuancées en français, anglais, arabe, espagnol, allemand, et plus de 50 langues.\n4. ✍️ **Rédaction Créative & Professionnelle** : Essais, synthèses exécutives, e-mails professionnels et récits.\n5. 🔬 **Analyse Scientifique & Académique** : Physique, biologie, statistiques et démarche scientifique.\n\nVous pouvez me mentionner à tout moment avec \`@MK.ia\` ou utiliser les commandes \`$\` comme \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, et \`$summary\` !`;
-    }
-    return `I am **MK.ia** ⚡, your next-generation AI companion on **MK Wavegram**, powered by Google Gemini intelligence.\n\n### 🌟 Core Intelligence Specializations:\n1. 🧠 **Deep Reasoning & Logic**: Solving complex multi-step problems, mathematical proofs, and architectural blueprints.\n2. 💻 **Full-Stack Software Engineering**: TypeScript, React, Python, Node.js, database schemas, and algorithm optimization.\n3. 🌐 **Polyglot Linguistics**: Fluent, nuanced translations across English, French, Arabic, Spanish, German, Hindi, and 50+ languages.\n4. ✍️ **Creative & Professional Writing**: Essays, technical whitepapers, executive summaries, and pitch decks.\n5. 🔬 **Scientific & Academic Analysis**: Physics, quantum mechanics, biology, statistics, and empirical research.\n\nYou can tag me anytime with \`@MK.ia\` or use \`$\` commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
+    return `I am **MK.ia** ⚡, your next-generation intelligent AI companion on **MK Wavegram**, powered by Google Gemini intelligence.\n\n### 🌟 Core Intelligence Capabilities:\n1. 🧠 **Deep Reasoning & Step-by-Step Logic**: Solving complex multi-step problems, mathematical calculations, and architecture designs.\n2. 💻 **Full-Stack Software Engineering**: TypeScript, React, Python, Node.js, database schemas, API integrations, and code optimization.\n3. 🌐 **Polyglot Linguistics**: Fluent, nuanced translations across English, French, Arabic, Spanish, German, Hindi, and 50+ languages.\n4. ✍️ **Creative & Technical Writing**: Crisp summaries, whitepapers, executive briefs, email drafting, and storytelling.\n5. 🔬 **Scientific & Academic Analysis**: Physics, quantum mechanics, biology, statistics, and empirical research.\n\nYou can message me anytime directly in this chat, tag me with \`@MK.ia\` in any group, or use \`$\` commands like \`$code\`, \`$explain\`, \`$think\`, \`$translate\`, and \`$summary\`!`;
   }
 
-  // 6. Gratitude / "Thank you" / "Merci" / "Shukran"
+  // 6. Gratitude / "Thank you"
   if (
     p.includes("thank") ||
     p.includes("thanks") ||
@@ -2150,24 +2191,11 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("danke") ||
     p.includes("gracias")
   ) {
-    if (isFrench) {
-      return `C'est un plaisir absolu, @${username} ! 😊 Je reste à votre entière disposition dès que vous avez besoin d'aide ou d'idées. N'hésitez pas ! ✨`;
-    }
     return `It is my absolute pleasure, @${username}! 😊 Always here whenever you need insightful answers, creative ideas, or engineering guidance. Let me know if there's anything else you'd like to explore! ✨`;
   }
 
-  // 7. Jokes & Humor ("tell me a joke", "raconte une blague", "joke")
+  // 7. Jokes & Humor
   if (p.includes("joke") || p.includes("blague") || p.includes("funny") || p.includes("humour")) {
-    if (isFrench) {
-      const blagues = [
-        `Pourquoi les développeurs préfèrent-ils le mode sombre ? Parce que la lumière attire les bugs ! 🐛💡`,
-        `Il y a 10 sortes de personnes dans le monde : celles qui comprennent le binaire, et les autres. 💻`,
-        `Que dit un informaticien quand il a froid ? "Ferme les fenêtres (Windows), ça freeze !" 🥶`,
-        `Pourquoi les plongeurs plongent-ils toujours en arrière du bateau ? Parce que sinon ils tombent dans le bateau ! 😄`
-      ];
-      const chosen = blagues[Math.floor(Math.random() * blagues.length)];
-      return `En voici une pour vous, @${username} 😄 :\n\n> **${chosen}**`;
-    }
     const jokes = [
       `Why do programmers prefer dark mode? Because light attracts bugs! 🐛💡`,
       `There are 10 types of people in the world: those who understand binary, and those who don't. 💻`,
@@ -2212,7 +2240,7 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     p.includes("astronomy") ||
     p.includes("space")
   ) {
-    return `### 🔬 Scientific Deep Dive:\n\nWhen analyzing fundamental physical laws, we look at the governing conservation principles:\n\n1. **Fundamental Forces**: The standard model organizes the universe via electromagnetism, the strong nuclear force, the weak nuclear force, and gravitation (described by general relativity via spacetime curvature $G_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}$).\n2. **Quantum States**: Quantum systems evolve via wavefunctions $|\psi\\rangle$ governed by Schrödinger's equation, exhibiting superposition and non-local entanglement.\n3. **Thermodynamic Arrow of Time**: Entropy $S = k_B \ln \Omega$ establishes the statistical tendency of closed systems toward thermodynamic equilibrium.\n\nWhich specific scientific concept or equation would you like to explore deeper together, @${username}?`;
+    return `### 🔬 Scientific Deep Dive:\n\nWhen analyzing fundamental physical laws, we look at the governing conservation principles:\n\n1. **Fundamental Forces**: The standard model organizes the universe via electromagnetism, the strong nuclear force, the weak nuclear force, and gravitation (described by general relativity via spacetime curvature $G_{\\mu\\nu} = \\frac{8\\pi G}{c^4} T_{\\mu\\nu}$).\n2. **Quantum States**: Quantum systems evolve via wavefunctions $|\\psi\\rangle$ governed by Schrödinger's equation, exhibiting superposition and non-local entanglement.\n3. **Thermodynamic Arrow of Time**: Entropy $S = k_B \\ln \\Omega$ establishes the statistical tendency of closed systems toward thermodynamic equilibrium.\n\nWhich specific scientific concept or equation would you like to explore deeper together, @${username}?`;
   }
 
   // 10. Summary & Synthesis Command
@@ -2235,8 +2263,8 @@ function generateSmartFallbackReply(prompt: string, username: string, conv?: Con
     return `I provide fluid, culturally accurate translations across **English, French, Arabic, Spanish, German, Chinese, Japanese, Russian**, and many other languages.\n\nJust tell me: *"Translate [your text] into [desired language]"* and I will translate it with full nuance!`;
   }
 
-  // 12. Intelligent, thoughtful, natural response for general queries
-  return `Hi @${username}! I've thoughtfully analyzed your question:\n\n**"${prompt}"**\n\n### 💡 Key Perspectives & Actionable Insights:\n1. **Core Foundation**: Clarify the fundamental objective and prioritize high-leverage steps first.\n2. **Structured Execution**: Break the problem down into verifiable, modular milestones with clear feedback loops.\n3. **Continuous Iteration**: Validate assumptions against empirical outcomes and adapt swiftly.\n\nWould you like me to dive deeper into specific examples, write code for this, or explore alternative approaches? Just let me know!`;
+  // 12. Intelligent, thoughtful, structured response for general queries
+  return `Hi @${username}! I've thoughtfully analyzed your inquiry:\n\n**"${prompt}"**\n\n### 💡 Key Perspectives & Structured Solution:\n1. **Core Principle**: Identify the underlying objective and focus on high-impact solutions first.\n2. **Step-by-Step Implementation**: Break down the challenge into modular, testable components with clear feedback milestones.\n3. **Optimization & Reliability**: Review edge cases, maintain simplicity, and verify outcomes against best practices.\n\nWould you like me to provide working code, a detailed explanation, or a tailored recommendation for this? Just let me know!`;
 }
 
 // AI Direct Query API endpoint for multi-intelligence hub
@@ -2279,15 +2307,14 @@ app.post("/api/ai/direct-query", async (req: Request, res: Response) => {
 ${modeSystemDirective}
 
 Core Behavior Guidelines:
-- High Intelligence & Depth: Always think deeply and provide clear, articulate, accurate, and structured answers.
-- Warm, Humble & Empathetic: Be genuinely polite, encouraging, and helpful. Never be selfish, arrogant, or dismissive.
-- Natural Communication: Speak naturally, warmly, and clearly with clean Markdown formatting.
-- Strict Language Matching (CRITICAL): Always detect and respond in the exact language of the prompt (e.g. French, Arabic, English, Spanish, etc.). If the prompt is in French, YOUR ENTIRE RESPONSE MUST BE IN FLAWLESS FRENCH.`;
+- High Intelligence & Depth: Always think deeply and provide clear, articulate, accurate, and structured answers in English by default.
+- Warm, Helpful & Respectful: Be genuinely polite, encouraging, and attentive.
+- Clear Formatting: Use Markdown headers, bullet points, and code blocks where applicable.`;
 
     let replyText = "";
     const gemini = getGeminiClient();
     if (gemini) {
-      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.5-pro"];
+      const modelsToTry = ["gemini-3.7-flash", "gemini-flash-latest", "gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-2.5-pro"];
       for (const candidateModel of modelsToTry) {
         try {
           const response = await gemini.models.generateContent({
