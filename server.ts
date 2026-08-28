@@ -13,7 +13,7 @@ const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 let aiClient: GoogleGenAI | null = null;
 let currentLoadedApiKey = "";
 
-function withTimeout<T>(promise: Promise<T>, ms = 6000): Promise<T> {
+function withTimeout<T>(promise: Promise<T>, ms = 25000): Promise<T> {
   return Promise.race([
     promise,
     new Promise<never>((_, reject) =>
@@ -1889,7 +1889,7 @@ ${modeDirective ? `\n- ${modeDirective}` : ""}`;
                 systemInstruction
               }
             }),
-            5000
+            25000
           );
           if (response.text && response.text.trim().length > 0) {
             replyText = response.text;
@@ -2401,7 +2401,7 @@ Core Behavior Guidelines:
                 systemInstruction
               }
             }),
-            5000
+            25000
           );
           if (response.text && response.text.trim().length > 0) {
             replyText = response.text;
