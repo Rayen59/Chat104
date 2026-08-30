@@ -31,7 +31,19 @@ export default function App() {
   const [groups, setGroups] = useState<Group[]>([]);
   const [chatRequests, setChatRequests] = useState<ChatRequest[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem("wavegram_active_conv") || null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    if (activeConversationId) {
+      localStorage.setItem("wavegram_active_conv", activeConversationId);
+    }
+  }, [activeConversationId]);
   
   const [sidebarTab, setSidebarTab] = useState<"chats" | "people" | "groups" | "requests">("chats");
   const [viewMode, setViewMode] = useState<"chat" | "analytics">("chat");
@@ -145,6 +157,17 @@ export default function App() {
   // Load initial dataset
   const fetchData = async () => {
     try {
+      if (currentUser) {
+        // Sync active user session with server to guarantee store presence
+        try {
+          await fetch("/api/auth/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user: currentUser })
+          });
+        } catch {}
+      }
+
       const [usersData, convsData, groupsData, requestsData, storiesData] = await Promise.all([
         safeFetchJson("/api/users"),
         currentUser ? safeFetchJson(`/api/conversations?userId=${currentUser.id}`) : Promise.resolve(null),
@@ -172,9 +195,16 @@ export default function App() {
         const convList: Conversation[] = convsData.conversations;
         setConversations(convList);
 
-        if (!activeConversationId && convList.length > 0) {
-          setActiveConversationId(convList[0].id);
-        }
+        setActiveConversationId((prev) => {
+          if (prev && convList.some((c) => c.id === prev || (c.groupId && c.groupId === prev))) {
+            return prev;
+          }
+          const saved = localStorage.getItem("wavegram_active_conv");
+          if (saved && convList.some((c) => c.id === saved || (c.groupId && c.groupId === saved))) {
+            return saved;
+          }
+          return convList.length > 0 ? convList[0].id : null;
+        });
       }
 
       if (groupsData && groupsData.groups) {
@@ -193,14 +223,34 @@ export default function App() {
     fetchData();
   }, [currentUser?.id]);
 
-  // Fetch messages when active conversation changes
+  // Fetch messages when active conversation changes with instant local cache restore
   useEffect(() => {
-    if (!activeConversationId || !currentUser) return;
+    if (!activeConversationId || !currentUser) {
+      setMessages([]);
+      return;
+    }
 
+    // 1. Instant local storage cache restore so messages never vanish on refresh
+    try {
+      const cached = localStorage.getItem(`wavegram_msgs_${activeConversationId}`);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+        }
+      }
+    } catch {}
+
+    // 2. Fresh server sync
     fetch(`/api/messages/${activeConversationId}?userId=${currentUser.id}`)
       .then((res) => (res.ok ? res.json() : { messages: [] }))
       .then((data) => {
-        setMessages(data.messages || []);
+        if (data.messages) {
+          setMessages(data.messages);
+          try {
+            localStorage.setItem(`wavegram_msgs_${activeConversationId}`, JSON.stringify(data.messages.slice(-100)));
+          } catch {}
+        }
       })
       .catch((err) => console.error("Error fetching messages:", err));
   }, [activeConversationId, currentUser?.id]);

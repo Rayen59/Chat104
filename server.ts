@@ -321,7 +321,7 @@ function ensureOfficialEntities() {
           type: "dm",
           participants: [u.id, MK_AI_USER.id],
           lastMessage: {
-            text: "⚡ Bonjour ! Je suis MK.ia, votre assistant d'intelligence artificielle sur MK Wavegram. Comment puis-je vous aider aujourd'hui ?",
+            text: "⚡ Hello! I am MK.ia, your official AI assistant on MK Wavegram. How can I help you today?",
             senderId: MK_AI_USER.id,
             senderName: MK_AI_USER.username,
             createdAt: new Date().toISOString()
@@ -339,7 +339,7 @@ function ensureOfficialEntities() {
           senderId: MK_AI_USER.id,
           senderName: MK_AI_USER.username,
           senderAvatar: MK_AI_USER.avatar,
-          text: "⚡ **Bonjour ! Je suis MK.ia, votre assistant IA officiel sur MK Wavegram, propulsé à 100% par Google Gemini.**\n\nJe suis à votre entière disposition pour répondre à toutes vos questions en français (ou dans votre langue) :\n- 🧠 **Raisonnement Approfondi & Analyse Logique**\n- 💻 **Développement Full-Stack, Code TypeScript & Debugging**\n- ✍️ **Rédaction de Textes, E-mails & Résumés**\n- 🌐 **Traductions Fluides & Explications Claires**\n- 🔬 **Sciences, Mathématiques & Stratégie**\n\n💬 *Posez-moi vos questions directement ici ou mentionnez `@MK.ia` dans les groupes !*",
+          text: "⚡ **Hello! I am MK.ia, your official AI workspace assistant on MK Wavegram, powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, TypeScript Architecture & Debugging**\n- ✍️ **Professional Writing, Email Drafting & Summaries**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or mention `@MK.ia` in any group chat!*",
           type: "text",
           reactions: { "⚡": [MK_AI_USER.id], "🚀": [u.id] },
           likes: [],
@@ -885,6 +885,76 @@ app.get("/api/events", (req: Request, res: Response) => {
   req.on("close", () => {
     sseSubscribers = sseSubscribers.filter((s) => s.id !== subId);
   });
+});
+
+// 1b. Auth: Session Sync / Restore
+app.post("/api/auth/sync", (req: Request, res: Response) => {
+  const { user } = req.body;
+  if (!user || !user.id) {
+    return res.status(400).json({ error: "User payload required" });
+  }
+
+  ensureOfficialEntities();
+
+  let existing = store.users.find((u) => u.id === user.id || (user.email && u.email?.toLowerCase() === user.email.toLowerCase()));
+  if (!existing) {
+    existing = {
+      id: user.id,
+      email: user.email || `${user.id}@wavegram.internal`,
+      username: user.username || "Member",
+      avatar: user.avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.id}`,
+      bio: user.bio || "Hey there! I am using MK Wavegram.",
+      status: "online",
+      role: user.role || "user",
+      createdAt: user.createdAt || new Date().toISOString(),
+      badges: Array.isArray(user.badges) ? user.badges : ["Member"],
+      hasAccount: true,
+      acceptedPrivacyTerms: true,
+      privacyAcceptedAt: user.privacyAcceptedAt || new Date().toISOString()
+    };
+    store.users.push(existing);
+    saveStore();
+  } else {
+    existing.status = "online";
+    if (user.username && user.username !== "Member" && existing.username === "Member") {
+      existing.username = user.username;
+    }
+    if (user.avatar && existing.avatar !== user.avatar) {
+      existing.avatar = user.avatar;
+    }
+  }
+
+  // Guarantee official channel and group subscription
+  const mkGroup = store.groups.find((g) => g.id === "group_mk_official");
+  if (mkGroup && !mkGroup.memberIds.includes(existing.id)) {
+    mkGroup.memberIds.push(existing.id);
+  }
+  const mkConv = store.conversations.find((c) => c.id === "conv_mk_official");
+  if (mkConv && !mkConv.participants.includes(existing.id)) {
+    mkConv.participants.push(existing.id);
+  }
+
+  // Guarantee direct MK.ia DM conversation exists
+  const dmConvId = `conv_mk_ia_${existing.id}`;
+  let aiConv = store.conversations.find((c) => c.id === dmConvId);
+  if (!aiConv) {
+    aiConv = {
+      id: dmConvId,
+      type: "dm",
+      participants: [existing.id, MK_AI_USER.id],
+      lastMessage: {
+        text: "⚡ Hello! I am MK.ia, your official AI assistant on MK Wavegram. How can I help you today?",
+        senderId: MK_AI_USER.id,
+        senderName: MK_AI_USER.username,
+        createdAt: new Date().toISOString()
+      },
+      updatedAt: new Date().toISOString()
+    };
+    store.conversations.push(aiConv);
+  }
+
+  saveStore();
+  return res.json({ success: true, user: existing });
 });
 
 // 2. Auth: Register (enforce unique email & admin reservation)
@@ -1542,15 +1612,56 @@ app.post("/api/messages/send", (req: Request, res: Response) => {
     drawingData
   } = req.body;
 
-  const sender = store.users.find((u) => u.id === senderId);
-  if (!sender) return res.status(404).json({ error: "Sender not found" });
+  let sender = store.users.find((u) => u.id === senderId);
+  if (!sender) {
+    sender = {
+      id: senderId,
+      email: `${senderId}@wavegram.internal`,
+      username: "Wavegram User",
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${senderId}`,
+      status: "online",
+      role: "user",
+      createdAt: new Date().toISOString(),
+      badges: ["Member"],
+      hasAccount: true,
+      acceptedPrivacyTerms: true,
+      privacyAcceptedAt: new Date().toISOString()
+    };
+    store.users.push(sender);
+    saveStore();
+  }
 
   if (sender.isBanned) {
     return res.status(403).json({ error: "Your account is currently suspended. You cannot send messages." });
   }
 
-  const conv = store.conversations.find((c) => c.id === conversationId);
-  if (!conv) return res.status(404).json({ error: "Conversation not found" });
+  let conv = store.conversations.find((c) => c.id === conversationId);
+  if (!conv) {
+    const matchingGroup = store.groups.find((g) => g.id === conversationId);
+    if (matchingGroup) {
+      conv = {
+        id: conversationId,
+        type: "group",
+        groupId: matchingGroup.id,
+        participants: matchingGroup.memberIds || [senderId],
+        updatedAt: new Date().toISOString()
+      };
+      store.conversations.push(conv);
+    } else {
+      conv = {
+        id: conversationId,
+        type: (conversationId.startsWith("group_") || conversationId.startsWith("grp_")) ? "group" : "dm",
+        groupId: (conversationId.startsWith("group_") || conversationId.startsWith("grp_")) ? conversationId : undefined,
+        participants: [senderId],
+        updatedAt: new Date().toISOString()
+      };
+      if (conversationId.startsWith("conv_mk_ia_") && !conv.participants.includes(MK_AI_USER.id)) {
+        conv.participants.push(MK_AI_USER.id);
+      }
+      store.conversations.push(conv);
+    }
+    saveStore();
+  }
 
   // Strictly enforce that only MK Admins can send messages in the official channel
   if (conversationId === "conv_mk_official" && sender.role !== "admin" && sender.id !== "user_admin_mk") {
