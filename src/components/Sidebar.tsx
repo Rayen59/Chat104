@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { User, Conversation, Group, ChatRequest, Story } from "../types";
 import { StoriesBar } from "./StoriesBar";
 import {
@@ -132,14 +132,24 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const [lang, setLang] = useState<Language>(getSavedLanguage());
   const t = translations[lang];
 
+  useEffect(() => {
+    const handleLang = (e: any) => {
+      if (e.detail) {
+        setLang(e.detail);
+      }
+    };
+    window.addEventListener("wavegram_lang_change", handleLang);
+    return () => window.removeEventListener("wavegram_lang_change", handleLang);
+  }, []);
+
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearchInput, setShowSearchInput] = useState(false);
   const [showDropdownMenu, setShowDropdownMenu] = useState(false);
   const [showFabMenu, setShowFabMenu] = useState(false);
 
   const LANG_CYCLE: { code: Language; label: string; flag: string }[] = [
-    { code: "en", label: "EN", flag: "🇬🇧" },
     { code: "fr", label: "FR", flag: "🇫🇷" },
+    { code: "en", label: "EN", flag: "🇬🇧" },
     { code: "ar", label: "AR", flag: "🇸🇦" },
     { code: "hi", label: "HI", flag: "🇮🇳" },
     { code: "zh", label: "ZH", flag: "🇨🇳" },

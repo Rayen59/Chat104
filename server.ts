@@ -7,7 +7,7 @@ import { GoogleGenAI } from "@google/genai";
 import { User, Message, Group, Conversation, ActiveCall, UserAnalytics, ChatRequest, Story, StoryComment, StoryAnonymousAnswer, Note, NoteMusic, UserReport } from "./src/types";
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
 // Lazy Gemini AI client initialization
 let aiClient: GoogleGenAI | null = null;
@@ -111,6 +111,17 @@ export function checkAdminAccess(adminIdentifier?: string): User | null {
 
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
+
+// Health check endpoints for Render, Railway, Docker, Cloud Run
+app.get(["/api/health", "/healthz"], (req: Request, res: Response) => {
+  res.json({
+    status: "ok",
+    app: "MK Wavegram",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString(),
+    geminiConfigured: !!(process.env.GEMINI_API_KEY || "").trim()
+  });
+});
 
 // Persistent memory storage file helper
 const DB_FILE = path.join(process.cwd(), "data_store.json");

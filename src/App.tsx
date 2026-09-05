@@ -18,6 +18,7 @@ import { ReportModal } from "./components/ReportModal";
 import { CeoShowcaseHubModal } from "./components/CeoShowcaseHubModal";
 import { MessageSquare } from "lucide-react";
 import { applyTheme, getSavedTheme } from "./theme";
+import { getSavedLanguage } from "./i18n";
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(() => {
@@ -75,8 +76,10 @@ export default function App() {
   // Initialize theme and language on mount
   useEffect(() => {
     applyTheme(getSavedTheme());
+    const currentLang = getSavedLanguage();
     if (typeof document !== "undefined") {
-      document.documentElement.lang = "en";
+      document.documentElement.lang = currentLang;
+      document.documentElement.dir = currentLang === "ar" ? "rtl" : "ltr";
     }
 
     const handleThemeChange = (e: any) => {
@@ -84,8 +87,18 @@ export default function App() {
         setAppTheme(e.detail.id);
       }
     };
+    const handleLangChange = (e: any) => {
+      if (typeof document !== "undefined" && e.detail) {
+        document.documentElement.lang = e.detail;
+        document.documentElement.dir = e.detail === "ar" ? "rtl" : "ltr";
+      }
+    };
     window.addEventListener("wavegram_theme_change", handleThemeChange);
-    return () => window.removeEventListener("wavegram_theme_change", handleThemeChange);
+    window.addEventListener("wavegram_lang_change", handleLangChange);
+    return () => {
+      window.removeEventListener("wavegram_theme_change", handleThemeChange);
+      window.removeEventListener("wavegram_lang_change", handleLangChange);
+    };
   }, []);
 
   // Synthesize notification sound

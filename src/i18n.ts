@@ -1067,15 +1067,30 @@ export const translations: Record<Language, Translations> = {
 export const getSavedLanguage = (): Language => {
   if (typeof localStorage !== "undefined") {
     const saved = localStorage.getItem("wavegram_lang");
-    // Ensure English is forced when requested or as crisp default
-    if (saved === "en" || saved === "ar" || saved === "hi" || saved === "zh" || saved === "ru") {
+    if (saved === "fr" || saved === "en" || saved === "ar" || saved === "hi" || saved === "zh" || saved === "ru") {
       return saved as Language;
     }
-    // Set and persist English as default
-    localStorage.setItem("wavegram_lang", "en");
-    return "en";
+    // Auto-detect browser language if available
+    if (typeof navigator !== "undefined" && navigator.language) {
+      const browserLang = navigator.language.toLowerCase();
+      if (browserLang.startsWith("fr")) {
+        localStorage.setItem("wavegram_lang", "fr");
+        return "fr";
+      }
+      if (browserLang.startsWith("ar")) {
+        localStorage.setItem("wavegram_lang", "ar");
+        return "ar";
+      }
+      if (browserLang.startsWith("es")) {
+        localStorage.setItem("wavegram_lang", "fr");
+        return "fr";
+      }
+    }
+    // Default to French for optimal bilingual experience
+    localStorage.setItem("wavegram_lang", "fr");
+    return "fr";
   }
-  return "en";
+  return "fr";
 };
 
 export const setSavedLanguage = (lang: Language): void => {
