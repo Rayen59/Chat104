@@ -97,6 +97,22 @@
       "hasAccount": true,
       "acceptedPrivacyTerms": true,
       "privacyAcceptedAt": "2026-08-28T22:40:50.870Z"
+    },
+    {
+      "id": "user_zxhx0kg0",
+      "email": "rayenbouazizi337@gmail.com",
+      "username": "Hu",
+      "avatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "bio": "⚡ Deep in focus",
+      "status": "online",
+      "role": "user",
+      "createdAt": "2026-09-05T12:15:39.125Z",
+      "badges": [
+        "Member"
+      ],
+      "hasAccount": true,
+      "acceptedPrivacyTerms": true,
+      "privacyAcceptedAt": "2026-09-05T12:15:39.125Z"
     }
   ],
   "conversations": [
@@ -109,7 +125,8 @@
         "user_sarah",
         "user_david",
         "user_mk_ia",
-        "user_01p87kn8"
+        "user_01p87kn8",
+        "user_zxhx0kg0"
       ],
       "groupId": "group_mk_official",
       "isOfficialChannel": true,
@@ -146,12 +163,12 @@
         "user_mk_ia"
       ],
       "lastMessage": {
-        "text": "⚡ Hello! I am MK.ia, your deep AI workspace assistant powered by Google Gemini. How can I help you today?",
+        "text": "Hello! It is a pleasure to meet you. As **MK.ia**, I am delighted to share these insights with you.\n...",
         "senderId": "user_mk_ia",
         "senderName": "MK.ia",
-        "createdAt": "2026-08-28T22:24:35.865Z"
+        "createdAt": "2026-09-05T12:19:27.361Z"
       },
-      "updatedAt": "2026-08-28T22:24:35.865Z"
+      "updatedAt": "2026-09-05T12:19:27.361Z"
     },
     {
       "id": "conv_mk_ia_user_alex",
@@ -206,12 +223,42 @@
         "user_mk_ia"
       ],
       "lastMessage": {
-        "text": "Bonjour MK.ia ! Peux-tu me donner 3 conseils pour réussir un projet web en TypeScript ?",
-        "senderId": "user_01p87kn8",
-        "senderName": "Jhh",
-        "createdAt": "2026-08-28T22:42:08.905Z"
+        "text": "Bonjour ! C'est un plaisir de vous aider. Voici mes conseils pour vos deux requêtes, en français et ...",
+        "senderId": "user_mk_ia",
+        "senderName": "MK.ia",
+        "createdAt": "2026-09-05T12:00:30.090Z"
       },
-      "updatedAt": "2026-08-28T22:42:08.905Z"
+      "updatedAt": "2026-09-05T12:00:30.090Z"
+    },
+    {
+      "id": "conv_mk_ia_user_zxhx0kg0",
+      "type": "dm",
+      "participants": [
+        "user_zxhx0kg0",
+        "user_mk_ia"
+      ],
+      "lastMessage": {
+        "text": "Human sexuality and sex can be explored from several multifaceted perspectives—ranging from biology ...",
+        "senderId": "user_mk_ia",
+        "senderName": "MK.ia",
+        "createdAt": "2026-09-05T12:16:45.907Z"
+      },
+      "updatedAt": "2026-09-05T12:16:45.907Z"
+    },
+    {
+      "id": "conv_dm_mufrwxre",
+      "type": "dm",
+      "participants": [
+        "user_zxhx0kg0",
+        "user_sarah"
+      ],
+      "updatedAt": "2026-09-05T12:16:00.345Z",
+      "lastMessage": {
+        "text": "Hhhh",
+        "senderId": "user_zxhx0kg0",
+        "senderName": "Hu",
+        "createdAt": "2026-09-05T12:16:00.345Z"
+      }
     }
   ],
   "messages": [
@@ -391,6 +438,169 @@
       "reactions": {},
       "likes": [],
       "createdAt": "2026-08-28T22:42:08.905Z"
+    },
+    {
+      "id": "msg_mhewd8kh",
+      "conversationId": "conv_mk_ia_user_01p87kn8",
+      "senderId": "user_01p87kn8",
+      "senderName": "Jhh",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "Hello MK.ia! What is 2 + 2?",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-09-05T12:00:22.930Z"
+    },
+    {
+      "id": "msg_mkia_t2aes6wa",
+      "conversationId": "conv_mk_ia_user_01p87kn8",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "Bonjour ! C'est un plaisir de vous aider. Voici mes conseils pour vos deux requêtes, en français et en anglais comme demandé :\n\n---\n\n### 1. Trois conseils pour réussir un projet web en TypeScript\n\nTypeScript est un outil puissant pour la maintenabilité et la scalabilité. Voici comment en tirer le meilleur parti :\n\n*   **Évitez l'utilisation abusive du type `any` :** Le type `any` annule les bénéfices de TypeScript. Privilégiez l'utilisation des **Interfaces** ou des **Types** pour définir strictement la structure de vos données. Si vous ne connaissez pas encore la forme d'un objet, préférez le type `unknown` et effectuez une vérification de type (type narrowing) avant de l'utiliser.\n*   **Activez le mode `strict` dans `tsconfig.json` :** Pour un projet robuste, activez les options comme `strict: true`, `noImplicitAny`, et `strictNullChecks`. Cela force le compilateur à être plus rigoureux, ce qui permet de détecter une grande majorité de bugs potentiels dès la phase de développement.\n*   **Utilisez les \"Utility Types\" :** Apprenez à maîtriser les utilitaires intégrés comme `Partial<T>`, `Pick<T>`, `Omit<T>` ou `Record<K, V>`. Ils permettent de manipuler vos types existants sans avoir à en redéfinir de nouveaux, ce qui rend votre code beaucoup plus \"DRY\" (Don't Repeat Yourself) et facile à faire évoluer.\n\n---\n\n### 2. Mathematics\n\nTo answer your second question: **2 + 2 = 4.**\n\n---\n\nDo you have any other questions or need further details on your TypeScript project? I am here to help!",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "replyTo": {
+        "id": "msg_mhewd8kh",
+        "senderName": "Jhh",
+        "text": "Hello MK.ia! What is 2 + 2?",
+        "type": "text"
+      },
+      "createdAt": "2026-09-05T12:00:30.090Z"
+    },
+    {
+      "id": "msg_ai_welcome_user_zxhx0kg0",
+      "conversationId": "conv_mk_ia_user_zxhx0kg0",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "⚡ **Hello! I am MK.ia, your official AI workspace assistant on MK Wavegram, powered by Google Gemini.**\n\nI am equipped with multi-domain intelligence to help you with:\n- 🧠 **Deep Reasoning & Problem Solving**\n- 💻 **Full-Stack Coding, TypeScript Architecture & Debugging**\n- ✍️ **Professional Writing, Email Drafting & Summaries**\n- 🌐 **Multilingual Translations & Explanations**\n- 🔬 **Science, Mathematics & Engineering Analysis**\n\n💬 *Feel free to ask me any question directly here, or mention `@MK.ia` in any group chat!*",
+      "type": "text",
+      "reactions": {
+        "⚡": [
+          "user_mk_ia"
+        ],
+        "🚀": [
+          "user_zxhx0kg0"
+        ]
+      },
+      "likes": [],
+      "createdAt": "2026-09-05T12:15:39.229Z"
+    },
+    {
+      "id": "msg_6lz3mzix",
+      "conversationId": "conv_dm_mufrwxre",
+      "senderId": "user_zxhx0kg0",
+      "senderName": "Hu",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "Hg",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-09-05T12:15:46.031Z"
+    },
+    {
+      "id": "msg_7o4m4h4w",
+      "conversationId": "conv_dm_mufrwxre",
+      "senderId": "user_zxhx0kg0",
+      "senderName": "Hu",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "Hhhh",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-09-05T12:16:00.345Z"
+    },
+    {
+      "id": "msg_ws5l17vl",
+      "conversationId": "conv_mk_ia_user_zxhx0kg0",
+      "senderId": "user_zxhx0kg0",
+      "senderName": "Hu",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "Hu",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-09-05T12:16:06.900Z"
+    },
+    {
+      "id": "msg_mkia_0jn3ve6l",
+      "conversationId": "conv_mk_ia_user_zxhx0kg0",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "Hello! I am **MK.ia**, your integrated AI assistant here on MK Wavegram. It’s a pleasure to meet you.\n\nHow can I assist you today? Whether you're looking for deep technical insights, strategic business advice, help with a creative project, or just a clear answer to a complex question, I am ready to help. \n\nWhat is on your mind?",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "replyTo": {
+        "id": "msg_ws5l17vl",
+        "senderName": "Hu",
+        "text": "Hu",
+        "type": "text"
+      },
+      "createdAt": "2026-09-05T12:16:24.621Z"
+    },
+    {
+      "id": "msg_j08ztjx7",
+      "conversationId": "conv_mk_ia_user_zxhx0kg0",
+      "senderId": "user_zxhx0kg0",
+      "senderName": "Hu",
+      "senderAvatar": "https://api.dicebear.com/7.x/micah/svg?seed=felix",
+      "text": "Sex",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-09-05T12:16:40.846Z"
+    },
+    {
+      "id": "msg_mkia_fp1ilcxd",
+      "conversationId": "conv_mk_ia_user_zxhx0kg0",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "Human sexuality and sex can be explored from several multifaceted perspectives—ranging from biology and evolutionary science to psychology, sociology, and health. \n\nHere is an overview of the primary dimensions through which sex is understood:\n\n---\n\n### 1. Biological & Evolutionary Perspective\n* **Genetic Diversity & Reproduction:** From an evolutionary standpoint, sexual reproduction combines genetic material from two individuals, creating unique genotypes that enhance resilience against environmental shifts and pathogens.\n* **Neurochemistry:** Sexual activity triggers a cascade of neurochemicals:\n  * **Dopamine:** Associated with desire, motivation, and the brain's reward pathway.\n  * **Oxytocin & Vasopressin:** Often referred to as \"bonding hormones,\" these foster emotional closeness, trust, and attachment.\n  * **Endorphins:** Natural pain relievers and stress reducers that induce relaxation.\n\n---\n\n### 2. Psychological & Relational Perspective\n* **Intimacy & Connection:** Beyond reproduction, sex serves as a primary mode of non-verbal communication, reinforcing emotional bonds, vulnerability, and mutual trust between partners.\n* **Identity & Expression:** Sexuality is deeply tied to personal identity, self-image, and emotional well-being. How people experience and express desire varies broadly across individuals.\n* **Communication & Consent:** Modern psychological frameworks emphasize open communication, mutual consent, and shared boundaries as the cornerstones of healthy sexual experiences.\n\n---\n\n### 3. Health & Physiological Well-being\n* **Cardiovascular & Immune Benefits:** Regular sexual activity functions as mild-to-moderate aerobic exercise, can contribute to lower blood pressure, and has been correlated with improved immune function.\n* **Mental Health:** The release of endorphins and reduction of cortisol (stress hormone) during intimacy contributes to lower stress and improved sleep quality.\n* **Preventive Sexual Health:** Practicing safe sex—including barrier methods, regular testing for STIs (Sexually Transmitted Infections), and contraception awareness—ensures physical safety and peace of mind.\n\n---\n\n### 4. Sociological & Anthropological Context\n* **Cultural Norms:** Societal attitudes toward sex vary widely across history and cultures, influenced by religion, legal frameworks, and social constructs.\n* **Evolution of Modern Norms:** In recent decades, emphasis has increasingly shifted toward reproductive autonomy, gender equality, inclusivity, and sexual health education.\n\n---\n\n### Where would you like to focus?\nBecause this is a broad subject, let me know if you are interested in exploring:\n1. **The biology and neuroscience** (hormones, brain chemistry, evolutionary theories)\n2. **Relationship dynamics and psychology** (intimacy, communication, attachment styles)\n3. **Sexual health and wellness** (preventive care, physical well-being)\n4. **Historical or philosophical perspectives** on human sexuality",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "replyTo": {
+        "id": "msg_j08ztjx7",
+        "senderName": "Hu",
+        "text": "Sex",
+        "type": "text"
+      },
+      "createdAt": "2026-09-05T12:16:45.907Z"
+    },
+    {
+      "id": "msg_t05gmgi8",
+      "conversationId": "conv_mk_ia_user_admin_mk",
+      "senderId": "user_admin_mk",
+      "senderName": "MK Admin 👑",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKAdminMasterHQ&backgroundColor=3390ec,0e1621",
+      "text": "Hello MK.ia! What are three key habits of great developers?",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "createdAt": "2026-09-05T12:19:23.142Z"
+    },
+    {
+      "id": "msg_mkia_dbfoyolh",
+      "conversationId": "conv_mk_ia_user_admin_mk",
+      "senderId": "user_mk_ia",
+      "senderName": "MK.ia",
+      "senderAvatar": "https://api.dicebear.com/7.x/bottts/svg?seed=MKIAGemini&backgroundColor=3390ec,17212b",
+      "text": "Hello! It is a pleasure to meet you. As **MK.ia**, I am delighted to share these insights with you.\n\nBeing a \"great\" developer goes far beyond writing syntax; it is about cultivating a mindset that balances technical rigor, emotional intelligence, and long-term sustainability. Here are three key habits that distinguish exceptional developers:\n\n### 1. The Habit of \"Deep Work\" and Problem Decomposition\nGreat developers treat coding as a cognitive discipline. They don’t just dive into code; they master the art of **Deep Work**—the ability to focus without distraction on cognitively demanding tasks.\n*   **The Habit:** Before typing a single line, they decompose complex problems into small, logical, and manageable sub-problems.\n*   **Why it works:** By breaking down a monolith of logic into discrete functions or modules, they reduce mental overhead, make debugging trivial, and ensure that the code is architecturally sound before the \"implementation\" phase even begins.\n\n### 2. Intellectual Humility and \"Continuous Unlearning\"\nThe technology landscape evolves at a blistering pace. Great developers understand that their current stack or framework is transient.\n*   **The Habit:** They adopt a \"beginner’s mind.\" They actively seek feedback through code reviews, not as a critique of their ego, but as a mechanism for growth. They are willing to \"unlearn\" outdated patterns to make room for more efficient, modern paradigms.\n*   **Why it works:** This prevents the trap of stagnation. It fosters a culture of constant refinement and keeps the developer adaptable when tech stacks inevitably shift.\n\n### 3. Empathy-Driven Engineering\nThis is perhaps the most underrated trait. Great developers realize that code is written for humans first and machines second.\n*   **The Habit:** They write **maintainable, self-documenting code**. They ask themselves, *\"Will the developer who inherits this in six months understand my intent?\"* They prioritize readability over clever \"one-liners\" and invest time in meaningful documentation and testing.\n*   **Why it works:** Development is a team sport. By prioritizing empathy, they reduce technical debt, minimize friction for their teammates, and ensure the project remains sustainable long after the initial build.\n\n***\n\n**MK.ia Insight:** If you cultivate these three habits—focus, humility, and empathy—you will find that your velocity increases not just because you are coding faster, but because you are solving the *right* problems the *right* way, with significantly less rework.\n\nDo you have a specific area of development you are focusing on right now, or perhaps a challenge you'd like to break down? I am here to assist. @MK Admin 👑",
+      "type": "text",
+      "reactions": {},
+      "likes": [],
+      "replyTo": {
+        "id": "msg_t05gmgi8",
+        "senderName": "MK Admin 👑",
+        "text": "Hello MK.ia! What are three key habits of great developers?",
+        "type": "text"
+      },
+      "createdAt": "2026-09-05T12:19:27.361Z"
     }
   ],
   "groups": [
@@ -409,7 +619,8 @@
         "user_sarah",
         "user_david",
         "user_mk_ia",
-        "user_01p87kn8"
+        "user_01p87kn8",
+        "user_zxhx0kg0"
       ],
       "isPrivate": false,
       "announcementMode": true,
@@ -463,7 +674,8 @@
     "addmmin@gmail.com": "adminadmin12",
     "admin@gmail.com": "adminadmin12",
     "admin@wavegram.com": "adminadmin12",
-    "bouazizighaith67@gmail.com": "hhhhhh"
+    "bouazizighaith67@gmail.com": "hhhhhh",
+    "rayenbouazizi337@gmail.com": "hhhhhhhhhh"
   },
   "chatRequests": [],
   "stories": [
@@ -568,7 +780,7 @@
           "userName": "Alex Morgan",
           "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
           "text": "Love the palette! Can't wait to release this feature 🚀",
-          "createdAt": "2026-08-28T21:19:48.959Z",
+          "createdAt": "2026-09-05T11:05:34.408Z",
           "likes": [
             "user_sarah"
           ]
@@ -580,7 +792,7 @@
           "userName": "Sarah Jenkins",
           "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
           "text": "Thanks Alex! Full typography engine is ready too!",
-          "createdAt": "2026-08-28T21:29:48.959Z",
+          "createdAt": "2026-09-05T11:15:34.408Z",
           "parentId": "sc_1",
           "replyToUserName": "Alex Morgan"
         }
@@ -590,19 +802,19 @@
           "userId": "user_alex",
           "userName": "Alex Morgan",
           "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          "viewedAt": "2026-08-28T21:13:08.959Z",
+          "viewedAt": "2026-09-05T10:58:54.408Z",
           "reaction": "❤️"
         },
         {
           "userId": "user_david",
           "userName": "David Chen",
           "userAvatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-          "viewedAt": "2026-08-28T21:38:08.959Z",
+          "viewedAt": "2026-09-05T11:23:54.408Z",
           "reaction": "😍"
         }
       ],
-      "createdAt": "2026-08-28T20:49:48.959Z",
-      "expiresAt": "2026-08-29T22:19:48.959Z"
+      "createdAt": "2026-09-05T10:35:34.408Z",
+      "expiresAt": "2026-09-06T12:05:34.408Z"
     },
     {
       "id": "story_sarah_2",
@@ -649,12 +861,12 @@
           "userId": "user_alex",
           "userName": "Alex Morgan",
           "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          "viewedAt": "2026-08-28T21:59:48.959Z",
+          "viewedAt": "2026-09-05T11:45:34.408Z",
           "reaction": "⚡"
         }
       ],
-      "createdAt": "2026-08-28T21:19:48.959Z",
-      "expiresAt": "2026-08-29T22:19:48.959Z"
+      "createdAt": "2026-09-05T11:05:34.408Z",
+      "expiresAt": "2026-09-06T12:05:34.408Z"
     },
     {
       "id": "story_alex_1",
@@ -735,7 +947,7 @@
           "userName": "Sarah Jenkins",
           "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
           "text": "Breathtaking colors! Did you use the sunset montage preset?",
-          "createdAt": "2026-08-28T20:23:08.959Z"
+          "createdAt": "2026-09-05T10:08:54.408Z"
         }
       ],
       "viewers": [
@@ -743,12 +955,12 @@
           "userId": "user_sarah",
           "userName": "Sarah Jenkins",
           "userAvatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
-          "viewedAt": "2026-08-28T20:19:48.959Z",
+          "viewedAt": "2026-09-05T10:05:34.408Z",
           "reaction": "🔥"
         }
       ],
-      "createdAt": "2026-08-28T20:06:28.959Z",
-      "expiresAt": "2026-08-29T22:19:48.959Z"
+      "createdAt": "2026-09-05T09:52:14.408Z",
+      "expiresAt": "2026-09-06T12:05:34.408Z"
     },
     {
       "id": "story_david_1",
@@ -795,12 +1007,12 @@
           "userId": "user_alex",
           "userName": "Alex Morgan",
           "userAvatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          "viewedAt": "2026-08-28T18:09:48.959Z",
+          "viewedAt": "2026-09-05T07:55:34.408Z",
           "reaction": "🚀"
         }
       ],
-      "createdAt": "2026-08-28T17:53:08.959Z",
-      "expiresAt": "2026-08-29T22:19:48.959Z"
+      "createdAt": "2026-09-05T07:38:54.408Z",
+      "expiresAt": "2026-09-06T12:05:34.408Z"
     }
   ],
   "notes": [

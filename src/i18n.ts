@@ -1065,21 +1065,30 @@ export const translations: Record<Language, Translations> = {
 };
 
 export const getSavedLanguage = (): Language => {
-  const saved = typeof localStorage !== "undefined" ? localStorage.getItem("wavegram_lang") : null;
-  if (saved && (saved === "en" || saved === "fr" || saved === "ar" || saved === "hi" || saved === "zh" || saved === "ru")) {
-    return saved as Language;
+  if (typeof localStorage !== "undefined") {
+    const saved = localStorage.getItem("wavegram_lang");
+    // Ensure English is forced when requested or as crisp default
+    if (saved === "en" || saved === "ar" || saved === "hi" || saved === "zh" || saved === "ru") {
+      return saved as Language;
+    }
+    // Set and persist English as default
+    localStorage.setItem("wavegram_lang", "en");
+    return "en";
   }
-  // Standardize default strictly to English
   return "en";
 };
 
 export const setSavedLanguage = (lang: Language): void => {
-  localStorage.setItem("wavegram_lang", lang);
+  if (typeof localStorage !== "undefined") {
+    localStorage.setItem("wavegram_lang", lang);
+  }
   if (typeof document !== "undefined") {
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
   }
-  window.dispatchEvent(new CustomEvent("wavegram_lang_change", { detail: lang }));
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("wavegram_lang_change", { detail: lang }));
+  }
 };
 
 export const saveLanguage = setSavedLanguage;
